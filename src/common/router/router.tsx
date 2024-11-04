@@ -9,6 +9,10 @@ import {
   RecruitmentListPage,
   RecruitmentPage,
 } from "../../applicant/pages";
+import PostManage from "../../owner/post_manage/post_manage";
+import PostWrite from "../../owner/post_write/post_write";
+import FormBuilder from "../../owner/apply_form/form_builder";
+import { PostProvider } from "../../owner/post_context/post_context";
 
 export const ROUTES = {
   LANDING: "/",
@@ -20,6 +24,9 @@ export const ROUTES = {
   RECRUITMENT: "/recruitment/:clubId",
   APPLICATION: "/application/:clubId",
   RESULTSHARE: "/result",
+  POST_MANAGE: "/post-manage",
+  POST_WRITE: "/post-write",
+  FORM_BUILDER: "/apply-form",
 };
 
 export const router = createBrowserRouter([
@@ -35,6 +42,7 @@ export const router = createBrowserRouter([
     path: ROUTES.LOGIN,
     element: <LoginPage />,
   },
+  
   {
     path: ROUTES.VERIFICATION,
     element: <VerificationPage />,
@@ -50,6 +58,26 @@ export const router = createBrowserRouter([
   {
     path: ROUTES.APPLICATION,
     element: <ApplicationFormPage />,
+  },
+  {
+    path: ROUTES.POST_MANAGE, 
+    element: (
+      <PostProvider>
+        <PostManage />
+      </PostProvider>
+    ), 
+  },
+  {
+    path: ROUTES.POST_WRITE, 
+    element: (
+      <PostProvider>
+        <PostWrite />
+      </PostProvider>
+    ), 
+  },
+  {
+    path: ROUTES.FORM_BUILDER,
+    element: <FormBuilder />,
   },
   {
     path: ROUTES.DOCEVALUATE,
