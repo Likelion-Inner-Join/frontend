@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
 
 interface Applicant {
@@ -20,8 +20,19 @@ interface ApplicantListProps {
 }
 
 const stateList = ["전체", "합격", "불합격", "미평가"];
+const positionList = ["전체", "단장단", "기획단"];
 
 const ApplicantList = ({ data1, data2 }: ApplicantListProps) => {
+  const [selectedState, setSelectedState] = useState("전체");
+  const [selectedPosition, setSelectedPosition] = useState("전체");
+
+  const filteredApplicants = data1.filter((applicant) => {
+    if (selectedState === "합격") return applicant.firstState === "pass";
+    if (selectedState === "불합격") return applicant.firstState === "fail";
+    if (selectedState === "미평가") return applicant.firstState === "null";
+    if (selectedPosition === "전체") return true;
+  });
+
   const getIconByState = (state: string) => {
     switch (state) {
       case "pass":
@@ -47,9 +58,14 @@ const ApplicantList = ({ data1, data2 }: ApplicantListProps) => {
           <h2>상태</h2>
           <StateContainer>
             {stateList.map((state, index) => (
-              <StateItem key={state}>
+              <StateItem
+                key={state}
+                onClick={() => setSelectedState(state)}
+                state={state}
+                selected={selectedState}
+              >
                 <p>{state}</p>
-                {index < stateList.length - 1 && <p>|</p>}
+                {index < stateList.length - 1 && <div>|</div>}
               </StateItem>
             ))}
           </StateContainer>
@@ -69,7 +85,7 @@ const ApplicantList = ({ data1, data2 }: ApplicantListProps) => {
         </Position>
       </Filter>
       <Applicant>
-        {data1?.map((applicant: Applicant) => (
+        {filteredApplicants.map((applicant: Applicant) => (
           <ApplicantItem key={applicant.id}>
             <div>
               <img
@@ -170,17 +186,22 @@ const StateContainer = styled.div`
   margin-left: 32px;
 `;
 
-const StateItem = styled.div`
+const StateItem = styled.div<{ state: string; selected: string }>`
   display: flex;
   gap: 12px;
+  color: #767676;
+  font-family: Pretendard;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 500;
+  letter-spacing: -0.24px;
 
   p {
-    color: #767676;
-    font-family: Pretendard;
-    font-size: 12px;
-    font-style: normal;
-    font-weight: 500;
-    letter-spacing: -0.24px;
+    color: ${({ state, selected }) => {
+      if (state === selected) return "#88181C";
+      return "#767676";
+    }};
+    cursor: pointer;
   }
 `;
 
@@ -230,6 +251,7 @@ const Applicant = styled.div`
   justify-content: space-between;
   margin-left: 65px;
   margin-right: 8px;
+  margin-bottom: 10px;
   padding-right: 57px;
 `;
 

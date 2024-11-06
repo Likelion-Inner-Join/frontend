@@ -112,14 +112,14 @@ const applicantData = [
     position: "단장단",
   },
   {
-    id: "20211523",
+    id: "20211525",
     name: "김어아",
     firstState: "pass",
     secondState: "null",
     position: "단장단",
   },
   {
-    id: "20211524",
+    id: "20211526",
     name: "나어아",
     firstState: "pass",
     secondState: "null",
