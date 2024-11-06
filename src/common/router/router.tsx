@@ -11,8 +11,9 @@ import {
 } from "../../applicant/pages";
 import PostManage from "../../owner/post_manage/post_manage";
 import PostWrite from "../../owner/post_write/post_write";
-import FormBuilder from "../../owner/apply_form/form_builder";
 import { PostProvider } from "../../owner/post_context/post_context";
+import ApplyForm from "../../owner/apply_form/apply_form";
+import ApplyManage from "../../owner/apply_manage/apply_manage";
 
 export const ROUTES = {
   LANDING: "/",
@@ -27,6 +28,8 @@ export const ROUTES = {
   POST_MANAGE: "/post-manage",
   POST_WRITE: "/post-write",
   FORM_BUILDER: "/apply-form",
+  APPLY_FORM: "/apply-form",
+  APPLY_MANAGE: "/apply-manage",
 };
 
 export const router = createBrowserRouter([
@@ -60,15 +63,16 @@ export const router = createBrowserRouter([
     element: <ApplicationFormPage />,
   },
   {
-    path: ROUTES.POST_MANAGE, 
+    path: ROUTES.POST_MANAGE,
     element: (
       <PostProvider>
         <PostManage />
       </PostProvider>
-    ), 
+    ),
+ 
   },
   {
-    path: ROUTES.POST_WRITE, 
+    path: ROUTES.POST_WRITE,
     element: (
       <PostProvider>
         <PostWrite />
@@ -76,8 +80,12 @@ export const router = createBrowserRouter([
     ), 
   },
   {
-    path: ROUTES.FORM_BUILDER,
-    element: <FormBuilder />,
+    path: ROUTES.APPLY_FORM,
+    element: <ApplyForm />,
+  },
+  {
+    path: ROUTES.APPLY_MANAGE,
+    element: <ApplyManage />,
   },
   {
     path: ROUTES.DOCEVALUATE,

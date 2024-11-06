@@ -59,7 +59,7 @@ const ApplicantList = ({ data1, data2 }: ApplicantListProps) => {
           <PositionContainer>
             {data2.map((pos, index) => (
               <PositionItem key={pos.id}>
-                <input type="checkbox" title="Username" />
+                <input type="checkbox" />
                 <p>{pos.name}</p>
                 {index < data2.length - 1 && <p>|</p>}
               </PositionItem>
