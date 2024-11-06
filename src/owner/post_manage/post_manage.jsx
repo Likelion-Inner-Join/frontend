@@ -157,7 +157,9 @@ const PostManage = () => {
       </Header>
       <TabMenu>
         <Tab active={true}>홍보글 작성</Tab>
-        <Tab active={false}>지원폼 관리</Tab>
+        <Tab active={false} onClick={() => navigate("/apply-manage")}>
+          지원폼 관리
+        </Tab>
       </TabMenu>
       <PostButtonContainer>
         <PostButton onClick={() => navigate("/post-write")}>
