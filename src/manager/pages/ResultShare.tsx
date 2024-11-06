@@ -5,6 +5,7 @@ import InformationBox from "../components/InformationBox";
 import ResultTable from "../components/ResultTable";
 import { applicantData } from "../mock/applicantData";
 import { positionData } from "../mock/positionData";
+import { useNavigate } from "react-router-dom";
 
 interface Applicant {
   id: string;
@@ -18,8 +19,8 @@ const ResultShare = () => {
   const [restList, setRestList] = useState<Applicant[]>([]);
   const [passList, setPassList] = useState<Applicant[]>([]);
   const [failList, setFailList] = useState<Applicant[]>([]);
-
   const [isShared, setIsShared] = useState(false);
+  const navigate = useNavigate();
 
   const shareButtonClick = () => {
     if (!isShared) setIsShared(!isShared);
@@ -55,9 +56,13 @@ const ResultShare = () => {
             공유하기
           </ShareButton>
           {isShared ? (
-            <EmailButton>이메일로 알리기</EmailButton>
+            <EmailButton onClick={() => navigate("/email-write")}>
+              이메일로 알리기
+            </EmailButton>
           ) : (
-            <FixButton>수정하기</FixButton>
+            <FixButton onClick={() => navigate("/doc-eval")}>
+              수정하기
+            </FixButton>
           )}
         </ButtonBox>
         <InformationBox

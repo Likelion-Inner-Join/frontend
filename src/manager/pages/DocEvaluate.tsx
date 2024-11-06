@@ -5,6 +5,7 @@ import InformationBox from "../components/InformationBox";
 import ResultTable from "../components/ResultTable";
 import { applicantData } from "../mock/applicantData";
 import { positionData } from "../mock/positionData";
+import { useNavigate } from "react-router-dom";
 
 interface Applicant {
   id: string;
@@ -18,6 +19,7 @@ const DocEvaluate = () => {
   const [restList, setRestList] = useState<Applicant[]>([]);
   const [passList, setPassList] = useState<Applicant[]>([]);
   const [failList, setFailList] = useState<Applicant[]>([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     setPassList(
@@ -77,7 +79,7 @@ const DocEvaluate = () => {
           passList={passList}
           failList={failList}
         />
-        <NextButton>다음 단계</NextButton>
+        <NextButton onClick={() => navigate("/result")}>다음 단계</NextButton>
       </Container>
     </Wrapper>
   );

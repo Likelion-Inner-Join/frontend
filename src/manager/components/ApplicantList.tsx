@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
 interface Applicant {
@@ -25,6 +26,7 @@ const positionList = ["전체", "단장단", "기획단"];
 const ApplicantList = ({ data1, data2 }: ApplicantListProps) => {
   const [selectedState, setSelectedState] = useState("전체");
   const [selectedPosition, setSelectedPosition] = useState("전체");
+  const navigate = useNavigate();
 
   const filteredApplicants = data1.filter((applicant) => {
     if (selectedState === "합격") return applicant.firstState === "pass";
@@ -48,7 +50,7 @@ const ApplicantList = ({ data1, data2 }: ApplicantListProps) => {
     <Wrapper>
       <Title>
         <h1>지원자 리스트</h1>
-        <EmailButton>
+        <EmailButton onClick={() => navigate("/email-write")}>
           <img src="/images/manager/mail.svg" alt="이메일 아이콘" />
           <p>이메일 보내기</p>
         </EmailButton>
@@ -142,6 +144,7 @@ const EmailButton = styled.div`
   padding: 8px 12px;
   border-radius: 20px;
   background: #fff;
+  cursor: pointer;
 
   p {
     color: #88181c;

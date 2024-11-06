@@ -15,6 +15,7 @@ import { PostProvider } from "../../owner/post_context/post_context";
 import ApplyForm from "../../owner/apply_form/apply_form";
 import ApplyManage from "../../owner/apply_manage/apply_manage";
 import WriteEmail from "../../manager/pages/WriteEmail";
+import SendEmail from "../../manager/pages/SendEmail";
 
 export const ROUTES = {
   LANDING: "/",
@@ -32,6 +33,7 @@ export const ROUTES = {
   APPLY_FORM: "/apply-form",
   APPLY_MANAGE: "/apply-manage",
   WRTIE_EMAIL: "/email-write",
+  SEND_EMAIL: "/email-send",
 };
 
 export const router = createBrowserRouter([
@@ -112,6 +114,15 @@ export const router = createBrowserRouter([
       <div>
         <GlobalStyle />
         <WriteEmail />
+      </div>
+    ),
+  },
+  {
+    path: ROUTES.SEND_EMAIL,
+    element: (
+      <div>
+        <GlobalStyle />
+        <SendEmail />
       </div>
     ),
   },

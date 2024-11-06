@@ -3,6 +3,7 @@ import styled from "styled-components";
 import ApplicantList from "../components/ApplicantList";
 import { applicantData } from "../mock/applicantData";
 import { positionData } from "../mock/positionData";
+import { useNavigate } from "react-router-dom";
 
 interface Applicant {
   id: string;
@@ -17,6 +18,8 @@ const WriteEmail = () => {
   const [failList, setFailList] = useState<Applicant[]>([]);
   const [receiverList, setReceiverList] = useState<Applicant[]>([]);
   const [selectedTab, setSelectedTab] = useState("");
+
+  const navigate = useNavigate();
 
   const selectBtnClick = (selected: string) => {
     setSelectedTab(selected);
@@ -57,7 +60,9 @@ const WriteEmail = () => {
     <Wrapper>
       <ApplicantList data1={applicantData} data2={positionData} />
       <Container>
-        <SendButton>전송하기</SendButton>
+        <SendButton onClick={() => navigate("/email-send")}>
+          전송하기
+        </SendButton>
         <Sender>
           <Caption>관리자 메일 주소</Caption>
           <Input>
