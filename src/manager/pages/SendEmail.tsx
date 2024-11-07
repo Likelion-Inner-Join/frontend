@@ -11,7 +11,11 @@ const SendEmail = () => {
 
   return (
     <Wrapper>
-      <ApplicantList data1={applicantData} data2={positionData} />
+      <ApplicantList
+        data1={applicantData}
+        data2={positionData}
+        isEmail={true}
+      />
       <Container>
         <img src="/images/manager/success.svg" />
         {isSended ? (

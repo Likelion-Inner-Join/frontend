@@ -35,7 +35,11 @@ const DocEvaluate = () => {
 
   return (
     <Wrapper>
-      <ApplicantList data1={applicantData} data2={positionData} />
+      <ApplicantList
+        data1={applicantData}
+        data2={positionData}
+        isEmail={false}
+      />
       <Container>
         <Title>
           <h1>트라이파시 12기 단장단 / 기획단 모집합니다 ! ✨</h1>

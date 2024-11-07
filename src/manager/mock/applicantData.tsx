@@ -17,9 +17,9 @@ export const applicantData: Applicant[] = [
   {
     id: "20211512",
     name: "나서아",
-    firstState: "pass",
+    firstState: "fail",
     secondState: "null",
-    position: "단장단",
+    position: "기획단",
   },
   {
     id: "20211513",
@@ -40,7 +40,7 @@ export const applicantData: Applicant[] = [
     name: "마서아",
     firstState: "fail",
     secondState: "null",
-    position: "단장단",
+    position: "기획단",
   },
   {
     id: "20211516",
@@ -61,14 +61,14 @@ export const applicantData: Applicant[] = [
     name: "아서아",
     firstState: "null",
     secondState: "null",
-    position: "단장단",
+    position: "기획단",
   },
   {
     id: "20211519",
     name: "자서아",
     firstState: "pass",
     secondState: "null",
-    position: "단장단",
+    position: "기획단",
   },
   {
     id: "20211520",
@@ -82,7 +82,7 @@ export const applicantData: Applicant[] = [
     name: "카서아",
     firstState: "pass",
     secondState: "null",
-    position: "단장단",
+    position: "기획단",
   },
   {
     id: "20211522",
@@ -103,7 +103,7 @@ export const applicantData: Applicant[] = [
     name: "하서아",
     firstState: "pass",
     secondState: "null",
-    position: "단장단",
+    position: "기획단",
   },
   {
     id: "20211525",

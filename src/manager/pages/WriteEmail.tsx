@@ -58,7 +58,11 @@ const WriteEmail = () => {
 
   return (
     <Wrapper>
-      <ApplicantList data1={applicantData} data2={positionData} />
+      <ApplicantList
+        data1={applicantData}
+        data2={positionData}
+        isEmail={true}
+      />
       <Container>
         <SendButton onClick={() => navigate("/email-send")}>
           전송하기
