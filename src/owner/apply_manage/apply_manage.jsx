@@ -11,6 +11,10 @@ const ApplyManage = () => {
     setForms(savedForms);
   }, []);
 
+  const handleEditClick = (id) => {
+    navigate(`/apply-edit/${id}`); // Redirect to an edit page, passing the form ID
+  };
+
   return (
     <Container>
       <Header>
@@ -37,7 +41,12 @@ const ApplyManage = () => {
       <FormList>
         {forms.map((form) => (
           <FormItem key={form.id}>
-            <FormTitle>{form.title}</FormTitle>
+            <EditButton onClick={() => handleEditClick(form.id)}>✏️</EditButton>
+            <FormTitle>
+              {form.title.length > 15
+                ? `${form.title.slice(0, 15)}...`
+                : form.title}
+            </FormTitle>
             <FormDescription>
               {form.description.slice(0, 50)}...
             </FormDescription>
@@ -151,11 +160,27 @@ const FormList = styled.div`
 `;
 
 const FormItem = styled.div`
+  position: relative;
   width: 250px;
   background-color: #f9f9f9;
   padding: 20px;
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+`;
+
+const EditButton = styled.button`
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  color: #b10d15;
+
+  &:hover {
+    color: #a00c14;
+  }
 `;
 
 const FormTitle = styled.h3`

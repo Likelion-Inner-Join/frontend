@@ -45,7 +45,7 @@ export const router = createBrowserRouter([
     path: ROUTES.LOGIN,
     element: <LoginPage />,
   },
-  
+
   {
     path: ROUTES.VERIFICATION,
     element: <VerificationPage />,
@@ -69,7 +69,6 @@ export const router = createBrowserRouter([
         <PostManage />
       </PostProvider>
     ),
- 
   },
   {
     path: ROUTES.POST_WRITE,
@@ -77,7 +76,7 @@ export const router = createBrowserRouter([
       <PostProvider>
         <PostWrite />
       </PostProvider>
-    ), 
+    ),
   },
   {
     path: ROUTES.APPLY_FORM,
