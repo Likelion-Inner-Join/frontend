@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
 interface Applicant {
@@ -17,11 +18,42 @@ interface Position {
 interface ApplicantListProps {
   data1: Applicant[];
   data2: Position[];
+  isEmail: boolean;
 }
 
 const stateList = ["전체", "합격", "불합격", "미평가"];
 
-const ApplicantList = ({ data1, data2 }: ApplicantListProps) => {
+const ApplicantList = ({ data1, data2, isEmail }: ApplicantListProps) => {
+  const [selectedState, setSelectedState] = useState("전체");
+  const [selectedPositions, setSelectedPositions] = useState<string[]>([]);
+  const navigate = useNavigate();
+
+  const filteredApplicants = data1.filter((applicant) => {
+    const matchState =
+      selectedState === "전체" ||
+      (selectedState === "합격" && applicant.firstState === "pass") ||
+      (selectedState === "불합격" && applicant.firstState === "fail") ||
+      (selectedState === "미평가" && applicant.firstState === "null");
+
+    const matchPosition =
+      selectedPositions.length === 0 ||
+      selectedPositions.includes(applicant.position);
+
+    return matchState && matchPosition;
+  });
+
+  const handlePositionChange = (positionName: string) => {
+    if (positionName === "전체") {
+      setSelectedPositions([]);
+    } else {
+      setSelectedPositions((prev) =>
+        prev.includes(positionName)
+          ? prev.filter((name) => name !== positionName)
+          : [...prev, positionName]
+      );
+    }
+  };
+
   const getIconByState = (state: string) => {
     switch (state) {
       case "pass":
@@ -29,7 +61,7 @@ const ApplicantList = ({ data1, data2 }: ApplicantListProps) => {
       case "fail":
         return "/images/manager/fail.svg";
       default:
-        return "/images/manager/neutral.svg"; // 기본 아이콘
+        return "/images/manager/neutral.svg";
     }
   };
 
@@ -37,39 +69,59 @@ const ApplicantList = ({ data1, data2 }: ApplicantListProps) => {
     <Wrapper>
       <Title>
         <h1>지원자 리스트</h1>
-        <EmailButton>
-          <img src="/images/manager/mail.svg" alt="이메일 아이콘" />
-          <p>이메일 보내기</p>
-        </EmailButton>
+        {isEmail ? (
+          <div></div>
+        ) : (
+          <EmailButton onClick={() => navigate("/email-write")}>
+            <img src="/images/manager/mail.svg" alt="이메일 아이콘" />
+            <p>이메일 보내기</p>
+          </EmailButton>
+        )}
       </Title>
       <Filter>
         <State>
           <h2>상태</h2>
           <StateContainer>
             {stateList.map((state, index) => (
-              <StateItem key={state}>
+              <StateItem
+                key={state}
+                onClick={() => setSelectedState(state)}
+                state={state}
+                selected={selectedState}
+              >
                 <p>{state}</p>
-                {index < stateList.length - 1 && <p>|</p>}
+                {index < stateList.length - 1 && <div>|</div>}
               </StateItem>
             ))}
           </StateContainer>
         </State>
         <Position>
-          <h2>전형</h2>{" "}
+          <h2>전형</h2>
           <PositionContainer>
+            <PositionItem key="전체">
+              <input
+                type="checkbox"
+                checked={selectedPositions.length === 0}
+                onChange={() => handlePositionChange("전체")}
+              />
+              <p>전체</p>
+            </PositionItem>
             {data2.map((pos, index) => (
               <PositionItem key={pos.id}>
-                <input type="checkbox" title="Username" />
+                <p>|</p>
+                <input
+                  type="checkbox"
+                  checked={selectedPositions.includes(pos.name)}
+                  onChange={() => handlePositionChange(pos.name)}
+                />
                 <p>{pos.name}</p>
-                {index < data2.length - 1 && <p>|</p>}
               </PositionItem>
             ))}
           </PositionContainer>
-          <PositionItem></PositionItem>
         </Position>
       </Filter>
       <Applicant>
-        {data1?.map((applicant: Applicant) => (
+        {filteredApplicants.map((applicant: Applicant) => (
           <ApplicantItem key={applicant.id}>
             <div>
               <img
@@ -79,9 +131,23 @@ const ApplicantList = ({ data1, data2 }: ApplicantListProps) => {
               <ApplicantName>{applicant.name}</ApplicantName>
               <ApplicantPosition>{applicant.position}</ApplicantPosition>
             </div>
-            <DocButton>
-              <img src="/images/manager/directionBt.svg" alt="서류 보기 버튼" />
-            </DocButton>
+            {isEmail ? (
+              <div>
+                <AddButton>
+                  <img
+                    src="/images/manager/directionBt.svg"
+                    alt="수신자 추가 버튼"
+                  />
+                </AddButton>
+              </div>
+            ) : (
+              <DocButton>
+                <img
+                  src="/images/manager/directionBt.svg"
+                  alt="서류 보기 버튼"
+                />
+              </DocButton>
+            )}
           </ApplicantItem>
         ))}
       </Applicant>
@@ -126,6 +192,7 @@ const EmailButton = styled.div`
   padding: 8px 12px;
   border-radius: 20px;
   background: #fff;
+  cursor: pointer;
 
   p {
     color: #88181c;
@@ -170,17 +237,22 @@ const StateContainer = styled.div`
   margin-left: 32px;
 `;
 
-const StateItem = styled.div`
+const StateItem = styled.div<{ state: string; selected: string }>`
   display: flex;
   gap: 12px;
+  color: #767676;
+  font-family: Pretendard;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 500;
+  letter-spacing: -0.24px;
 
   p {
-    color: #767676;
-    font-family: Pretendard;
-    font-size: 12px;
-    font-style: normal;
-    font-weight: 500;
-    letter-spacing: -0.24px;
+    color: ${({ state, selected }) => {
+      if (state === selected) return "#88181C";
+      return "#767676";
+    }};
+    cursor: pointer;
   }
 `;
 
@@ -230,6 +302,7 @@ const Applicant = styled.div`
   justify-content: space-between;
   margin-left: 65px;
   margin-right: 8px;
+  margin-bottom: 10px;
   padding-right: 57px;
 `;
 
@@ -241,6 +314,7 @@ const ApplicantItem = styled.div`
   border-bottom: 1px solid #eaeaea;
   color: #000000;
   font-family: Pretendard;
+  cursor: pointer;
 
   div {
     display: flex;
@@ -265,3 +339,4 @@ const ApplicantPosition = styled.div`
 `;
 
 const DocButton = styled.div``;
+const AddButton = styled.div``;
