@@ -34,7 +34,7 @@ export const ROUTES = {
   POST_EDIT: "/post-edit/:postId",
   APPLY_FORM: "/apply-form",
   APPLY_MANAGE: "/apply-manage",
-  APPLY_EDIT: "/apply-eidt/:id",
+  APPLY_EDIT: "/apply-edit/:id",
   WRTIE_EMAIL: "/email-write",
   SEND_EMAIL: "/email-send",
 };
