@@ -47,18 +47,23 @@ const PostEdit = () => {
     navigate("/post-manage");
   };
 
-  const handleDateChange = (e) => {
-    const selectedDate = new Date(e.target.value);
-    const currentDate = new Date();
-    currentDate.setHours(0, 0, 0, 0);
+  //   const handleDateChange = (e) => {
+  //     const selectedDate = new Date(e.target.value);
+  //     const currentDate = new Date();
+  //     currentDate.setHours(0, 0, 0, 0);
 
-    if (selectedDate < currentDate) {
-      setPopupMessage("마감일이 잘못되었습니다.");
-      setShowPopup(true);
-      setDeadline("");
-    } else {
-      setDeadline(e.target.value);
-    }
+  //     if (selectedDate < currentDate) {
+  //       setPopupMessage("마감일이 잘못되었습니다.");
+  //       setShowPopup(true);
+  //       setDeadline("");
+  //     } else {
+  //       setDeadline(e.target.value);
+  //     }
+  //   };
+
+  const handleDateChange = () => {
+    setPopupMessage("마감일은 수정할 수 없습니다.");
+    setShowPopup(true);
   };
 
   const handleImageChange = (e) => {
@@ -102,6 +107,52 @@ const PostEdit = () => {
               type="date"
               value={deadline}
               onChange={handleDateChange}
+              disabled // 필드 비활성화
+            />
+          </div>
+          <div>
+            <Label>마감 시간</Label>
+            <TimeSelectWrapper>
+              <Select
+                value={period}
+                onChange={(e) => setPeriod(e.target.value)}
+                disabled // 시간 선택도 비활성화
+              >
+                <option value="AM">오전</option>
+                <option value="PM">오후</option>
+              </Select>
+              <Select
+                value={hour}
+                onChange={(e) => setHour(e.target.value)}
+                disabled
+              >
+                {hourOptions.map((h) => (
+                  <option key={h} value={h.toString().padStart(2, "0")}>
+                    {h.toString().padStart(2, "0")}
+                  </option>
+                ))}
+              </Select>
+              <Select
+                value={minute}
+                onChange={(e) => setMinute(e.target.value)}
+                disabled
+              >
+                {minuteOptions.map((m) => (
+                  <option key={m} value={m.toString().padStart(2, "0")}>
+                    {m.toString().padStart(2, "0")}
+                  </option>
+                ))}
+              </Select>
+            </TimeSelectWrapper>
+          </div>
+        </DateTimeWrapper>
+        {/* <DateTimeWrapper>
+          <div>
+            <Label>마감일</Label>
+            <InputField
+              type="date"
+              value={deadline}
+              onChange={handleDateChange}
               required
             />
           </div>
@@ -134,7 +185,7 @@ const PostEdit = () => {
               </Select>
             </TimeSelectWrapper>
           </div>
-        </DateTimeWrapper>
+        </DateTimeWrapper> */}
         <Label>본문</Label>
         <TextArea
           placeholder="홍보글 내용을 입력하세요"
@@ -151,15 +202,16 @@ const PostEdit = () => {
             onChange={handleImageChange}
           />
           <ImagePreviewContainer>
-            {images.map((image, index) =>
-              image instanceof File ? ( // image가 File 객체일 때만 처리
-                <ImagePreview
-                  key={index}
-                  style={{
-                    backgroundImage: `url(${URL.createObjectURL(image)})`,
-                  }}
-                />
-              ) : null // 유효하지 않은 경우 렌더링하지 않음
+            {images.map(
+              (image, index) =>
+                image instanceof File ? ( // image가 File 객체일 때만 처리
+                  <ImagePreview
+                    key={index}
+                    style={{
+                      backgroundImage: `url(${URL.createObjectURL(image)})`,
+                    }}
+                  />
+                ) : null // 유효하지 않은 경우 렌더링하지 않음
             )}
           </ImagePreviewContainer>
         </ImageUploadWrapper>
