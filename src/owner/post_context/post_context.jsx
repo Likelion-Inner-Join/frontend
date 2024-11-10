@@ -1,29 +1,37 @@
 // src/common/PostContext.jsx
-import React, { createContext, useState } from "react";
+import React, { createContext, useState, useEffect } from "react";
 
 // Context 생성
 export const PostContext = createContext();
 
+// Helper function to manage local storage
+const getPostsFromStorage = () => {
+  const storedPosts = localStorage.getItem("posts");
+  return storedPosts ? JSON.parse(storedPosts) : [];
+};
+
 // Provider 생성
 export const PostProvider = ({ children }) => {
-  const [posts, setPosts] = useState([
-    {
-      id: 1,
-      title: "🦁멋쟁이사자처럼 서강대학교에서 13기 아기사자를 모집합니다!🦁",
-      date: "2024/10/20 작성",
-      deadline: "2024년 10월 27일 (토) 마감",
-      remainingDays: "D-7",
-      description:
-        "안녕하세요, 멋쟁이사자처럼 서강대학교입니다! 13기 아기사자 모집이 시작되었습니다. 창업, 웹 개발에 관심 있는 분은 누구나 지원 가능합니다.",
-    },
-  ]);
+  const [posts, setPosts] = useState(getPostsFromStorage);
+
+  useEffect(() => {
+    // Save posts to local storage whenever they change
+    localStorage.setItem("posts", JSON.stringify(posts));
+  }, [posts]);
 
   const addPost = (newPost) => {
     setPosts([newPost, ...posts]);
   };
 
+  const updatePost = (updatedPost) => {
+    const updatedPosts = posts.map((post) =>
+      post.id === updatedPost.id ? updatedPost : post
+    );
+    setPosts(updatedPosts);
+  };
+
   return (
-    <PostContext.Provider value={{ posts, addPost }}>
+    <PostContext.Provider value={{ posts, addPost, updatePost }}>
       {children}
     </PostContext.Provider>
   );

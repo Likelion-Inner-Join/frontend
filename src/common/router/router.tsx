@@ -11,11 +11,13 @@ import {
 } from "../../applicant/pages";
 import PostManage from "../../owner/post_manage/post_manage";
 import PostWrite from "../../owner/post_write/post_write";
+import PostEdit from "../../owner/post_edit/post_edit";
 import { PostProvider } from "../../owner/post_context/post_context";
 import ApplyForm from "../../owner/apply_form/apply_form";
 import ApplyManage from "../../owner/apply_manage/apply_manage";
 import WriteEmail from "../../manager/pages/WriteEmail";
 import SendEmail from "../../manager/pages/SendEmail";
+import ApplyEdit from "../../owner/apply_edit/apply_edit";
 
 export const ROUTES = {
   LANDING: "/",
@@ -29,9 +31,10 @@ export const ROUTES = {
   RESULTSHARE: "/result",
   POST_MANAGE: "/post-manage",
   POST_WRITE: "/post-write",
-  FORM_BUILDER: "/apply-form",
+  POST_EDIT: "/post-edit/:postId",
   APPLY_FORM: "/apply-form",
   APPLY_MANAGE: "/apply-manage",
+  APPLY_EDIT: "/apply-eidt/:id",
   WRTIE_EMAIL: "/email-write",
   SEND_EMAIL: "/email-send",
 };
@@ -83,12 +86,24 @@ export const router = createBrowserRouter([
     ),
   },
   {
+    path: ROUTES.POST_EDIT,
+    element: (
+      <PostProvider>
+        <PostEdit />
+      </PostProvider>
+    ),
+  },
+  {
     path: ROUTES.APPLY_FORM,
     element: <ApplyForm />,
   },
   {
     path: ROUTES.APPLY_MANAGE,
     element: <ApplyManage />,
+  },
+  {
+    path: ROUTES.APPLY_EDIT,
+    element: <ApplyEdit />,
   },
   {
     path: ROUTES.DOCEVALUATE,

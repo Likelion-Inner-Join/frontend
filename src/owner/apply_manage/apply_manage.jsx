@@ -37,6 +37,14 @@ const ApplyManage = () => {
       <FormList>
         {forms.map((form) => (
           <FormItem key={form.id}>
+            <EditButton
+              onClick={(e) => {
+                e.stopPropagation(); // 카드 클릭 이벤트가 발생하지 않도록 방지
+                navigate(`/apply-edit/${form.id}`);
+              }}
+            >
+              수정하기
+            </EditButton>
             <FormTitle>{form.title}</FormTitle>
             <FormDescription>
               {form.description.slice(0, 50)}...
@@ -144,29 +152,62 @@ const ApplyButton = styled.button`
   }
 `;
 
+const FormItem = styled.div`
+  flex: 1 1 calc(23% - 20px);
+  max-width: 280px;
+  height: 220px;
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1), 0px 2px 6px rgba(0, 0, 0, 0.08);
+  position: relative;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  overflow: hidden;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0px 6px 16px rgba(0, 0, 0, 0.15), 0px 3px 8px rgba(0, 0, 0, 0.1);
+  }
+`;
+
+const FormTitle = styled.h3`
+  font-size: 20px;
+  color: #b10d15;
+  font-weight: 600;
+  margin-bottom: 12px;
+`;
+
+const FormDescription = styled.p`
+  font-size: 15px;
+  color: #555;
+  line-height: 1.4;
+  text-overflow: ellipsis;
+  max-height: 3.6em;
+  overflow: hidden;
+`;
+
 const FormList = styled.div`
   display: flex;
   flex-wrap: wrap;
   gap: 20px;
+  padding-top: 20px;
+  justify-content: flex-start; /* 왼쪽 정렬 */
 `;
 
-const FormItem = styled.div`
-  width: 250px;
-  background-color: #f9f9f9;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-`;
+const EditButton = styled.button`
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: #b10d15;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  font-size: 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
 
-const FormTitle = styled.h3`
-  font-size: 18px;
-  color: #b10d15;
-  margin-bottom: 10px;
-`;
-
-const FormDescription = styled.p`
-  font-size: 14px;
-  color: #555;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  &:hover {
+    background-color: #9c0c13;
+  }
 `;
