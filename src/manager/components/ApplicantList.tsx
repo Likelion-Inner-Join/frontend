@@ -67,90 +67,97 @@ const ApplicantList = ({ data1, data2, isEmail }: ApplicantListProps) => {
 
   return (
     <Wrapper>
-      <Title>
-        <h1>지원자 리스트</h1>
-        {isEmail ? (
-          <div></div>
-        ) : (
-          <EmailButton onClick={() => navigate("/email-write")}>
-            <img src="/images/manager/mail.svg" alt="이메일 아이콘" />
-            <p>이메일 보내기</p>
-          </EmailButton>
-        )}
-      </Title>
-      <Filter>
-        <State>
-          <h2>상태</h2>
-          <StateContainer>
-            {stateList.map((state, index) => (
-              <StateItem
-                key={state}
-                onClick={() => setSelectedState(state)}
-                state={state}
-                selected={selectedState}
-              >
-                <p>{state}</p>
-                {index < stateList.length - 1 && <div>|</div>}
-              </StateItem>
-            ))}
-          </StateContainer>
-        </State>
-        <Position>
-          <h2>전형</h2>
-          <PositionContainer>
-            <PositionItem key="전체">
-              <input
-                type="checkbox"
-                checked={selectedPositions.length === 0}
-                onChange={() => handlePositionChange("전체")}
-              />
-              <p>전체</p>
-            </PositionItem>
-            {data2.map((pos, index) => (
-              <PositionItem key={pos.id}>
-                <p>|</p>
+      <Container>
+        <Title>
+          <h1>지원자 리스트</h1>
+          {isEmail ? (
+            <div></div>
+          ) : (
+            <EmailButton onClick={() => navigate("/email-write")}>
+              <img src="/images/manager/mail.svg" alt="이메일 아이콘" />
+              <p>이메일 보내기</p>
+            </EmailButton>
+          )}
+        </Title>
+        <Filter>
+          <State>
+            <h2>상태</h2>
+            <StateContainer>
+              {stateList.map((state, index) => (
+                <StateItem
+                  key={state}
+                  onClick={() => setSelectedState(state)}
+                  state={state}
+                  selected={selectedState}
+                >
+                  <p>{state}</p>
+                  {index < stateList.length - 1 && <div>|</div>}
+                </StateItem>
+              ))}
+            </StateContainer>
+          </State>
+          <Position>
+            <h2>전형</h2>
+            <PositionContainer>
+              <PositionItem key="전체">
                 <input
                   type="checkbox"
-                  checked={selectedPositions.includes(pos.name)}
-                  onChange={() => handlePositionChange(pos.name)}
+                  checked={selectedPositions.length === 0}
+                  onChange={() => handlePositionChange("전체")}
                 />
-                <p>{pos.name}</p>
+                <p>전체</p>
               </PositionItem>
-            ))}
-          </PositionContainer>
-        </Position>
-      </Filter>
-      <Applicant>
-        {filteredApplicants.map((applicant: Applicant) => (
-          <ApplicantItem key={applicant.id}>
-            <div>
-              <img
-                src={getIconByState(applicant.firstState)}
-                alt={`${applicant.firstState} 아이콘`}
-              />
-              <ApplicantName>{applicant.name}</ApplicantName>
-              <ApplicantPosition>{applicant.position}</ApplicantPosition>
-            </div>
-            {isEmail ? (
-              <div>
-                <AddButton>
-                  <img
-                    src="/images/manager/directionBt.svg"
-                    alt="수신자 추가 버튼"
+              {data2.map((pos, index) => (
+                <PositionItem key={pos.id}>
+                  <p>|</p>
+                  <input
+                    type="checkbox"
+                    checked={selectedPositions.includes(pos.name)}
+                    onChange={() => handlePositionChange(pos.name)}
                   />
-                </AddButton>
-              </div>
-            ) : (
-              <DocButton>
+                  <p>{pos.name}</p>
+                </PositionItem>
+              ))}
+            </PositionContainer>
+          </Position>
+        </Filter>
+        <Applicant>
+          {filteredApplicants.map((applicant: Applicant) => (
+            <ApplicantItem
+              key={applicant.id}
+              onClick={() => navigate("/doc-eval/applyID")}
+            >
+              <div>
+                <OrderItem></OrderItem>
                 <img
-                  src="/images/manager/directionBt.svg"
-                  alt="서류 보기 버튼"
+                  src={getIconByState(applicant.firstState)}
+                  alt={`${applicant.firstState} 아이콘`}
                 />
-              </DocButton>
-            )}
-          </ApplicantItem>
-        ))}
-      </Applicant>
+                <ApplicantName>{applicant.name}</ApplicantName>
+                <ApplicantInfo>{applicant.position}</ApplicantInfo>
+              </div>
+              <div>
+                <ApplicantPosition>{applicant.position}</ApplicantPosition>
+                {isEmail ? (
+                  <AddButton>
+                    <img
+                      src="/images/manager/directionBt.svg"
+                      alt="수신자 추가 버튼"
+                    />
+                  </AddButton>
+                ) : (
+                  <DocButton>
+                    <img
+                      src="/images/manager/directionBt.svg"
+                      alt="서류 보기 버튼"
+                    />
+                  </DocButton>
+                )}
+              </div>
+            </ApplicantItem>
+          ))}
+        </Applicant>
+      </Container>
     </Wrapper>
   );
 };
@@ -159,20 +166,31 @@ export default ApplicantList;
 
 const Wrapper = styled.div`
   display: flex;
-  width: 450px;
+  width: 400px;
   height: 100vh;
+  padding: 0px 8px 5px 30px;
+  gap: 20px;
+  flex-shrink: 0;
+  background-color: #fcfafa;
+`;
+
+const Container = styled.div`
+  display: flex;
+  width: 100%;
   flex-direction: column;
+  align-items: flex-start;
   background-color: #fcfafa;
 `;
 
 const Title = styled.div`
   display: flex;
-  width: 320px;
-  height: 76px;
+  height: 108px;
+  padding: 40px 58px 16px 18px;
   justify-content: space-between;
   align-items: flex-end;
-  margin: 16px 65px;
+  align-self: stretch;
   flex-shrink: 0;
+  margin-bottom: 8px;
 
   h1 {
     margin-bottom: 6px;
@@ -187,20 +205,27 @@ const Title = styled.div`
 
 const EmailButton = styled.div`
   display: flex;
-  gap: 5px;
+  gap: 4px;
   align-items: center;
   padding: 8px 12px;
   border-radius: 20px;
+  border-radius: 20px;
+  border: 1px solid #88181c;
   background: #fff;
   cursor: pointer;
+
+  &:hover {
+    background: #fff3f3;
+  }
 
   p {
     color: #88181c;
     font-family: Pretendard;
-    font-size: 16px;
+    font-size: 14px;
     font-style: normal;
     font-weight: 500;
-    letter-spacing: -0.32px;
+    line-height: 150%; /* 21px */
+    letter-spacing: -0.28px;
   }
 `;
 
@@ -210,8 +235,9 @@ const Filter = styled.div`
   width: 320px;
   justify-content: space-between;
   align-items: flex-start;
-  margin: 0px 65px;
-  margin-bottom: 32px;
+  padding: 0px 18px;
+  padding-right: 40px;
+  margin-bottom: 28px;
   flex-shrink: 0;
   gap: 12px;
 `;
@@ -297,17 +323,19 @@ const PositionItem = styled.div`
 const Applicant = styled.div`
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
   overflow-y: auto;
   overflow-x: hidden;
-  justify-content: space-between;
-  margin-left: 65px;
-  margin-right: 8px;
-  margin-bottom: 10px;
-  padding-right: 57px;
+`;
+
+const OrderItem = styled.div`
+  width: 11px;
 `;
 
 const ApplicantItem = styled.div`
   display: flex;
+  width: 90%;
   justify-content: space-between;
   align-items: center;
   padding: 20px 12px;
@@ -319,7 +347,6 @@ const ApplicantItem = styled.div`
   div {
     display: flex;
     align-items: center;
-    gap: 16px;
   }
 `;
 
@@ -328,6 +355,16 @@ const ApplicantName = styled.div`
   font-style: normal;
   font-weight: 500;
   letter-spacing: -0.32px;
+  margin: 0px 16px;
+  }
+`;
+
+const ApplicantInfo = styled.div`
+  color: #555;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  letter-spacing: -0.28px;
 `;
 
 const ApplicantPosition = styled.div`
@@ -336,7 +373,20 @@ const ApplicantPosition = styled.div`
   font-style: normal;
   font-weight: 400;
   letter-spacing: -0.28px;
+  transition: transform 0.3s ease; 
+  
+  ${ApplicantItem}:hover & {
+    transform: translateX(5px); 
 `;
 
-const DocButton = styled.div``;
-const AddButton = styled.div``;
+const DocButton = styled.div`
+  margin-left: 5px;
+  transition: transform 0.3s ease;
+
+  ${ApplicantItem}:hover & {
+    transform: translateX(5px);
+  }
+`;
+const AddButton = styled.div`
+  margin-left: 5px;
+`;
