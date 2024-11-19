@@ -4,13 +4,22 @@ import ApplicantList from "../components/ApplicantList";
 import { applicantData } from "../mock/applicantData";
 import { positionData } from "../mock/positionData";
 import { useNavigate } from "react-router-dom";
-
 interface Applicant {
-  id: string;
+  applicationId: number;
+  userId: number;
   name: string;
-  firstState: string;
-  secondState: string;
+  email: string;
+  phoneNum: string;
+  school: string;
+  major: string;
   position: string;
+  studentNumber: string;
+  formResult: string;
+  meetingResult: string;
+  formScore: number;
+  meetingScore: number;
+  meetingStartTime: string;
+  meetingEndTime: string;
 }
 
 const WriteEmail = () => {
@@ -32,20 +41,20 @@ const WriteEmail = () => {
     }
   };
 
-  const addReceiver = (id: string) => {};
+  const addReceiver = (id: number) => {};
 
-  const removeReceiver = (id: string) => {
+  const removeReceiver = (id: number) => {
     setReceiverList((prevList) =>
-      prevList.filter((receiver) => receiver.id !== id)
+      prevList.filter((receiver) => receiver.applicationId !== id)
     );
   };
 
   useEffect(() => {
     setPassList(
-      applicantData.filter((applicant) => applicant.firstState === "pass")
+      applicantData.filter((applicant) => applicant.formResult === "pass")
     );
     setFailList(
-      applicantData.filter((applicant) => applicant.firstState === "fail")
+      applicantData.filter((applicant) => applicant.formResult === "fail")
     );
   }, []);
 
@@ -98,12 +107,12 @@ const WriteEmail = () => {
             </SelectTab>
             <ReceiverBox>
               {receiverList.map((receiver, index) => (
-                <ReceiverItem key={receiver.id}>
+                <ReceiverItem key={receiver.applicationId}>
                   <p>{receiver.name}</p>
                   <img
                     src="/images/manager/cancel.svg"
                     alt="삭제"
-                    onClick={() => removeReceiver(receiver.id)}
+                    onClick={() => removeReceiver(receiver.applicationId)}
                   />
                 </ReceiverItem>
               ))}

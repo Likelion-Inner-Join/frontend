@@ -24,6 +24,7 @@ export const ROUTES = {
   SIGNUP: "/signup",
   LOGIN: "/login",
   DOCEVALUATE: "/doc-eval",
+  APPLY_FORM_VIEW: "/doc-eval/applyID",
   VERIFICATION: "/verification",
   MY: "/my",
   RECRUITMENT: "/recruitment/:clubId",
