@@ -1,14 +1,22 @@
 import React from "react";
 import styled from "styled-components";
-
 interface Applicant {
-  id: string;
+  applicationId: number;
+  userId: number;
   name: string;
-  firstState: string;
-  secondState: string;
+  email: string;
+  phoneNum: string;
+  school: string;
+  major: string;
   position: string;
+  studentNumber: string;
+  formResult: string;
+  meetingResult: string;
+  formScore: number;
+  meetingScore: number;
+  meetingStartTime: string;
+  meetingEndTime: string;
 }
-
 interface InformationBoxProps {
   restList: Applicant[];
   passList: Applicant[];

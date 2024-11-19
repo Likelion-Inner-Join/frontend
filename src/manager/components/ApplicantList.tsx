@@ -1,13 +1,24 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import styled from "styled-components";
+import DocView from "./DocView";
 
 interface Applicant {
-  id: string;
+  applicationId: number;
+  userId: number;
   name: string;
-  firstState: string;
-  secondState: string;
+  email: string;
+  phoneNum: string;
+  school: string;
+  major: string;
   position: string;
+  studentNumber: string;
+  formResult: string;
+  meetingResult: string;
+  formScore: number;
+  meetingScore: number;
+  meetingStartTime: string;
+  meetingEndTime: string;
 }
 
 interface Position {
@@ -26,14 +37,18 @@ const stateList = ["전체", "합격", "불합격", "미평가"];
 const ApplicantList = ({ data1, data2, isEmail }: ApplicantListProps) => {
   const [selectedState, setSelectedState] = useState("전체");
   const [selectedPositions, setSelectedPositions] = useState<string[]>([]);
+  const [isDocumentOpen, setIsDocumentOpen] = useState(false);
+  const [selectedApplicant, setSelectedApplicant] = useState<Applicant>();
+  const [searchParams] = useSearchParams();
+  const currApplyID = searchParams.get("apply");
   const navigate = useNavigate();
 
   const filteredApplicants = data1.filter((applicant) => {
     const matchState =
       selectedState === "전체" ||
-      (selectedState === "합격" && applicant.firstState === "pass") ||
-      (selectedState === "불합격" && applicant.firstState === "fail") ||
-      (selectedState === "미평가" && applicant.firstState === "null");
+      (selectedState === "합격" && applicant.formResult === "pass") ||
+      (selectedState === "불합격" && applicant.formResult === "fail") ||
+      (selectedState === "미평가" && applicant.formResult === "null");
 
     const matchPosition =
       selectedPositions.length === 0 ||
@@ -53,6 +68,22 @@ const ApplicantList = ({ data1, data2, isEmail }: ApplicantListProps) => {
       );
     }
   };
+
+  const openDocument = (applicant: Applicant) => {
+    setSelectedApplicant(applicant);
+    setIsDocumentOpen(true);
+    navigate(`?apply=${applicant.applicationId}`);
+  };
+
+  useEffect(() => {
+    if (currApplyID) {
+      const selectedApplicant = data1.find(
+        (applicant) => String(applicant.applicationId) === currApplyID
+      );
+      setSelectedApplicant(selectedApplicant);
+      setIsDocumentOpen(true);
+    } else setIsDocumentOpen(false);
+  }, [currApplyID]);
 
   const getIconByState = (state: string) => {
     switch (state) {
@@ -124,14 +155,14 @@ const ApplicantList = ({ data1, data2, isEmail }: ApplicantListProps) => {
         <Applicant>
           {filteredApplicants.map((applicant: Applicant) => (
             <ApplicantItem
-              key={applicant.id}
-              onClick={() => navigate("/doc-eval/applyID")}
+              key={applicant.applicationId}
+              onClick={() => openDocument(applicant)}
             >
               <div>
                 <OrderItem></OrderItem>
                 <img
-                  src={getIconByState(applicant.firstState)}
-                  alt={`${applicant.firstState} 아이콘`}
+                  src={getIconByState(applicant.formResult)}
+                  alt={`${applicant.formResult} 아이콘`}
                 />
                 <ApplicantName>{applicant.name}</ApplicantName>
                 <ApplicantInfo>{applicant.position}</ApplicantInfo>
@@ -158,6 +189,7 @@ const ApplicantList = ({ data1, data2, isEmail }: ApplicantListProps) => {
           ))}
         </Applicant>
       </Container>
+      {isDocumentOpen && <DocView applicant={selectedApplicant} />}
     </Wrapper>
   );
 };
@@ -168,7 +200,7 @@ const Wrapper = styled.div`
   display: flex;
   width: 400px;
   height: 100vh;
-  padding: 0px 8px 5px 30px;
+  padding: 0px 8px 5px 0px;
   gap: 20px;
   flex-shrink: 0;
   background-color: #fcfafa;
@@ -180,6 +212,7 @@ const Container = styled.div`
   flex-direction: column;
   align-items: flex-start;
   background-color: #fcfafa;
+  margin-left: 30px;
 `;
 
 const Title = styled.div`
@@ -387,6 +420,7 @@ const DocButton = styled.div`
     transform: translateX(5px);
   }
 `;
+
 const AddButton = styled.div`
   margin-left: 5px;
 `;

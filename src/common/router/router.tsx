@@ -16,7 +16,6 @@ import ApplyForm from "../../owner/apply_form/apply_form";
 import ApplyManage from "../../owner/apply_manage/apply_manage";
 import WriteEmail from "../../manager/pages/WriteEmail";
 import SendEmail from "../../manager/pages/SendEmail";
-import DocView from "../../manager/pages/DocView";
 
 export const ROUTES = {
   LANDING: "/",
@@ -125,15 +124,6 @@ export const router = createBrowserRouter([
       <div>
         <GlobalStyle />
         <SendEmail />
-      </div>
-    ),
-  },
-  {
-    path: ROUTES.APPLY_FORM_VIEW,
-    element: (
-      <div>
-        <GlobalStyle />
-        <DocView />
       </div>
     ),
   },

@@ -2,11 +2,21 @@ import React from "react";
 import styled from "styled-components";
 
 interface Applicant {
-  id: string;
+  applicationId: number;
+  userId: number;
   name: string;
-  firstState: string;
-  secondState: string;
+  email: string;
+  phoneNum: string;
+  school: string;
+  major: string;
   position: string;
+  studentNumber: string;
+  formResult: string;
+  meetingResult: string;
+  formScore: number;
+  meetingScore: number;
+  meetingStartTime: string;
+  meetingEndTime: string;
 }
 
 interface ResultTableProps {
@@ -24,7 +34,7 @@ const ResultTable = ({ restList, passList, failList }: ResultTableProps) => {
           <TableContainer>
             {restList?.map((applicant, index) => (
               <TableItem
-                key={applicant.id}
+                key={applicant.applicationId}
                 loc={index}
                 length={restList.length}
               >
@@ -38,7 +48,11 @@ const ResultTable = ({ restList, passList, failList }: ResultTableProps) => {
         <TableTitle state="pass">합격</TableTitle>
         <TableContainer>
           {passList?.map((applicant, index) => (
-            <TableItem key={applicant.id} loc={index} length={passList.length}>
+            <TableItem
+              key={applicant.applicationId}
+              loc={index}
+              length={passList.length}
+            >
               {applicant.name}
             </TableItem>
           ))}
@@ -48,7 +62,11 @@ const ResultTable = ({ restList, passList, failList }: ResultTableProps) => {
         <TableTitle state="fail">불합격</TableTitle>
         <TableContainer>
           {failList?.map((applicant, index) => (
-            <TableItem key={applicant.id} loc={index} length={failList.length}>
+            <TableItem
+              key={applicant.applicationId}
+              loc={index}
+              length={failList.length}
+            >
               {applicant.name}
             </TableItem>
           ))}

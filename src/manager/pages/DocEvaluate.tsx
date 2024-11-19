@@ -8,11 +8,21 @@ import { positionData } from "../mock/positionData";
 import { useNavigate } from "react-router-dom";
 
 interface Applicant {
-  id: string;
+  applicationId: number;
+  userId: number;
   name: string;
-  firstState: string;
-  secondState: string;
+  email: string;
+  phoneNum: string;
+  school: string;
+  major: string;
   position: string;
+  studentNumber: string;
+  formResult: string;
+  meetingResult: string;
+  formScore: number;
+  meetingScore: number;
+  meetingStartTime: string;
+  meetingEndTime: string;
 }
 
 const DocEvaluate = () => {
@@ -23,13 +33,13 @@ const DocEvaluate = () => {
 
   useEffect(() => {
     setPassList(
-      applicantData.filter((applicant) => applicant.firstState === "pass")
+      applicantData.filter((applicant) => applicant.formResult === "pass")
     );
     setFailList(
-      applicantData.filter((applicant) => applicant.firstState === "fail")
+      applicantData.filter((applicant) => applicant.formResult === "fail")
     );
     setRestList(
-      applicantData.filter((applicant) => applicant.firstState === "null")
+      applicantData.filter((applicant) => applicant.formResult === "null")
     );
   }, [applicantData]);
 
