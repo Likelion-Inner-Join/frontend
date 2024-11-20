@@ -125,14 +125,8 @@ const WriteEmail = () => {
             <input></input>
           </Input>
         </Title>
-        <File>
-          <Caption>파일 첨부</Caption>{" "}
-          <FileBox>
-            <input placeholder="파일 첨부"></input>
-          </FileBox>
-        </File>
         <Body>
-          <input placeholder="메일 내용을 입력하세요"></input>
+          <textarea placeholder="메일 내용을 입력하세요" />
         </Body>
       </Container>
     </Wrapper>
@@ -145,13 +139,15 @@ const Wrapper = styled.div`
   display: flex;
   width: 100vw;
   height: 100vh;
+  justify-content: flex-start;
+  gap: 100px;
   background-color: #fff;
 `;
 
 const Container = styled.div`
   display: flex;
   flex-direction: column;
-  width: 100%;
+  width: 60%;
   height: 100vh;
   align-items: center;
 `;
@@ -159,7 +155,6 @@ const Container = styled.div`
 const SendButton = styled.div`
   align-self: flex-end;
   margin-top: 50px;
-  margin-right: 70px;
   margin-bottom: 20px;
   padding: 12px 32px;
   gap: 10px;
@@ -181,28 +176,28 @@ const SendButton = styled.div`
 
 const Sender = styled.div`
   display: flex;
+  justyfy-content: flex-start;
   align-items: center;
+  width: 100%;
   margin-bottom: 10px;
 `;
 
 const Receiver = styled.div`
   display: flex;
+  justyfy-content: flex-start;
+  width: 100%;
   margin-bottom: 10px;
 `;
 
 const Title = styled.div`
   display: flex;
+  width: 100%;
   align-items: center;
   margin-bottom: 10px;
 `;
 
-const File = styled.div`
-  display: flex;
-  margin-bottom: 20px;
-`;
-
 const Caption = styled.div`
-  width: 120px;
+  width: 150px;
   color: #000;
   font-family: Pretendard;
   font-size: 16px;
@@ -214,21 +209,28 @@ const Caption = styled.div`
 
 const Input = styled.div`
   display: flex;
-  width: 830px;
+  width: 100%;
   height: 44px;
   align-items: center;
-
-  flex-shrink: 0;
+  padding: 0px 10px;
   border-radius: 4px;
   border: 1px solid #ddd;
 
   input {
     width: 100%;
+    font-family: Pretendard;
+    color: #222;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 150%; /* 21px */
+    letter-spacing: -0.28px;
   }
 `;
 
 const ReceiverContainer = styled.div`
   display: flex;
+  width: 100%;
   flex-direction: column;
 `;
 
@@ -267,7 +269,7 @@ const SelectButton = styled.div<{ selected: boolean }>`
 const ReceiverBox = styled.div`
   display: flex;
   flex-wrap: wrap;
-  width: 830px;
+  width: 100%;
   min-height: 44px;
   height: auto
   align-items: center;
@@ -302,20 +304,9 @@ const ReceiverItem = styled.div`
   }
 `;
 
-const FileBox = styled.div`
-  display: flex;
-  width: 830px;
-  height: 104px;
-  justify-content: center;
-  align-items: center;
-  flex-shrink: 0;
-  border-radius: 4px;
-  border: 1px dashed #ddd;
-`;
-
 const Body = styled.div`
   display: flex;
-  width: 954px;
+  width: 100%;
   flex: 1;
   margin-bottom: 20px;
   padding: 5px;
@@ -324,10 +315,25 @@ const Body = styled.div`
   border-radius: 4px;
   border: 1px solid #ddd;
 
-  input {
+  textarea {
     width: 100%;
+    height: 100%;
+    border: none;
+    resize: none;
+    font-family: Pretendard;
+    color: #222;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 150%; /* 21px */
+    letter-spacing: -0.28px;
+
+    &:focus {
+      outline: none;
+    }
 
     &::placeholder {
+      color: #767676;
     }
   }
 `;
