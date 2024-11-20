@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
-import ApplicantList from "../components/ApplicantList";
+import InterviewerList from "../components/InterviewerList";
 import InformationBox from "../components/InformationBox";
 import ResultTable from "../components/ResultTable";
 import { applicantData } from "../mock/applicantData";
@@ -24,7 +24,7 @@ interface Applicant {
   meetingEndTime: string;
 }
 
-const ResultShare = () => {
+const FinalResultShare = () => {
   const [restList, setRestList] = useState<Applicant[]>([]);
   const [passList, setPassList] = useState<Applicant[]>([]);
   const [failList, setFailList] = useState<Applicant[]>([]);
@@ -37,19 +37,28 @@ const ResultShare = () => {
 
   useEffect(() => {
     setPassList(
-      applicantData.filter((applicant) => applicant.formResult === "pass")
+      applicantData.filter(
+        (applicant) =>
+          applicant.formResult === "pass" && applicant.meetingResult === "pass"
+      )
     );
     setFailList(
-      applicantData.filter((applicant) => applicant.formResult === "fail")
+      applicantData.filter(
+        (applicant) =>
+          applicant.formResult === "fail" || applicant.meetingResult === "fail"
+      )
     );
     setRestList(
-      applicantData.filter((applicant) => applicant.formResult === "null")
+      applicantData.filter(
+        (applicant) =>
+          applicant.formResult === "pass" && applicant.meetingResult === "null"
+      )
     );
   }, [applicantData]);
 
   return (
     <Wrapper>
-      <ApplicantList
+      <InterviewerList
         data1={applicantData}
         data2={positionData}
         isEmail={false}
@@ -60,9 +69,9 @@ const ResultShare = () => {
           <p>2021년 3월 8일 마감</p>
         </Title>
         {isShared ? (
-          <Caption>서류 결과가 지원자에게 공유되었습니다!</Caption>
+          <Caption>최종 결과가 지원자에게 공유되었습니다!</Caption>
         ) : (
-          <Caption>서류 결과를 지원자에게 공유하시겠습니까?</Caption>
+          <Caption>최종 결과를 지원자에게 공유하시겠습니까?</Caption>
         )}
         <ButtonBox>
           <ShareButton onClick={shareButtonClick} isShared={isShared}>
@@ -89,15 +98,15 @@ const ResultShare = () => {
           passList={passList}
           failList={failList}
         />
-        <NextButton onClick={() => navigate("/meet-eval")}>
-          다음 단계
+        <NextButton onClick={() => navigate("/post-manage")}>
+          평가 종료
         </NextButton>
       </Container>
     </Wrapper>
   );
 };
 
-export default ResultShare;
+export default FinalResultShare;
 
 const Wrapper = styled.div`
   display: flex;
