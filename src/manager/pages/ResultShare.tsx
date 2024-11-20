@@ -89,7 +89,7 @@ const ResultShare = () => {
           passList={passList}
           failList={failList}
         />
-        <NextButton>다음 단계</NextButton>
+        <NextButton onClick={() => navigate("/post-manage")}>다음 단계</NextButton>
       </Container>
     </Wrapper>
   );

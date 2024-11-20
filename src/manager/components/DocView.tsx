@@ -2,6 +2,9 @@ import React, { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import styled from "styled-components";
 import { documentData } from "../mock/DocumentData";
+import TextForm from "./TextForm";
+import DropDownForm from "./DropDownForm";
+import CheckBoxForm from "./CheckBoxForm";
 
 interface Applicant {
   applicationId: number;
@@ -51,27 +54,11 @@ const DocView = ({ applicant }: DocViewProps) => {
   const renderQuestionAnswer = (question: Question) => {
     switch (question.type) {
       case "text":
-        return <input type="text" placeholder="답변을 입력하세요" />;
+        return <TextForm quest={question} />;
       case "dropdown":
-        return (
-          <select>
-            {question.list?.map((item, index) => (
-              <option key={index} value={item}>
-                {item}
-              </option>
-            ))}
-          </select>
-        );
+        return <DropDownForm quest={question} />;
       case "checkbox":
-        return (
-          <div>
-            {question.list?.map((item, index) => (
-              <label key={index}>
-                <input type="checkbox" value={item} /> {item}
-              </label>
-            ))}
-          </div>
-        );
+        return <CheckBoxForm quest={question} />;
       default:
         return <div>알 수 없는 질문 유형</div>;
     }

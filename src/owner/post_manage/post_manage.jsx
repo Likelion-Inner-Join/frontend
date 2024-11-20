@@ -200,7 +200,7 @@ const PostManage = () => {
                 ))}
             </ImageContainer>
             <ButtonContainer>
-              <ListButton onClick={() => navigate("/check-list")}>
+              <ListButton onClick={() => navigate("/doc-eval")}>
                 지원 리스트 확인하기
               </ListButton>
             </ButtonContainer>
