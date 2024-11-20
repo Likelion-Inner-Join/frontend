@@ -1,99 +1,3 @@
-// import React from "react";
-// import { useNavigate, useLocation } from "react-router-dom";
-// import styled from "styled-components";
-// import { useState } from "react";
-
-// const PostManage = () => {
-//   const navigate = useNavigate(); // 페이지 이동을 위한 useNavigate 훅 사용
-
-//   const posts = [
-//     {
-//       id: 1,
-//       title: "🦁멋쟁이사자처럼 서강대학교에서 13기 아기사자를 모집합니다!🦁",
-//       date: "2024/10/20 작성",
-//       deadline: "2024년 10월 27일 (토) 마감",
-//       remainingDays: "D-7",
-//       description:
-//         "안녕하세요, 멋쟁이사자처럼 서강대학교입니다! 13기 아기사자 모집이 시작되었습니다. 창업, 웹 개발에 관심 있는 분은 누구나 지원 가능합니다.",
-//     },
-//   ];
-
-//   return (
-//     <Container>
-//       {/* 동아리 소개 헤더 */}
-//       <Header>
-//         <ClubLogo />
-//         <ClubSubTitle>중앙동아리</ClubSubTitle>
-//         <ClubName>멋쟁이사자처럼</ClubName>
-//         <ClubTags>
-//           <Tag>#IT</Tag>
-//           <Tag>#프론트엔드</Tag>
-//           <Tag>#백엔드</Tag>
-//         </ClubTags>
-//       </Header>
-//       {/* 탭 메뉴 */}
-//       <TabMenu>
-//         <Tab active={true}>홍보글 작성</Tab>
-//         <Tab active={false}>지원폼 관리</Tab>
-//       </TabMenu>
-//       {/* 새로운 홍보글 작성하기 버튼 */}
-//       <PostButtonContainer>
-//         <PostButton onClick={() => navigate("/post-write")}>
-//           새로운 홍보글 작성하기
-//         </PostButton>
-//       </PostButtonContainer>
-//       {/* 게시글 목록 */}
-//       <PostList>
-//         {posts.map((post) => (
-//           <PostItem key={post.id}>
-//             <PostTitle>{post.title}</PostTitle>
-//             <PostDeadline>
-//               <PostDeadlineRed>{post.remainingDays}</PostDeadlineRed>
-//               <PostDeadlineBlack> &nbsp; {post.deadline}</PostDeadlineBlack>
-//             </PostDeadline>
-
-//             <PostMeta>
-//               <span>{post.date}</span>
-//               <div>
-//                 <span style={{ marginRight: "15px", cursor: "pointer" }}>
-//                   수정
-//                 </span>
-//                 <span style={{ cursor: "pointer" }}>삭제</span>
-//               </div>
-//             </PostMeta>
-
-//             <PostDescription>{post.description}</PostDescription>
-
-//             {/* 사진 9개와 지원 리스트 버튼 추가 */}
-//             <ImageContainer>
-//               <ImageBox>사진 1</ImageBox>
-//               <ImageBox>사진 2</ImageBox>
-//               <ImageBox>사진 3</ImageBox>
-//               <ImageBox>사진 4</ImageBox>
-//               <ImageBox>사진 5</ImageBox>
-//               <ImageBox>사진 6</ImageBox>
-//               <ImageBox>사진 7</ImageBox>
-//               <ImageBox>사진 8</ImageBox>
-//               <ImageBox>사진 9</ImageBox>
-//             </ImageContainer>
-
-//             <ButtonContainer>
-//               <ListButton onClick={() => navigate("/check-list")}>
-//                 지원 리스트 확인하기
-//               </ListButton>
-//             </ButtonContainer>
-//           </PostItem>
-//         ))}
-//       </PostList>
-//     </Container>
-//   );
-// };
-
-// export default PostManage;
-
-// src/owner/post_manage/post_manage.jsx
-
-// src/owner/post_manage/post_manage.jsx
 import React, { useContext, useState } from "react";
 import { PostContext } from "../post_context/post_context";
 import { useNavigate } from "react-router-dom";
@@ -108,10 +12,34 @@ const PostManage = () => {
 
   const calculateRemainingDays = (deadline) => {
     const currentDate = new Date();
-    const deadlineDate = new Date(deadline);
+
+    // `deadline`이 문자열인 경우, Date 객체로 올바르게 변환
+    const [datePart, period, timePart] = deadline.split(" "); // "YYYY-MM-DD", "AM/PM", "HH:MM"
+    const [year, month, day] = datePart.split("-").map(Number);
+    let [hours, minutes] = timePart.split(":").map(Number);
+
+    // 오전/오후에 따라 시간 조정
+    if (period === "PM" && hours !== 12) {
+      hours += 12; // PM이면서 12시가 아닌 경우에만 12를 더함
+    } else if (period === "AM" && hours === 12) {
+      hours = 0; // AM 12시는 자정으로 설정
+    }
+
+    const deadlineDate = new Date(year, month - 1, day, hours, minutes);
+
+    // 시간 부분을 제거하여 날짜만 비교
+    currentDate.setHours(0, 0, 0, 0);
+    deadlineDate.setHours(0, 0, 0, 0);
+
     const timeDifference = deadlineDate - currentDate;
     const dayDifference = Math.ceil(timeDifference / (1000 * 60 * 60 * 24));
-    return dayDifference >= 0 ? `D-${dayDifference}` : "마감됨";
+
+    if (dayDifference === 0) return "D-DAY"; // 오늘 마감일인 경우
+    return dayDifference > 0 ? `D-${dayDifference}` : "마감됨"; // 미래 날짜 또는 이미 마감된 경우
+  };
+
+  const handleEdit = (postId) => {
+    navigate(`/post-edit/${postId}`);
   };
 
   const handleImageClick = (postIndex, imageIndex) => {
@@ -179,7 +107,10 @@ const PostManage = () => {
             <PostMeta>
               <span>{post.date}</span>
               <div>
-                <span style={{ marginRight: "15px", cursor: "pointer" }}>
+                <span
+                  style={{ marginRight: "15px", cursor: "pointer" }}
+                  onClick={() => handleEdit(post.id)} // 수정하기 버튼 클릭 시 이동
+                >
                   수정
                 </span>
                 <span style={{ cursor: "pointer" }}>삭제</span>
@@ -189,16 +120,19 @@ const PostManage = () => {
             <ImageContainer>
               {post.images &&
                 post.images.length > 0 &&
-                post.images.map((image, index) => (
-                  <ImagePreview
-                    key={index}
-                    style={{
-                      backgroundImage: `url(${URL.createObjectURL(image)})`,
-                    }}
-                    onClick={() => handleImageClick(postIndex, index)} // 수정된 부분
-                  />
-                ))}
+                post.images.map((image, index) =>
+                  image instanceof File ? ( // image가 File 객체일 때만 처리
+                    <ImagePreview
+                      key={index}
+                      style={{
+                        backgroundImage: `url(${URL.createObjectURL(image)})`,
+                      }}
+                      onClick={() => handleImageClick(postIndex, index)}
+                    />
+                  ) : null // 유효하지 않은 경우 렌더링하지 않음
+                )}
             </ImageContainer>
+
             <ButtonContainer>
               <ListButton onClick={() => navigate("/doc-eval")}>
                 지원 리스트 확인하기

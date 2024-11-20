@@ -109,15 +109,20 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 20px;
-  max-width: 1000px;
+  padding: 30px;
+  max-width: 800px;
   margin: auto;
+  background: #fdfdfd;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
 `;
 
 const Header = styled.h1`
   font-size: 32px;
   color: #b10d15;
+  font-weight: bold;
   margin-bottom: 20px;
+  letter-spacing: 1.2px;
 `;
 
 const Content = styled.div`
@@ -127,34 +132,38 @@ const Content = styled.div`
 
 const TitleInput = styled.input`
   width: 100%;
-  font-size: 24px;
-  color: #b10d15;
-  margin-bottom: 10px;
-  padding: 8px;
-  border: none;
-  border-bottom: 2px solid #ccc;
+  font-size: 20px;
+  color: #444;
+  padding: 12px 10px;
+  margin-bottom: 15px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
   outline: none;
+  transition: border-color 0.3s ease;
+
   &:focus {
-    border-bottom-color: #b10d15;
+    border-color: #b10d15;
   }
 `;
 
 const DescriptionTextarea = styled.textarea`
   width: 100%;
-  font-family: inherit;
   font-size: 16px;
-  color: #333;
+  color: #444;
+  padding: 12px 10px;
   margin-bottom: 20px;
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
   resize: none;
   outline: none;
+  transition: border-color 0.3s ease;
+
   &:focus {
     border-color: #b10d15;
   }
+
   &::placeholder {
-    font-family: inherit;
+    color: #aaa;
   }
 `;
 
@@ -163,52 +172,82 @@ const QuestionList = styled.div`
 `;
 
 const AddQuestionContainer = styled.div`
-  position: relative;
   display: flex;
   align-items: start;
+  position: relative;
+  margin-top: 10px;
 `;
 
 const AddQuestionButton = styled.button`
   background-color: #b10d15;
   color: white;
   border: none;
-  padding: 10px 15px;
+  padding: 12px 20px;
+  font-size: 16px;
+  font-weight: bold;
   cursor: pointer;
-  margin-top: 10px;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s ease, transform 0.3s ease;
+
   &:hover {
     background-color: #a00c14;
+    transform: translateY(-2px);
+  }
+
+  &:active {
+    transform: translateY(0);
   }
 `;
 
 const ButtonContainer = styled.div`
   display: flex;
   position: absolute;
-  top: 20px; /* 원하는 위치 조정 */
-  right: 20px; /* 오른쪽 상단으로 배치 */
-  gap: 10px;
-  z-index: 1;
+  top: 20px;
+  right: 20px;
+  gap: 15px;
 `;
 
 const PreviewButton = styled.button`
   background-color: #b10d15;
   color: white;
   border: none;
-  padding: 10px 15px;
+  padding: 10px 18px;
+  font-size: 14px;
+  font-weight: bold;
   cursor: pointer;
-  border-radius: 4px;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s ease, transform 0.3s ease;
+
   &:hover {
     background-color: #a00c14;
+    transform: translateY(-2px);
+  }
+
+  &:active {
+    transform: translateY(0);
   }
 `;
 
 const SubmitButton = styled.button`
-  background-color: #b10d15; /* 동일한 빨간색으로 설정 */
+  background-color: #b10d15;
   color: white;
   border: none;
-  padding: 10px 15px;
+  padding: 10px 18px;
+  font-size: 14px;
+  font-weight: bold;
   cursor: pointer;
-  border-radius: 4px;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s ease, transform 0.3s ease;
+
   &:hover {
     background-color: #a00c14;
+    transform: translateY(-2px);
+  }
+
+  &:active {
+    transform: translateY(0);
   }
 `;
