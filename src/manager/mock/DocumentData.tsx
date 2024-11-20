@@ -12,6 +12,16 @@ interface Question {
   list?: string[];
 }
 
+interface Answers {
+  answers: Answer[];
+}
+
+interface Answer {
+  questionId: number;
+  answer: string;
+  score: number;
+}
+
 export const documentData: Document[] = [
   {
     title: "지원서제목",
@@ -40,3 +50,24 @@ export const documentData: Document[] = [
     ],
   },
 ];
+
+export const answerData: Answers = {
+  answers: [
+    {
+      questionId: 123,
+      answer:
+        "안녕하세요. 저는 멋쟁이사자처럼 프론트엔드 직무에 지원한 김서아입니다. 붙여주세요 제발요. 제가 아니면 안돼요. 너무 하고 싶어요 붙여주세요......",
+      score: 10,
+    },
+    {
+      questionId: 124,
+      answer: "프론트엔드",
+      score: 20,
+    },
+    {
+      questionId: 125,
+      answer: "짜장면",
+      score: 20,
+    },
+  ],
+};

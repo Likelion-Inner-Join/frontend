@@ -2,6 +2,7 @@ import { createBrowserRouter } from "react-router-dom";
 import DocEvaluate from "../../manager/pages/DocEvaluate";
 import { GlobalStyle } from "../styles/GlobalStyles";
 import ResultShare from "../../manager/pages/ResultShare";
+import FinalResultShare from "../../manager/pages/FinalResultShare";
 import { LoginPage, SignupPage, VerificationPage } from "../../auth/pages";
 import {
   ApplicationFormPage,
@@ -17,19 +18,21 @@ import ApplyForm from "../../owner/apply_form/apply_form";
 import ApplyManage from "../../owner/apply_manage/apply_manage";
 import WriteEmail from "../../manager/pages/WriteEmail";
 import SendEmail from "../../manager/pages/SendEmail";
+import MeetEvaluate from "../../manager/pages/MeetEvaluate";
 import ApplyEdit from "../../owner/apply_edit/apply_edit";
 
 export const ROUTES = {
   LANDING: "/",
   SIGNUP: "/signup",
   LOGIN: "/login",
-  DOCEVALUATE: "/doc-eval",
+  DOC_EVALUATE: "/doc-eval",
   APPLY_FORM_VIEW: "/doc-eval/applyID",
   VERIFICATION: "/verification",
   MY: "/my",
   RECRUITMENT: "/recruitment/:clubId",
   APPLICATION: "/application/:clubId",
   RESULTSHARE: "/result",
+  FINAL_RESULTSHARE: "/final-result",
   POST_MANAGE: "/post-manage",
   POST_WRITE: "/post-write",
   POST_EDIT: "/post-edit/:postId",
@@ -38,6 +41,7 @@ export const ROUTES = {
   APPLY_EDIT: "/apply-edit/:id",
   WRTIE_EMAIL: "/email-write",
   SEND_EMAIL: "/email-send",
+  MEET_EVALUATE: "meet-eval",
 };
 
 export const router = createBrowserRouter([
@@ -107,7 +111,7 @@ export const router = createBrowserRouter([
     element: <ApplyEdit />,
   },
   {
-    path: ROUTES.DOCEVALUATE,
+    path: ROUTES.DOC_EVALUATE,
     element: (
       <div>
         <GlobalStyle />
@@ -121,6 +125,15 @@ export const router = createBrowserRouter([
       <div>
         <GlobalStyle />
         <ResultShare />
+      </div>
+    ),
+  },
+  {
+    path: ROUTES.FINAL_RESULTSHARE,
+    element: (
+      <div>
+        <GlobalStyle />
+        <FinalResultShare />
       </div>
     ),
   },
@@ -139,6 +152,15 @@ export const router = createBrowserRouter([
       <div>
         <GlobalStyle />
         <SendEmail />
+      </div>
+    ),
+  },
+  {
+    path: ROUTES.MEET_EVALUATE,
+    element: (
+      <div>
+        <GlobalStyle />
+        <MeetEvaluate />
       </div>
     ),
   },

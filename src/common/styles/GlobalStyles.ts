@@ -6,25 +6,23 @@ export const GlobalStyle = createGlobalStyle`
     font-size:10px;
     height:100vh;
     cursor:default;
-
   }
   *{
     margin: 0;
     padding: 0;
     box-sizing: border-box;
   }
-body {
-    font-family: "Pretendard-Regular";
+  body {
+    font-family: Pretendard;
     background-color: #000000;
     height:100vh;
   }
-::-webkit-scrollbar {
+  ::-webkit-scrollbar {
   width: 4px; /* 스크롤바의 너비 */
   height: 4px; /* 수평 스크롤바의 높이 */
-}
+  } 
 
-/* 스크롤바의 트랙을 스타일링합니다. */
-::-webkit-scrollbar-track {
+  ::-webkit-scrollbar-track {
   // background: #CCCAC5; /* 트랙의 배경색 */
   // border-radius: 10px; /* 트랙의 테두리 반경 */
 }
