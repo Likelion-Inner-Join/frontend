@@ -77,8 +77,9 @@ const DocView = ({ applicant }: DocViewProps) => {
         <TitleContainer>
           <Title>{applicant?.name}님의 지원서</Title>
           <ApplicantInfo>
-            {applicant?.school} | {applicant?.major} |{" "}
-            {applicant?.studentNumber} | {applicant?.phoneNum} |{" "}
+            {applicant?.school} &nbsp; | &nbsp;{applicant?.major} &nbsp;| &nbsp;
+            {applicant?.studentNumber} &nbsp;| &nbsp; {applicant?.phoneNum}{" "}
+            &nbsp; | &nbsp;
             {applicant?.email}
           </ApplicantInfo>
         </TitleContainer>
@@ -86,7 +87,7 @@ const DocView = ({ applicant }: DocViewProps) => {
           {questionList?.map((quest, questionid) => (
             <Content>
               <Question key={questionid}>
-                {quest.number}.{quest.question}
+                {quest.number}. &nbsp;{quest.question}
               </Question>
               <Answer>{renderQuestionAnswer(quest)}</Answer>
             </Content>
@@ -102,24 +103,31 @@ export default DocView;
 const Wrapper = styled.div`
   display: flex;
   position: fixed;
+  left: 400px;
   justify-content: center;
-  align-items: center;
-  width: 100vw;
+  align-items: flex-end;
+  width: calc(100% - 400px);
   height: 100vh;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(68, 68, 68, 0.4);
+  z-index: 1;
 `;
 
 const CloseButton = styled.button`
   align-self: flex-end;
   margin-right: 10px;
   cursor: pointer;
+  transition: transform 0.1s ease;
+
+  :hover& {
+    transform: scale(1.05);
+  }
 `;
 
 const DocumentPopUp = styled.div`
   display: flex;
   flex-direction: column;
-  width: 50%;
-  height: 95%;
+  width: 80%;
+  height: 90%;
   align-items: flex-start;
   padding: 20px 10px 20px 30px;
   border-radius: 8px;

@@ -42,22 +42,20 @@ const ContentBox = styled.div`
 
 const CheckBox = styled.div<{ selected: boolean }>`
   display: flex;
-  width: 24px;
-  height: 24px;
-  padding: 9px;
   justify-content: center;
   align-items: center;
   gap: 10px;
+  background-color: #fff;
   border-radius: 100px;
 
   border: ${({ selected }) => {
-    if (selected) return "none";
+    if (selected) return "8px solid #CC141D";
     return "1px solid #ddd";
   }};
 
-  background-color: ${({ selected }) => {
-    if (selected) return "#cc141d";
-    return "#fff";
+  padding: ${({ selected }) => {
+    if (selected) return "4px";
+    return "11px";
   }};
 `;
 

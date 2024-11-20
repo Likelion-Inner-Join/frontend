@@ -18,14 +18,22 @@ const CheckBoxForm = ({ quest }: FormProps) => {
   return (
     <div>
       {quest?.list?.map((item: string, index: number) => (
-        <ContentBox>
-          <CheckBox
-            selected={answerData.answers.some(
-              (answerItem) =>
-                answerItem.questionId === quest.questionid &&
-                answerItem.answer === item
-            )}
-          />
+        <ContentBox key={index}>
+          <CheckBox>
+            <img
+              src={
+                answerData.answers.some(
+                  (answerItem) =>
+                    answerItem.questionId === quest.questionid &&
+                    answerItem.answer === item
+                )
+                  ? "/images/manager/checked.svg" // 선택된 경우 이미지 경로
+                  : "/images/manager/unchecked.svg" // 선택되지 않은 경우 이미지 경로
+              }
+              alt={item}
+              style={{ width: "100%", height: "100%" }}
+            />
+          </CheckBox>
           <Content>{item}</Content>
         </ContentBox>
       ))}
@@ -40,25 +48,12 @@ const ContentBox = styled.div`
   gap: 8px;
 `;
 
-const CheckBox = styled.div<{ selected: boolean }>`
+const CheckBox = styled.div`
   display: flex;
   width: 24px;
   height: 24px;
-  padding: 9px;
   justify-content: center;
   align-items: center;
-  gap: 10px;
-  border-radius: 100px;
-
-  border: ${({ selected }) => {
-    if (selected) return "none";
-    return "1px solid #ddd";
-  }};
-
-  background-color: ${({ selected }) => {
-    if (selected) return "#cc141d";
-    return "#fff";
-  }};
 `;
 
 const Content = styled.div`
