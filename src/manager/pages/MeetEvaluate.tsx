@@ -41,7 +41,7 @@ const MeetEvaluate = () => {
     setFailList(
       applicantData.filter(
         (applicant) =>
-          applicant.formResult === "pass" && applicant.meetingResult === "fail"
+          applicant.formResult === "fail" || applicant.meetingResult === "fail"
       )
     );
     setRestList(
