@@ -9,23 +9,33 @@ const PostEdit = () => {
   const { posts, updatePost } = useContext(PostContext);
   const post = posts.find((p) => p.id.toString() === postId);
 
+  const isOpenRecruitment = post?.deadline === "상시모집";
   const [title, setTitle] = useState(post ? post.title : "");
   const [deadline, setDeadline] = useState(
-    post ? post.deadline.split(" ")[0] : ""
+    isOpenRecruitment ? "" : post ? post.deadline.split(" ")[0] : ""
   );
   const [period, setPeriod] = useState(
-    post ? post.deadline.split(" ")[1] : "AM"
+    isOpenRecruitment ? "AM" : post ? post.deadline.split(" ")[1] : "AM"
   );
   const [hour, setHour] = useState(
-    post ? post.deadline.split(" ")[2].split(":")[0] : "00"
+    isOpenRecruitment
+      ? "00"
+      : post
+      ? post.deadline.split(" ")[2]?.split(":")[0]
+      : "00"
   );
   const [minute, setMinute] = useState(
-    post ? post.deadline.split(" ")[2].split(":")[1] : "00"
+    isOpenRecruitment
+      ? "00"
+      : post
+      ? post.deadline.split(" ")[2]?.split(":")[1]
+      : "00"
   );
   const [description, setDescription] = useState(post ? post.description : "");
   const [images, setImages] = useState(post ? post.images : []);
   const [showPopup, setShowPopup] = useState(false);
   const [popupMessage, setPopupMessage] = useState("");
+  const [isRecruitmentOpen, setIsRecruitmentOpen] = useState(isOpenRecruitment);
 
   useEffect(() => {
     if (!post) {
@@ -39,7 +49,9 @@ const PostEdit = () => {
     const updatedPost = {
       ...post,
       title,
-      deadline: `${deadline} ${period} ${hour}:${minute}`,
+      deadline: isRecruitmentOpen
+        ? "상시모집"
+        : `${deadline} ${period} ${hour}:${minute}`,
       description,
       images,
     };
@@ -47,23 +59,24 @@ const PostEdit = () => {
     navigate("/post-manage");
   };
 
-  //   const handleDateChange = (e) => {
-  //     const selectedDate = new Date(e.target.value);
-  //     const currentDate = new Date();
-  //     currentDate.setHours(0, 0, 0, 0);
+  const handleDateChange = (e) => {
+    const selectedDate = new Date(e.target.value);
+    const currentDate = new Date();
+    currentDate.setHours(0, 0, 0, 0);
 
-  //     if (selectedDate < currentDate) {
-  //       setPopupMessage("마감일이 잘못되었습니다.");
-  //       setShowPopup(true);
-  //       setDeadline("");
-  //     } else {
-  //       setDeadline(e.target.value);
-  //     }
-  //   };
+    if (selectedDate < currentDate) {
+      setPopupMessage("마감일이 잘못되었습니다.");
+      setShowPopup(true);
+      setDeadline("");
+    } else {
+      setDeadline(e.target.value);
+    }
+  };
 
-  const handleDateChange = () => {
-    setPopupMessage("마감일은 수정할 수 없습니다.");
-    setShowPopup(true);
+  const handleTimeChange = (e, type) => {
+    if (type === "hour") setHour(e.target.value);
+    if (type === "minute") setMinute(e.target.value);
+    if (type === "period") setPeriod(e.target.value);
   };
 
   const handleImageChange = (e) => {
@@ -92,12 +105,18 @@ const PostEdit = () => {
         <Title>홍보글 수정</Title>
       </Header>
       <Form onSubmit={handleSubmit}>
-        <Label>제목</Label>
+        <Label>
+          제목 <CharCount>({title.length} / 60)</CharCount>
+        </Label>
         <InputField
           type="text"
           placeholder="홍보글 제목을 입력하세요"
           value={title}
-          onChange={(e) => setTitle(e.target.value)}
+          onChange={(e) => {
+            if (e.target.value.length <= 60) {
+              setTitle(e.target.value);
+            }
+          }}
           required
         />
         <DateTimeWrapper>
@@ -107,7 +126,6 @@ const PostEdit = () => {
               type="date"
               value={deadline}
               onChange={handleDateChange}
-              disabled // 필드 비활성화
             />
           </div>
           <div>
@@ -115,16 +133,14 @@ const PostEdit = () => {
             <TimeSelectWrapper>
               <Select
                 value={period}
-                onChange={(e) => setPeriod(e.target.value)}
-                disabled // 시간 선택도 비활성화
+                onChange={(e) => handleTimeChange(e, "period")}
               >
                 <option value="AM">오전</option>
                 <option value="PM">오후</option>
               </Select>
               <Select
                 value={hour}
-                onChange={(e) => setHour(e.target.value)}
-                disabled
+                onChange={(e) => handleTimeChange(e, "hour")}
               >
                 {hourOptions.map((h) => (
                   <option key={h} value={h.toString().padStart(2, "0")}>
@@ -134,8 +150,7 @@ const PostEdit = () => {
               </Select>
               <Select
                 value={minute}
-                onChange={(e) => setMinute(e.target.value)}
-                disabled
+                onChange={(e) => handleTimeChange(e, "minute")}
               >
                 {minuteOptions.map((m) => (
                   <option key={m} value={m.toString().padStart(2, "0")}>
@@ -146,51 +161,17 @@ const PostEdit = () => {
             </TimeSelectWrapper>
           </div>
         </DateTimeWrapper>
-        {/* <DateTimeWrapper>
-          <div>
-            <Label>마감일</Label>
-            <InputField
-              type="date"
-              value={deadline}
-              onChange={handleDateChange}
-              required
-            />
-          </div>
-          <div>
-            <Label>마감 시간</Label>
-            <TimeSelectWrapper>
-              <Select
-                value={period}
-                onChange={(e) => setPeriod(e.target.value)}
-              >
-                <option value="AM">오전</option>
-                <option value="PM">오후</option>
-              </Select>
-              <Select value={hour} onChange={(e) => setHour(e.target.value)}>
-                {hourOptions.map((h) => (
-                  <option key={h} value={h.toString().padStart(2, "0")}>
-                    {h.toString().padStart(2, "0")}
-                  </option>
-                ))}
-              </Select>
-              <Select
-                value={minute}
-                onChange={(e) => setMinute(e.target.value)}
-              >
-                {minuteOptions.map((m) => (
-                  <option key={m} value={m.toString().padStart(2, "0")}>
-                    {m.toString().padStart(2, "0")}
-                  </option>
-                ))}
-              </Select>
-            </TimeSelectWrapper>
-          </div>
-        </DateTimeWrapper> */}
-        <Label>본문</Label>
+        <Label>
+          본문 <CharCount>({description.length} / 3500)</CharCount>
+        </Label>
         <TextArea
           placeholder="홍보글 내용을 입력하세요"
           value={description}
-          onChange={(e) => setDescription(e.target.value)}
+          onChange={(e) => {
+            if (e.target.value.length <= 3500) {
+              setDescription(e.target.value);
+            }
+          }}
           required
         />
         <ImageUploadWrapper>
@@ -204,14 +185,14 @@ const PostEdit = () => {
           <ImagePreviewContainer>
             {images.map(
               (image, index) =>
-                image instanceof File ? ( // image가 File 객체일 때만 처리
+                image instanceof File && (
                   <ImagePreview
                     key={index}
                     style={{
                       backgroundImage: `url(${URL.createObjectURL(image)})`,
                     }}
                   />
-                ) : null // 유효하지 않은 경우 렌더링하지 않음
+                )
             )}
           </ImagePreviewContainer>
         </ImageUploadWrapper>
@@ -384,4 +365,9 @@ const Overlay = styled.div`
   height: 100%;
   background: rgba(0, 0, 0, 0.5);
   z-index: 999;
+`;
+const CharCount = styled.span`
+  font-size: 12px;
+  color: #888;
+  margin-left: 8px;
 `;
