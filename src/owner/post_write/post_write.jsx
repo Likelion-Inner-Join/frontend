@@ -15,17 +15,29 @@ const PostWrite = () => {
   const [images, setImages] = useState([]);
   const [showPopup, setShowPopup] = useState(false);
   const [popupMessage, setPopupMessage] = useState("");
+  const [isOpenRecruitment, setIsOpenRecruitment] = useState(false); // 상시모집 상태
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    if (!isOpenRecruitment && (!deadline || !hour || !minute)) {
+      setPopupMessage(
+        "마감일과 마감 시간을 입력하거나 상시모집을 선택해주세요."
+      );
+      setShowPopup(true);
+      return;
+    }
 
     const newPost = {
       id: Date.now(),
       title,
       date: new Date().toLocaleDateString(),
-      deadline: `${deadline} ${period} ${hour}:${minute}`,
+      deadline: isOpenRecruitment
+        ? "상시모집"
+        : `${deadline} ${period} ${hour}:${minute}`,
       description,
       images,
+      isOpenRecruitment,
     };
 
     addPost(newPost);
@@ -33,6 +45,7 @@ const PostWrite = () => {
   };
 
   const handleDateChange = (e) => {
+    if (isOpenRecruitment) return; // 상시모집인 경우 변경 무시
     const selectedDate = new Date(e.target.value);
     const currentDate = new Date();
     currentDate.setHours(0, 0, 0, 0);
@@ -91,9 +104,10 @@ const PostWrite = () => {
             <Label>마감일</Label>
             <InputField
               type="date"
-              value={deadline}
+              value={isOpenRecruitment ? "" : deadline}
               onChange={handleDateChange}
-              required
+              disabled={isOpenRecruitment} // 상시모집일 경우 비활성화
+              required={!isOpenRecruitment} // 상시모집이 아닌 경우 필수 입력
             />
           </div>
           <div>
@@ -102,11 +116,16 @@ const PostWrite = () => {
               <Select
                 value={period}
                 onChange={(e) => setPeriod(e.target.value)}
+                disabled={isOpenRecruitment} // 상시모집일 경우 비활성화
               >
                 <option value="AM">오전</option>
                 <option value="PM">오후</option>
               </Select>
-              <Select value={hour} onChange={(e) => setHour(e.target.value)}>
+              <Select
+                value={hour}
+                onChange={(e) => setHour(e.target.value)}
+                disabled={isOpenRecruitment} // 상시모집일 경우 비활성화
+              >
                 {hourOptions.map((h) => (
                   <option key={h} value={h.toString().padStart(2, "0")}>
                     {h.toString().padStart(2, "0")}
@@ -116,6 +135,7 @@ const PostWrite = () => {
               <Select
                 value={minute}
                 onChange={(e) => setMinute(e.target.value)}
+                disabled={isOpenRecruitment} // 상시모집일 경우 비활성화
               >
                 {minuteOptions.map((m) => (
                   <option key={m} value={m.toString().padStart(2, "0")}>
@@ -125,12 +145,25 @@ const PostWrite = () => {
               </Select>
             </TimeSelectWrapper>
           </div>
+          <OpenRecruitmentButton
+            type="button"
+            onClick={() => setIsOpenRecruitment((prev) => !prev)}
+            active={isOpenRecruitment}
+          >
+            상시모집
+          </OpenRecruitmentButton>
         </DateTimeWrapper>
-        <Label>본문</Label>
+        <Label>
+          본문 <CharCount>({description.length} / 3500)</CharCount>
+        </Label>
         <TextArea
           placeholder="홍보글 내용을 입력하세요"
           value={description}
-          onChange={(e) => setDescription(e.target.value)}
+          onChange={(e) => {
+            if (e.target.value.length <= 3500) {
+              setDescription(e.target.value);
+            }
+          }}
           required
         />
         <ImageUploadWrapper>
@@ -328,4 +361,18 @@ const Overlay = styled.div`
   height: 100%;
   background: rgba(0, 0, 0, 0.5);
   z-index: 999;
+`;
+
+const OpenRecruitmentButton = styled.button`
+  margin-left: 15px;
+  background-color: ${(props) => (props.active ? "#B10D15" : "#F0F0F0")};
+  color: ${(props) => (props.active ? "white" : "black")};
+  border: 1px solid #ddd;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: ${(props) => (props.active ? "#9C0C13" : "#E0E0E0")};
+  }
 `;

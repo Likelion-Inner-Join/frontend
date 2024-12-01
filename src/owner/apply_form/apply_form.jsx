@@ -1,253 +1,447 @@
-import React, { useState } from "react";
-import QuestionTypeSelector from "./question_type_selector";
-import ShortAnswer from "./question_types/short_answer";
-import Paragraph from "./question_types/paragraph";
-import MultipleChoice from "./question_types/multiple_choice";
-import ImageUpload from "./question_types/image_upload";
-import PreviewModal from "./preview_modal";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
-import { DndProvider } from "react-dnd";
-import { HTML5Backend } from "react-dnd-html5-backend";
-import DraggableQuestion from "./draggable_question";
-import { useNavigate } from "react-router-dom";
+import QuestionBox from "./components/QuestionBox";
 
 const ApplyForm = () => {
-  const [questions, setQuestions] = useState([]);
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [showSelector, setShowSelector] = useState(false);
-  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const navigate = useNavigate();
+  const { formId } = useParams(); // 수정 시 사용할 폼 ID
+  const [formTitle, setFormTitle] = useState("");
+  const [formDescription, setFormDescription] = useState("");
+  const [formContent, setFormContent] = useState([]);
+
+  useEffect(() => {
+    if (formId) {
+      // 폼 수정 시 기존 데이터 로드
+      const savedForms = JSON.parse(localStorage.getItem("savedForms")) || [];
+      const formToEdit = savedForms.find((form) => form.id === formId);
+      if (formToEdit) {
+        setFormTitle(formToEdit.title);
+        setFormDescription(formToEdit.description);
+        setFormContent(formToEdit.content);
+      }
+    }
+  }, [formId]);
+
+  const saveForm = () => {
+    const savedForms = JSON.parse(localStorage.getItem("savedForms")) || [];
+    const newForm = {
+      id: formId || Date.now().toString(), // 기존 폼 ID 유지 또는 새 ID 생성
+      title: formTitle, // 폼 제목 저장
+      description: formDescription, // 폼 설명 저장
+      content: formContent, // 질문, 경계선, 설명글 포함한 데이터 저장
+    };
+
+    if (formId) {
+      // 수정 모드일 경우 기존 폼을 업데이트
+      const updatedForms = savedForms.map((form) =>
+        form.id === formId ? newForm : form
+      );
+      localStorage.setItem("savedForms", JSON.stringify(updatedForms));
+    } else {
+      // 새 폼 저장
+      localStorage.setItem(
+        "savedForms",
+        JSON.stringify([...savedForms, newForm])
+      );
+    }
+
+    navigate("/apply-manage"); // 저장 후 관리 페이지로 이동
+  };
 
   const addQuestion = (type) => {
-    setQuestions([...questions, { type, id: Date.now() }]);
-    setShowSelector(false);
+    setFormContent([
+      ...formContent,
+      {
+        id: Date.now().toString(),
+        type,
+        question: "",
+        description: "",
+        options: type === "multiple_choice" || type === "checkbox" ? [""] : [],
+      },
+    ]);
   };
 
-  const openPreview = () => setIsPreviewOpen(true);
-  const closePreview = () => setIsPreviewOpen(false);
-
-  const moveQuestion = (dragIndex, hoverIndex) => {
-    const updatedQuestions = [...questions];
-    const [draggedQuestion] = updatedQuestions.splice(dragIndex, 1);
-    updatedQuestions.splice(hoverIndex, 0, draggedQuestion);
-    setQuestions(updatedQuestions);
+  const addBorder = () => {
+    setFormContent([
+      ...formContent,
+      { id: Date.now().toString(), type: "border" },
+    ]);
   };
 
-  const deleteQuestion = (index) => {
-    const updatedQuestions = questions.filter((_, i) => i !== index);
-    setQuestions(updatedQuestions);
+  const addDescription = () => {
+    setFormContent([
+      ...formContent,
+      { id: Date.now().toString(), type: "description" },
+    ]);
   };
 
-  const handleSaveForm = () => {
-    const savedForms = JSON.parse(localStorage.getItem("savedForms")) || [];
-    const newForm = { title, description, questions, id: Date.now() };
-    localStorage.setItem(
-      "savedForms",
-      JSON.stringify([...savedForms, newForm])
+  const moveItemUp = (index) => {
+    if (index === 0) return; // 첫 번째 항목은 위로 이동 불가
+    const updatedContent = [...formContent];
+    const [item] = updatedContent.splice(index, 1); // 현재 항목 제거
+    updatedContent.splice(index - 1, 0, item); // 한 칸 위로 삽입
+    setFormContent(updatedContent);
+  };
+
+  const moveItemDown = (index) => {
+    if (index === formContent.length - 1) return; // 마지막 항목은 아래로 이동 불가
+    const updatedContent = [...formContent];
+    const [item] = updatedContent.splice(index, 1); // 현재 항목 제거
+    updatedContent.splice(index + 1, 0, item); // 한 칸 아래로 삽입
+    setFormContent(updatedContent);
+  };
+
+  const updateQuestion = (id, updatedData) => {
+    setFormContent(
+      formContent.map((item) =>
+        item.id === id ? { ...item, ...updatedData } : item
+      )
     );
-    navigate("/apply-manage");
+  };
+
+  const deleteItem = (id) => {
+    setFormContent(formContent.filter((item) => item.id !== id));
   };
 
   return (
-    <DndProvider backend={HTML5Backend}>
+    <Page>
       <Container>
-        <Header>지원서 생성</Header>
-        <Content>
-          <TitleInput
-            type="text"
-            placeholder="지원서 제목"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
-          <DescriptionTextarea
-            placeholder="여기에 지원서 설명을 입력하세요."
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          />
-          <QuestionList>
-            {questions.map((q, index) => (
-              <DraggableQuestion
-                key={q.id}
-                id={q.id}
-                index={index}
-                moveQuestion={moveQuestion}
-                deleteQuestion={() => deleteQuestion(index)}
-                questionType={q.type}
-                questionNumber={index + 1}
-              />
-            ))}
-          </QuestionList>
-        </Content>
-        <AddQuestionContainer
-          onMouseEnter={() => setShowSelector(true)}
-          onMouseLeave={() => setShowSelector(false)}
-        >
-          <AddQuestionButton>+ 질문 추가</AddQuestionButton>
-          {showSelector && <QuestionTypeSelector addQuestion={addQuestion} />}
-        </AddQuestionContainer>
-        <ButtonContainer>
-          <PreviewButton onClick={openPreview}>지원서 미리 보기</PreviewButton>
-          <SubmitButton onClick={handleSaveForm}>생성 완료</SubmitButton>
-        </ButtonContainer>
-        {isPreviewOpen && (
-          <PreviewModal
-            title={title}
-            description={description}
-            questions={questions}
-            closePreview={closePreview}
-          />
-        )}
+        <Header>
+          <HeaderLeft>
+            <TitleInput
+              type="text"
+              placeholder="지원폼 제목을 입력해주세요"
+              value={formTitle}
+              onChange={(e) => setFormTitle(e.target.value)}
+            />
+            <DescriptionInput
+              type="text"
+              placeholder="운영진이 확인하는 지원폼의 한 줄 메모를 입력해주세요"
+              value={formDescription}
+              onChange={(e) => setFormDescription(e.target.value)}
+            />
+          </HeaderLeft>
+          <SaveButton onClick={saveForm}>저장하기</SaveButton>
+        </Header>
+        <MainContent>
+          <LeftContent>
+            <QuestionList>
+              {formContent.map((item, index) => (
+                <ItemContainer key={item.id}>
+                  <MoveButtons>
+                    <ArrowButton
+                      onClick={() => moveItemUp(index)}
+                      disabled={index === 0} // 첫 번째 항목 비활성화
+                    >
+                      ▲
+                    </ArrowButton>
+                    <ArrowButton
+                      onClick={() => moveItemDown(index)}
+                      disabled={index === formContent.length - 1} // 마지막 항목 비활성화
+                    >
+                      ▼
+                    </ArrowButton>
+                  </MoveButtons>
+                  <ContentContainer>
+                    {item.type === "border" ? (
+                      <BorderContainer>
+                        <BorderLine />
+                        <DeleteBorderButton onClick={() => deleteItem(item.id)}>
+                          X
+                        </DeleteBorderButton>
+                      </BorderContainer>
+                    ) : item.type === "description" ? (
+                      <DescriptionContainer>
+                        <DescriptionHeader>
+                          <DescriptionTitle>설명글</DescriptionTitle>
+                          <DeleteButton onClick={() => deleteItem(item.id)}>
+                            삭제
+                          </DeleteButton>
+                        </DescriptionHeader>
+                        <DescriptionContent>
+                          <Input
+                            type="text"
+                            placeholder="제목 입력*"
+                            isQuestionInput
+                          />
+                          <Input type="text" placeholder="설명 입력" />
+                        </DescriptionContent>
+                      </DescriptionContainer>
+                    ) : (
+                      <QuestionBox
+                        key={item.id}
+                        questionData={item}
+                        updateQuestion={updateQuestion}
+                        deleteQuestion={deleteItem}
+                      />
+                    )}
+                  </ContentContainer>
+                </ItemContainer>
+              ))}
+            </QuestionList>
+          </LeftContent>
+          <RightPanel>
+            <ActionButton onClick={() => addQuestion("multiple_choice")}>
+              <Icon>?</Icon> 질문 추가
+            </ActionButton>
+            <ActionButton onClick={addBorder}>
+              <Icon>+</Icon> 경계선 추가
+            </ActionButton>
+            <ActionButton onClick={addDescription}>
+              <Icon>≡</Icon> 설명글 추가
+            </ActionButton>
+          </RightPanel>
+        </MainContent>
       </Container>
-    </DndProvider>
+    </Page>
   );
 };
 
 export default ApplyForm;
 
-const Container = styled.div`
+// 스타일 컴포넌트
+const Page = styled.div`
+  background-color: #fcfafa;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 30px;
-  max-width: 800px;
-  margin: auto;
-  background: #fdfdfd;
-  border-radius: 12px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  padding: 20px 0;
 `;
 
-const Header = styled.h1`
-  font-size: 32px;
-  color: #b10d15;
-  font-weight: bold;
+const Container = styled.div`
+  width: 60%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+`;
+
+const Header = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
   margin-bottom: 20px;
-  letter-spacing: 1.2px;
+  padding-bottom: 10px;
 `;
 
-const Content = styled.div`
-  width: 100%;
-  padding-right: 20px;
+const HeaderLeft = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 `;
 
 const TitleInput = styled.input`
-  width: 100%;
-  font-size: 20px;
-  color: #444;
-  padding: 12px 10px;
-  margin-bottom: 15px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
+  font-size: 33px;
+  font-weight: bold;
+  color: #000000;
+  border: none;
   outline: none;
-  transition: border-color 0.3s ease;
-
-  &:focus {
-    border-color: #b10d15;
+  background-color: transparent;
+  padding: 10px 0;
+  &::placeholder {
+    color: #000000;
   }
 `;
 
-const DescriptionTextarea = styled.textarea`
-  width: 100%;
-  font-size: 16px;
-  color: #444;
-  padding: 12px 10px;
-  margin-bottom: 20px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  resize: none;
+const DescriptionInput = styled.input`
+  font-size: 19px;
+  color: #666;
+  width: 600px;
+  border: none;
   outline: none;
-  transition: border-color 0.3s ease;
-
-  &:focus {
-    border-color: #b10d15;
-  }
-
+  background-color: transparent;
+  padding: 10px 0;
   &::placeholder {
-    color: #aaa;
+    color: #424242;
   }
+`;
+
+const SaveButton = styled.button`
+  background-color: #b10d15;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 25px;
+  font-size: 16px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #9c0c13;
+  }
+`;
+
+const MainContent = styled.div`
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+`;
+
+const LeftContent = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 `;
 
 const QuestionList = styled.div`
-  margin-top: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 `;
 
-const AddQuestionContainer = styled.div`
+const BorderContainer = styled.div`
   display: flex;
-  align-items: start;
-  position: relative;
+  align-items: center;
+  gap: 10px;
+`;
+
+const BorderLine = styled.div`
+  flex: 1;
+  height: 2px;
+  background-color: #ddd;
+`;
+
+const DeleteBorderButton = styled.button`
+  background-color: #ffffff;
+  color: #b10d15;
+  border: none;
+  padding: 10px 0px;
+  border-radius: 5px;
+  cursor: pointer;
+`;
+
+const DescriptionContainer = styled.div`
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 20px;
+  background-color: white;
+`;
+
+const DescriptionHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+const DescriptionTitle = styled.div`
+  font-size: 16px;
+  font-weight: bold;
+`;
+
+const DescriptionContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
   margin-top: 10px;
 `;
 
-const AddQuestionButton = styled.button`
-  background-color: #b10d15;
-  color: white;
-  border: none;
-  padding: 12px 20px;
-  font-size: 16px;
-  font-weight: bold;
-  cursor: pointer;
-  border-radius: 8px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  transition: background-color 0.3s ease, transform 0.3s ease;
-
-  &:hover {
-    background-color: #a00c14;
-    transform: translateY(-2px);
-  }
-
-  &:active {
-    transform: translateY(0);
-  }
+const Input = styled.input`
+  padding: 10px;
+  font-size: ${(props) => (props.isQuestionInput ? "18px" : "16px")};
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  width: 100%;
+  box-sizing: border-box;
 `;
 
-const ButtonContainer = styled.div`
+const DeleteButton = styled.button`
+  background-color: #ffffff;
+  color: #b10d15;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+`;
+
+const RightPanel = styled.div`
+  width: 150px;
+  height: fit-content; /* 내용에 맞게 높이 자동 조정 */
   display: flex;
+  flex-direction: column;
+  gap: 5px;
+  background-color: #ffffff;
+
+  border-radius: 14px;
+  padding: 5px 0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  margin: 0 auto; /* 가운데 정렬 */
+`;
+
+const ActionButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background-color: transparent;
+  border: none;
+  font-size: 14px;
+  color: #333;
+  cursor: pointer;
+  padding: 10px 20px;
+  text-align: left;
+  width: 100%;
+
+  &:hover {
+    background-color: #f9f9f9;
+  }
+
+  & > span {
+    font-size: 18px;
+    color: #666;
+  }
+`;
+
+const Icon = styled.span`
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f0f0f0; /* 아주 옅은 회색 배경 */
+  border-radius: 50%;
+  font-size: 18px;
+  color: #666;
+`;
+
+const ItemContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px; /* 버튼과 내용 사이 간격 */
+  position: relative;
+`;
+
+const MoveButtons = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 5px; /* 위아래 버튼 간 간격 */
   position: absolute;
-  top: 20px;
-  right: 20px;
-  gap: 15px;
+  left: -40px; /* 버튼을 왼쪽으로 배치 */
 `;
 
-const PreviewButton = styled.button`
-  background-color: #b10d15;
-  color: white;
+const ArrowButton = styled.button`
+  background-color: #ffffff;
   border: none;
-  padding: 10px 18px;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 14px;
-  font-weight: bold;
   cursor: pointer;
-  border-radius: 8px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  transition: background-color 0.3s ease, transform 0.3s ease;
+  color: #ccc; /* 옅은 회색 화살표 */
 
   &:hover {
-    background-color: #a00c14;
-    transform: translateY(-2px);
+    background-color: #f9f9f9; /* 조금 더 연한 배경 */
+    color: #999; /* hover 시 화살표 색상 변경 */
   }
 
-  &:active {
-    transform: translateY(0);
+  &:disabled {
+    cursor: not-allowed;
+    color: #e0e0e0; /* 비활성화 상태에서 더 연한 회색 */
   }
 `;
 
-const SubmitButton = styled.button`
-  background-color: #b10d15;
-  color: white;
-  border: none;
-  padding: 10px 18px;
-  font-size: 14px;
-  font-weight: bold;
-  cursor: pointer;
-  border-radius: 8px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  transition: background-color 0.3s ease, transform 0.3s ease;
-
-  &:hover {
-    background-color: #a00c14;
-    transform: translateY(-2px);
-  }
-
-  &:active {
-    transform: translateY(0);
-  }
+const ContentContainer = styled.div`
+  flex: 1;
 `;
