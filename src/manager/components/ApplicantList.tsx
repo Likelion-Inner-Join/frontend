@@ -105,7 +105,6 @@ const ApplicantList = ({ data1, data2, isEmail }: ApplicantListProps) => {
             <div></div>
           ) : (
             <EmailButton onClick={() => navigate("/email-write")}>
-              <img src="/images/manager/mail.svg" alt="이메일 아이콘" />
               <p>이메일 보내기</p>
             </EmailButton>
           )}
@@ -165,7 +164,7 @@ const ApplicantList = ({ data1, data2, isEmail }: ApplicantListProps) => {
                   alt={`${applicant.formResult} 아이콘`}
                 />
                 <ApplicantName>{applicant.name}</ApplicantName>
-                <ApplicantInfo>{applicant.position}</ApplicantInfo>
+                <ApplicantInfo>{applicant.studentNumber}</ApplicantInfo>
               </div>
               <div>
                 <ApplicantPosition>{applicant.position}</ApplicantPosition>
@@ -240,10 +239,10 @@ const EmailButton = styled.div`
   display: flex;
   gap: 4px;
   align-items: center;
-  padding: 8px 12px;
+  padding: 6px 8px;
   border-radius: 20px;
-  border-radius: 20px;
-  border: 1px solid #88181c;
+  border-radius: 24px;
+  border: 1px solid #cc141d;
   background: #fff;
   cursor: pointer;
 
@@ -252,7 +251,7 @@ const EmailButton = styled.div`
   }
 
   p {
-    color: #88181c;
+    color: #cc141d;
     font-family: Pretendard;
     font-size: 14px;
     font-style: normal;

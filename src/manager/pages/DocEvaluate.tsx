@@ -93,7 +93,9 @@ const DocEvaluate = () => {
           passList={passList}
           failList={failList}
         />
-        <NextButton onClick={() => navigate("/result")}>다음 단계</NextButton>
+        <NextButton onClick={() => navigate("/meet-table")}>
+          다음 단계
+        </NextButton>
       </Container>
     </Wrapper>
   );
