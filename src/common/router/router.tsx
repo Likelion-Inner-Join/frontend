@@ -18,6 +18,7 @@ import ApplyManage from "../../owner/apply_manage/apply_manage";
 import WriteEmail from "../../manager/pages/WriteEmail";
 import SendEmail from "../../manager/pages/SendEmail";
 import MeetEvaluate from "../../manager/pages/MeetEvaluate";
+import MeetArrange from "../../manager/pages/MeetArrange";
 
 export const ROUTES = {
   LANDING: "/",
@@ -39,6 +40,7 @@ export const ROUTES = {
   WRTIE_EMAIL: "/email-write",
   SEND_EMAIL: "/email-send",
   MEET_EVALUATE: "meet-eval",
+  MEET_ARRANGE: "meet-table",
 };
 
 export const router = createBrowserRouter([
@@ -146,6 +148,15 @@ export const router = createBrowserRouter([
       <div>
         <GlobalStyle />
         <MeetEvaluate />
+      </div>
+    ),
+  },
+  {
+    path: ROUTES.MEET_ARRANGE,
+    element: (
+      <div>
+        <GlobalStyle />
+        <MeetArrange />
       </div>
     ),
   },

@@ -40,34 +40,10 @@ const InterviewerList = ({ data1, data2, isEmail }: ApplicantListProps) => {
   const [isDocumentOpen, setIsDocumentOpen] = useState(false);
   const [selectedApplicant, setSelectedApplicant] = useState<Applicant>();
   const [searchParams] = useSearchParams();
+  const [filteredApplicants, setFilteredApplicants] = useState<Applicant[]>([]);
+
   const currApplyID = searchParams.get("apply");
   const navigate = useNavigate();
-
-  const filteredApplicants = data1
-    .filter((applicant) => {
-      const matchState =
-        selectedState === "전체" ||
-        (selectedState === "합격" &&
-          applicant.formResult === "pass" &&
-          applicant.meetingResult === "pass") ||
-        (selectedState === "불합격" &&
-          (applicant.formResult === "fail" ||
-            applicant.meetingResult === "fail")) ||
-        (selectedState === "미평가" &&
-          applicant.formResult === "pass" &&
-          applicant.meetingResult === "null");
-
-      const matchPosition =
-        selectedPositions.length === 0 ||
-        selectedPositions.includes(applicant.position);
-
-      return matchState && matchPosition;
-    })
-    .sort((a, b) => {
-      if (a.formResult === "fail" && b.formResult !== "fail") return 1;
-      if (a.formResult !== "fail" && b.formResult === "fail") return -1;
-      return 0;
-    });
 
   const handlePositionChange = (positionName: string) => {
     if (positionName === "전체") {
@@ -102,6 +78,36 @@ const InterviewerList = ({ data1, data2, isEmail }: ApplicantListProps) => {
     };
   };
 
+  const handleMeetingDateChange = (applicationId: number, value: string) => {
+    setFilteredApplicants((prev) =>
+      prev.map((applicant) =>
+        applicant.applicationId === applicationId
+          ? {
+              ...applicant,
+              meetingStartTime: `${value} ${
+                applicant.meetingStartTime.split(" ")[1]
+              }`,
+            }
+          : applicant
+      )
+    );
+  };
+
+  const handleMeetingTimeChange = (applicationId: number, value: string) => {
+    setFilteredApplicants((prev) =>
+      prev.map((applicant) =>
+        applicant.applicationId === applicationId
+          ? {
+              ...applicant,
+              meetingStartTime: `${
+                applicant.meetingStartTime.split(" ")[0]
+              } ${value}`,
+            }
+          : applicant
+      )
+    );
+  };
+
   useEffect(() => {
     if (currApplyID) {
       const selectedApplicant = data1.find(
@@ -111,6 +117,36 @@ const InterviewerList = ({ data1, data2, isEmail }: ApplicantListProps) => {
       setIsDocumentOpen(true);
     } else setIsDocumentOpen(false);
   }, [currApplyID]);
+
+  useEffect(() => {
+    const meetFilteredApplicants = data1
+      .filter((applicant) => {
+        const matchState =
+          selectedState === "전체" ||
+          (selectedState === "합격" &&
+            applicant.formResult === "pass" &&
+            applicant.meetingResult === "pass") ||
+          (selectedState === "불합격" &&
+            (applicant.formResult === "fail" ||
+              applicant.meetingResult === "fail")) ||
+          (selectedState === "미평가" &&
+            applicant.formResult === "pass" &&
+            applicant.meetingResult === "null");
+
+        const matchPosition =
+          selectedPositions.length === 0 ||
+          selectedPositions.includes(applicant.position);
+
+        return matchState && matchPosition;
+      })
+      .sort((a, b) => {
+        if (a.formResult === "fail" && b.formResult !== "fail") return 1;
+        if (a.formResult !== "fail" && b.formResult === "fail") return -1;
+        return 0;
+      });
+
+    setFilteredApplicants(meetFilteredApplicants);
+  }, [data1, selectedState, selectedPositions]);
 
   const getIconByState = (state: string) => {
     switch (state) {
@@ -136,7 +172,6 @@ const InterviewerList = ({ data1, data2, isEmail }: ApplicantListProps) => {
             <div></div>
           ) : (
             <EmailButton onClick={() => navigate("/email-write")}>
-              <img src="/images/manager/mail.svg" alt="이메일 아이콘" />
               <p>이메일 보내기</p>
             </EmailButton>
           )}
@@ -202,34 +237,28 @@ const InterviewerList = ({ data1, data2, isEmail }: ApplicantListProps) => {
                 <ApplicantInfo>{applicant.position}</ApplicantInfo>
               </div>
               <div>
-                {(() => {
-                  const meetTime = parseDateTime(applicant.meetingStartTime);
-                  return (
-                    <MeetingSchedule>
-                      <MeetingDate>
-                        {`${meetTime.year}년 ${meetTime.month}월 ${meetTime.day}일`}
-                      </MeetingDate>
-                      <MeetingTime>
-                        {`${meetTime.hour}:${meetTime.minute}`}
-                      </MeetingTime>
-                    </MeetingSchedule>
-                  );
-                })()}
-                {isEmail ? (
-                  <AddButton>
-                    <img
-                      src="/images/manager/directionBt.svg"
-                      alt="수신자 추가 버튼"
-                    />
-                  </AddButton>
-                ) : (
-                  <DocButton>
-                    <img
-                      src="/images/manager/directionBt.svg"
-                      alt="서류 보기 버튼"
-                    />
-                  </DocButton>
-                )}
+                <MeetingSchedule>
+                  <MeetingDate
+                    type="date"
+                    value={applicant.meetingStartTime.split(" ")[0]}
+                    onChange={(e) =>
+                      handleMeetingDateChange(
+                        applicant.applicationId,
+                        e.target.value
+                      )
+                    }
+                  />
+                  <MeetingTime
+                    type="time"
+                    value={applicant.meetingStartTime.split(" ")[1]}
+                    onChange={(e) =>
+                      handleMeetingTimeChange(
+                        applicant.applicationId,
+                        e.target.value
+                      )
+                    }
+                  />
+                </MeetingSchedule>
               </div>
             </ApplicantItem>
           ))}
@@ -286,10 +315,10 @@ const EmailButton = styled.div`
   display: flex;
   gap: 4px;
   align-items: center;
-  padding: 8px 12px;
+  padding: 6px 8px;
   border-radius: 20px;
-  border-radius: 20px;
-  border: 1px solid #88181c;
+  border-radius: 24px;
+  border: 1px solid #cc141d;
   background: #fff;
   cursor: pointer;
 
@@ -298,7 +327,7 @@ const EmailButton = styled.div`
   }
 
   p {
-    color: #88181c;
+    color: #cc141d;
     font-family: Pretendard;
     font-size: 14px;
     font-style: normal;
@@ -482,16 +511,33 @@ const MeetingSchedule = styled.div`
   font-weight: 500;
   line-height: 150%; /* 21px */
   letter-spacing: -0.28px;
-  transition: transform 0.3s ease; 
-  
-  ${ApplicantItem}:hover & {
-    transform: translateX(5px);
 `;
 
-const MeetingDate = styled.div``;
+const MeetingDate = styled.input`
+  border: 1px solid #fcfafa;
+  border-radius: 4px;
+  padding: 2px 2.5px;
+  font-family: Pretendard;
+  font-size: 14px;
+  font-weight: 500;
+  width: 115px;
+  background-color: #fcfafa;
+  &:hover {
+    border-color: #88181c;
+  }
+`;
 
-const MeetingTime = styled.div`
-  align-self: flex-end;
+const MeetingTime = styled.input`
+  border: 1px solid #fcfafa;
+  border-radius: 4px;
+  font-family: Pretendard;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 2px 2.5px;
+  background-color: #fcfafa;
+  &:hover {
+    border-color: #88181c;
+  }
 `;
 
 const AddButton = styled.div`
