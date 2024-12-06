@@ -19,11 +19,8 @@ import ApplyManage from "../../owner/apply_manage/apply_manage";
 import WriteEmail from "../../manager/pages/WriteEmail";
 import SendEmail from "../../manager/pages/SendEmail";
 import MeetEvaluate from "../../manager/pages/MeetEvaluate";
-<<<<<<< HEAD
 import MeetArrange from "../../manager/pages/MeetArrange";
-=======
 import ApplyEdit from "../../owner/apply_edit/apply_edit";
->>>>>>> 6ea1443270e7168feb734ee1daace6b372d53aa9
 
 export const ROUTES = {
   LANDING: "/",
