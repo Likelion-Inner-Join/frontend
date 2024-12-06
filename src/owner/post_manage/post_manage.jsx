@@ -1,99 +1,3 @@
-// import React from "react";
-// import { useNavigate, useLocation } from "react-router-dom";
-// import styled from "styled-components";
-// import { useState } from "react";
-
-// const PostManage = () => {
-//   const navigate = useNavigate(); // 페이지 이동을 위한 useNavigate 훅 사용
-
-//   const posts = [
-//     {
-//       id: 1,
-//       title: "🦁멋쟁이사자처럼 서강대학교에서 13기 아기사자를 모집합니다!🦁",
-//       date: "2024/10/20 작성",
-//       deadline: "2024년 10월 27일 (토) 마감",
-//       remainingDays: "D-7",
-//       description:
-//         "안녕하세요, 멋쟁이사자처럼 서강대학교입니다! 13기 아기사자 모집이 시작되었습니다. 창업, 웹 개발에 관심 있는 분은 누구나 지원 가능합니다.",
-//     },
-//   ];
-
-//   return (
-//     <Container>
-//       {/* 동아리 소개 헤더 */}
-//       <Header>
-//         <ClubLogo />
-//         <ClubSubTitle>중앙동아리</ClubSubTitle>
-//         <ClubName>멋쟁이사자처럼</ClubName>
-//         <ClubTags>
-//           <Tag>#IT</Tag>
-//           <Tag>#프론트엔드</Tag>
-//           <Tag>#백엔드</Tag>
-//         </ClubTags>
-//       </Header>
-//       {/* 탭 메뉴 */}
-//       <TabMenu>
-//         <Tab active={true}>홍보글 작성</Tab>
-//         <Tab active={false}>지원폼 관리</Tab>
-//       </TabMenu>
-//       {/* 새로운 홍보글 작성하기 버튼 */}
-//       <PostButtonContainer>
-//         <PostButton onClick={() => navigate("/post-write")}>
-//           새로운 홍보글 작성하기
-//         </PostButton>
-//       </PostButtonContainer>
-//       {/* 게시글 목록 */}
-//       <PostList>
-//         {posts.map((post) => (
-//           <PostItem key={post.id}>
-//             <PostTitle>{post.title}</PostTitle>
-//             <PostDeadline>
-//               <PostDeadlineRed>{post.remainingDays}</PostDeadlineRed>
-//               <PostDeadlineBlack> &nbsp; {post.deadline}</PostDeadlineBlack>
-//             </PostDeadline>
-
-//             <PostMeta>
-//               <span>{post.date}</span>
-//               <div>
-//                 <span style={{ marginRight: "15px", cursor: "pointer" }}>
-//                   수정
-//                 </span>
-//                 <span style={{ cursor: "pointer" }}>삭제</span>
-//               </div>
-//             </PostMeta>
-
-//             <PostDescription>{post.description}</PostDescription>
-
-//             {/* 사진 9개와 지원 리스트 버튼 추가 */}
-//             <ImageContainer>
-//               <ImageBox>사진 1</ImageBox>
-//               <ImageBox>사진 2</ImageBox>
-//               <ImageBox>사진 3</ImageBox>
-//               <ImageBox>사진 4</ImageBox>
-//               <ImageBox>사진 5</ImageBox>
-//               <ImageBox>사진 6</ImageBox>
-//               <ImageBox>사진 7</ImageBox>
-//               <ImageBox>사진 8</ImageBox>
-//               <ImageBox>사진 9</ImageBox>
-//             </ImageContainer>
-
-//             <ButtonContainer>
-//               <ListButton onClick={() => navigate("/check-list")}>
-//                 지원 리스트 확인하기
-//               </ListButton>
-//             </ButtonContainer>
-//           </PostItem>
-//         ))}
-//       </PostList>
-//     </Container>
-//   );
-// };
-
-// export default PostManage;
-
-// src/owner/post_manage/post_manage.jsx
-
-// src/owner/post_manage/post_manage.jsx
 import React, { useContext, useState } from "react";
 import { PostContext } from "../post_context/post_context";
 import { useNavigate } from "react-router-dom";
@@ -101,17 +5,62 @@ import styled from "styled-components";
 
 const PostManage = () => {
   const navigate = useNavigate();
-  const { posts } = useContext(PostContext);
+  // const [posts, setPosts] = useState(useContext(PostContext).posts);
+  const { posts: contextPosts } = useContext(PostContext); // Access posts from context
+  const [posts, setPosts] = useState(contextPosts); // Local state for posts
   const [selectedImage, setSelectedImage] = useState(null);
   const [selectedPostIndex, setSelectedPostIndex] = useState(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(null);
+  const [viewMode, setViewMode] = useState("grid");
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [postToDelete, setPostToDelete] = useState(null);
 
-  const calculateRemainingDays = (deadline) => {
+  const calculateRemainingDays = (deadline, isOpenRecruitment) => {
+    if (isOpenRecruitment) return "상시모집";
+
     const currentDate = new Date();
-    const deadlineDate = new Date(deadline);
+
+    const [datePart, period, timePart] = deadline.split(" "); // "YYYY-MM-DD", "AM/PM", "HH:MM"
+    const [year, month, day] = datePart.split("-").map(Number);
+    let [hours, minutes] = timePart.split(":").map(Number);
+
+    // 오전/오후에 따라 시간 조정
+    if (period === "PM" && hours !== 12) {
+      hours += 12;
+    } else if (period === "AM" && hours === 12) {
+      hours = 0;
+    }
+
+    const deadlineDate = new Date(year, month - 1, day, hours, minutes);
+
+    currentDate.setHours(0, 0, 0, 0);
+    deadlineDate.setHours(0, 0, 0, 0);
+
     const timeDifference = deadlineDate - currentDate;
     const dayDifference = Math.ceil(timeDifference / (1000 * 60 * 60 * 24));
-    return dayDifference >= 0 ? `D-${dayDifference}` : "마감됨";
+
+    if (dayDifference === 0) return "D-DAY";
+    return dayDifference > 0 ? `D-${dayDifference}` : "마감됨";
+  };
+
+  const handleEdit = (postId) => {
+    navigate(`/post-edit/${postId}`);
+  };
+
+  const handleDeleteClick = (postId) => {
+    setPostToDelete(postId);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = () => {
+    setPosts(posts.filter((post) => post.id !== postToDelete));
+    setShowDeleteModal(false);
+    setPostToDelete(null);
+  };
+
+  const cancelDelete = () => {
+    setShowDeleteModal(false);
+    setPostToDelete(null);
   };
 
   const handleImageClick = (postIndex, imageIndex) => {
@@ -155,60 +104,149 @@ const PostManage = () => {
           <Tag>#백엔드</Tag>
         </ClubTags>
       </Header>
+      {/* <TabMenu>
+        <Tab active={true}>홍보글 작성</Tab>
+        <Tab active={false} onClick={() => navigate("/apply-manage")}>
+          지원폼 관리
+        </Tab>
+      </TabMenu> */}
       <TabMenu>
         <Tab active={true}>홍보글 작성</Tab>
         <Tab active={false} onClick={() => navigate("/apply-manage")}>
           지원폼 관리
         </Tab>
       </TabMenu>
-      <PostButtonContainer>
-        <PostButton onClick={() => navigate("/post-write")}>
-          새로운 홍보글 작성하기
-        </PostButton>
-      </PostButtonContainer>
-      <PostList>
-        {posts.map((post, postIndex) => (
-          <PostItem key={post.id}>
-            <PostTitle>{post.title}</PostTitle>
-            <PostDeadline>
-              <PostDeadlineRed>
-                {calculateRemainingDays(post.deadline)}
-              </PostDeadlineRed>
-              <PostDeadlineBlack> &nbsp; {post.deadline}</PostDeadlineBlack>
-            </PostDeadline>
-            <PostMeta>
-              <span>{post.date}</span>
-              <div>
-                <span style={{ marginRight: "15px", cursor: "pointer" }}>
-                  수정
-                </span>
-                <span style={{ cursor: "pointer" }}>삭제</span>
-              </div>
-            </PostMeta>
-            <PostDescription>{post.description}</PostDescription>
-            <ImageContainer>
-              {post.images &&
-                post.images.length > 0 &&
-                post.images.map((image, index) => (
-                  <ImagePreview
-                    key={index}
-                    style={{
-                      backgroundImage: `url(${URL.createObjectURL(image)})`,
-                    }}
-                    onClick={() => handleImageClick(postIndex, index)} // 수정된 부분
-                  />
-                ))}
-            </ImageContainer>
-            <ButtonContainer>
-              <ListButton onClick={() => navigate("/doc-eval")}>
-                지원 리스트 확인하기
-              </ListButton>
-            </ButtonContainer>
-          </PostItem>
-        ))}
-      </PostList>
 
-      {/* 모달 */}
+      {/* 전체보기/목록보기 전환 버튼 추가 */}
+      <HeaderContainer>
+        <PostButtonContainer>
+          <PostButton onClick={() => navigate("/post-write")}>
+            새로운 홍보글 작성하기
+          </PostButton>
+        </PostButtonContainer>
+        {/* <ViewToggle>
+          <ToggleOption
+            active={viewMode === "grid"}
+            onClick={() => setViewMode("grid")}
+          >
+            전체보기
+          </ToggleOption>
+          <ToggleOption
+            active={viewMode === "list"}
+            onClick={() => setViewMode("list")}
+          >
+            목록보기
+          </ToggleOption>
+        </ViewToggle> */}
+      </HeaderContainer>
+
+      {viewMode === "grid" ? (
+        <PostList>
+          {posts.map((post, postIndex) => (
+            <PostItem key={post.id}>
+              <PostTitle>{post.title}</PostTitle>
+              <PostDeadline>
+                <PostDeadlineRed>
+                  {calculateRemainingDays(
+                    post.deadline,
+                    post.isOpenRecruitment
+                  )}
+                </PostDeadlineRed>
+                <PostDeadlineBlack>
+                  {!post.isOpenRecruitment && ` ${post.deadline}`}
+                </PostDeadlineBlack>
+              </PostDeadline>
+
+              <PostMeta>
+                <span>{post.date}</span>
+                <div>
+                  <span
+                    style={{ marginRight: "15px", cursor: "pointer" }}
+                    onClick={() => handleEdit(post.id)}
+                  >
+                    수정
+                  </span>
+                  <span
+                    style={{ cursor: "pointer" }}
+                    onClick={() => handleDeleteClick(post.id)}
+                  >
+                    삭제
+                  </span>
+                </div>
+              </PostMeta>
+              <PostDescription>{post.description}</PostDescription>
+              <ImageContainer>
+                {post.images &&
+                  post.images.length > 0 &&
+                  post.images.map((image, index) =>
+                    image instanceof File ? (
+                      <ImagePreview
+                        key={index}
+                        style={{
+                          backgroundImage: `url(${URL.createObjectURL(image)})`,
+                        }}
+                        onClick={() => handleImageClick(postIndex, index)}
+                      />
+                    ) : null
+                  )}
+              </ImageContainer>
+              <ButtonContainer>
+                <ListButton onClick={() => navigate("/doc-eval")}>
+                  지원 리스트 확인하기
+                </ListButton>
+              </ButtonContainer>
+            </PostItem>
+          ))}
+        </PostList>
+      ) : (
+        <ListView>
+          {posts.map((post) => (
+            <ListItem key={post.id}>
+              <ListImage
+                src={
+                  post.images[0] instanceof File
+                    ? URL.createObjectURL(post.images[0])
+                    : require("../../assets/image.png")
+                }
+                alt="Post Thumbnail"
+              />
+              <ListContent>
+                <ListTitle>{post.title}</ListTitle>
+                <ListDescription>
+                  {post.description.slice(0, 50)}...
+                </ListDescription>
+                <ListMeta>
+                  <span>{calculateRemainingDays(post.deadline)}</span>
+                  <span>{post.date}</span>
+                  {/* Place buttons inside ListMeta to align right */}
+                  <ButtonWrapper>
+                    <EditButton onClick={() => handleEdit(post.id)}>
+                      수정
+                    </EditButton>
+                    <DeleteButton onClick={() => handleDeleteClick(post.id)}>
+                      삭제
+                    </DeleteButton>
+                  </ButtonWrapper>
+                </ListMeta>
+              </ListContent>
+            </ListItem>
+          ))}
+        </ListView>
+      )}
+
+      {/* 삭제 확인 모달 */}
+      {showDeleteModal && (
+        <ModalOverlay onClick={cancelDelete}>
+          <ModalContent onClick={(e) => e.stopPropagation()}>
+            <ModalText>정말로 삭제하시겠습니까?</ModalText>
+            <ButtonContainer>
+              <ConfirmButton onClick={confirmDelete}>예</ConfirmButton>
+              <CancelButton onClick={cancelDelete}>아니요</CancelButton>
+            </ButtonContainer>
+          </ModalContent>
+        </ModalOverlay>
+      )}
+
       {selectedImage && (
         <ModalOverlay onClick={closeModal}>
           <ModalContent onClick={(e) => e.stopPropagation()}>
@@ -302,9 +340,9 @@ const Tab = styled.div`
 
 const PostButtonContainer = styled.div`
   display: flex;
-  justify-content: flex-start; /* 왼쪽 정렬 */
+  justify-content: flex-start;
   margin-top: 20px;
-  margin-bottom: 20px; /* 게시글과 간격 추가 */
+  margin-bottom: 20px;
 `;
 
 const PostButton = styled.button`
@@ -358,11 +396,11 @@ const PostDeadline = styled.div`
 `;
 
 const PostDeadlineRed = styled.span`
-  color: #b10d15; /* D-3 부분의 빨간색 */
+  color: #b10d15;
 `;
 
 const PostDeadlineBlack = styled.span`
-  color: #000; /* 마감 날짜 부분의 검은색 */
+  color: #000;
 `;
 
 const PostMeta = styled.div`
@@ -393,10 +431,14 @@ const ImageBox = styled.div`
   color: #666;
 `;
 
+// const ButtonContainer = styled.div`
+//   display: flex;
+//   justify-content: center;
+//   margin-top: 40px;
+// `;
 const ButtonContainer = styled.div`
   display: flex;
-  justify-content: center;
-  margin-top: 40px;
+  justify-content: space-around;
 `;
 
 const ListButton = styled.button`
@@ -415,14 +457,14 @@ const ListButton = styled.button`
 
 const ImageContainer = styled.div`
   display: flex;
-  overflow-x: auto; /* 가로 스크롤 가능하게 설정 */
-  gap: 10px; /* 사진 간의 간격을 줄임 */
+  overflow-x: auto;
+  gap: 10px;
   margin-top: 40px;
   padding-bottom: 20px;
 `;
 
 const ImagePreview = styled.div`
-  flex: 0 0 auto; /* 가로 스크롤 시 이미지가 고정된 너비를 가지도록 설정 */
+  flex: 0 0 auto;
   width: 280px;
   height: 280px;
   background-color: #ddd;
@@ -450,7 +492,7 @@ const ModalOverlay = styled.div`
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.5); /* 전체 배경을 살짝 어둡게 */
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -458,12 +500,16 @@ const ModalOverlay = styled.div`
 `;
 
 const ModalContent = styled.div`
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  padding: 20px; /* 사진과 화살표 간의 간격을 확보 */
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  width: 300px;
+  text-align: center;
+`;
+
+const ModalText = styled.p`
+  font-size: 16px;
+  margin-bottom: 20px;
 `;
 
 const ModalImage = styled.img`
@@ -489,10 +535,10 @@ const CloseButton = styled.button`
 `;
 
 const ArrowButton = styled.button`
-  background: #b10d15; /* 화살표 배경 색상을 #b10d15로 설정 */
+  background: #b10d15;
   border: none;
   font-size: 24px;
-  color: white; /* 화살표 아이콘을 흰색으로 설정 */
+  color: white;
   cursor: pointer;
   width: 40px;
   height: 40px;
@@ -511,4 +557,135 @@ const ArrowButton = styled.button`
   &:hover {
     background: #8e0a12; /* 호버 시 조금 더 어두운 색으로 변경 */
   }
+`;
+
+const HeaderContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+`;
+
+const ViewToggle = styled.div`
+  display: flex;
+  gap: 15px;
+`;
+
+const ToggleOption = styled.span`
+  font-size: 14px;
+  cursor: pointer;
+  color: ${(props) => (props.active ? "#B10D15" : "#888")};
+  font-weight: ${(props) => (props.active ? "bold" : "normal")};
+`;
+
+const ListView = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-top: 20px;
+`;
+
+const ListItem = styled.div`
+  display: flex;
+  background-color: #fff;
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  position: relative; /* 추가된 속성 */
+`;
+
+const ListImage = styled.img`
+  width: 80px;
+  height: 80px;
+  border-radius: 4px;
+  object-fit: cover;
+  margin-right: 10px;
+`;
+
+const ListContent = styled.div`
+  flex: 1;
+  padding: 10px;
+`;
+
+const ListTitle = styled.h3`
+  font-size: 18px;
+  font-weight: bold;
+`;
+
+const ListDescription = styled.p`
+  font-size: 14px;
+  color: #555;
+`;
+
+const ListMeta = styled.div`
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 12px;
+  color: #888;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px; /* Adds space between D-day and date */
+`;
+
+const EditButton = styled.button`
+  background-color: #b10d15;
+  color: white;
+  border: none;
+  width: 60px;
+  height: 30px;
+  font-size: 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  &:hover {
+    background-color: #9c0c13;
+  }
+`;
+
+const ConfirmButton = styled.button`
+  padding: 10px 20px;
+  background-color: #b10d15;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #9c0c13;
+  }
+`;
+
+const CancelButton = styled.button`
+  padding: 10px 20px;
+  background-color: #ddd;
+  color: black;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #bbb;
+  }
+`;
+
+const DeleteButton = styled.button`
+  background-color: #b10d15;
+  color: white;
+  border: none;
+  width: 60px;
+  height: 30px;
+  font-size: 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  &:hover {
+    background-color: #9c0c13;
+  }
+`;
+
+const ButtonWrapper = styled.div`
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: 5px;
 `;

@@ -1,57 +1,54 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
-import QuestionBox from "./components/QuestionBox";
+import QuestionBox from "../../owner/apply_form/components/QuestionBox";
 
-const ApplyForm = () => {
+const ApplyEdit = () => {
   const navigate = useNavigate();
   const { formId } = useParams(); // 수정 시 사용할 폼 ID
-  const [formTitle, setFormTitle] = useState("");
-  const [formDescription, setFormDescription] = useState("");
-  const [formContent, setFormContent] = useState([]);
+  const [formTitle, setFormTitle] = useState(""); // 폼 제목
+  const [formDescription, setFormDescription] = useState(""); // 폼 설명
+  const [formContent, setFormContent] = useState([]); // 폼의 질문 및 내용
 
+  // 로컬 스토리지에서 폼 데이터 로드
   useEffect(() => {
     if (formId) {
-      // 폼 수정 시 기존 데이터 로드
       const savedForms = JSON.parse(localStorage.getItem("savedForms")) || [];
-      const formToEdit = savedForms.find((form) => form.id === formId);
+      const formToEdit = savedForms.find(
+        (form) => form.id === formId.toString() // 형변환으로 ID 매칭
+      );
       if (formToEdit) {
-        setFormTitle(formToEdit.title);
-        setFormDescription(formToEdit.description);
-        setFormContent(formToEdit.content);
+        setFormTitle(formToEdit.title); // 제목 설정
+        setFormDescription(formToEdit.description); // 설명 설정
+        setFormContent(formToEdit.content || []); // 질문 및 내용 설정
+      } else {
+        console.error("해당 ID의 폼 데이터를 찾을 수 없습니다.");
       }
     }
   }, [formId]);
 
+  // 폼 저장
   const saveForm = () => {
     const savedForms = JSON.parse(localStorage.getItem("savedForms")) || [];
-    const newForm = {
-      id: formId || Date.now().toString(), // 기존 폼 ID 유지 또는 새 ID 생성
-      title: formTitle, // 폼 제목 저장
-      description: formDescription, // 폼 설명 저장
-      content: formContent, // 질문, 경계선, 설명글 포함한 데이터 저장
+    const updatedForm = {
+      id: formId, // 기존 ID 유지
+      title: formTitle,
+      description: formDescription,
+      content: formContent,
     };
 
-    if (formId) {
-      // 수정 모드일 경우 기존 폼을 업데이트
-      const updatedForms = savedForms.map((form) =>
-        form.id === formId ? newForm : form
-      );
-      localStorage.setItem("savedForms", JSON.stringify(updatedForms));
-    } else {
-      // 새 폼 저장
-      localStorage.setItem(
-        "savedForms",
-        JSON.stringify([...savedForms, newForm])
-      );
-    }
+    // 폼 업데이트
+    const updatedForms = savedForms.map((form) =>
+      form.id === formId ? updatedForm : form
+    );
 
-    navigate("/apply-manage"); // 저장 후 관리 페이지로 이동
+    localStorage.setItem("savedForms", JSON.stringify(updatedForms)); // 로컬 스토리지에 저장
+    navigate("/apply-manage"); // 관리 페이지로 이동
   };
 
   const addQuestion = (type) => {
-    setFormContent([
-      ...formContent,
+    setFormContent((prev) => [
+      ...prev,
       {
         id: Date.now().toString(),
         type,
@@ -62,20 +59,21 @@ const ApplyForm = () => {
     ]);
   };
 
+  // 경계선 추가
   const addBorder = () => {
-    setFormContent([
-      ...formContent,
+    setFormContent((prev) => [
+      ...prev,
       { id: Date.now().toString(), type: "border" },
     ]);
   };
 
+  // 설명글 추가
   const addDescription = () => {
-    setFormContent([
-      ...formContent,
-      { id: Date.now().toString(), type: "description" },
+    setFormContent((prev) => [
+      ...prev,
+      { id: Date.now().toString(), type: "description", text: "" },
     ]);
   };
-
   const moveItemUp = (index) => {
     if (index === 0) return; // 첫 번째 항목은 위로 이동 불가
     const updatedContent = [...formContent];
@@ -92,16 +90,16 @@ const ApplyForm = () => {
     setFormContent(updatedContent);
   };
 
+  // 질문 업데이트
   const updateQuestion = (id, updatedData) => {
-    setFormContent(
-      formContent.map((item) =>
-        item.id === id ? { ...item, ...updatedData } : item
-      )
+    setFormContent((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, ...updatedData } : item))
     );
   };
 
+  // 항목 삭제
   const deleteItem = (id) => {
-    setFormContent(formContent.filter((item) => item.id !== id));
+    setFormContent((prev) => prev.filter((item) => item.id !== id));
   };
 
   return (
@@ -129,6 +127,7 @@ const ApplyForm = () => {
             <QuestionList>
               {formContent.map((item, index) => (
                 <ItemContainer key={item.id}>
+                  {/* 항목 이동 버튼 */}
                   <MoveButtons>
                     <ArrowButton
                       onClick={() => moveItemUp(index)}
@@ -143,7 +142,10 @@ const ApplyForm = () => {
                       ▼
                     </ArrowButton>
                   </MoveButtons>
+
+                  {/* 항목 컨텐츠 */}
                   <ContentContainer>
+                    {/* 경계선 처리 */}
                     {item.type === "border" ? (
                       <BorderContainer>
                         <BorderLine />
@@ -152,6 +154,7 @@ const ApplyForm = () => {
                         </DeleteBorderButton>
                       </BorderContainer>
                     ) : item.type === "description" ? (
+                      /* 설명글 처리 */
                       <DescriptionContainer>
                         <DescriptionHeader>
                           <DescriptionTitle>설명글</DescriptionTitle>
@@ -162,18 +165,36 @@ const ApplyForm = () => {
                         <DescriptionContent>
                           <Input
                             type="text"
-                            placeholder="제목 입력*"
-                            isQuestionInput
+                            value={item.text || ""}
+                            placeholder="설명글 입력"
+                            onChange={(e) =>
+                              setFormContent((prev) =>
+                                prev.map((q) =>
+                                  q.id === item.id
+                                    ? { ...q, text: e.target.value }
+                                    : q
+                                )
+                              )
+                            }
                           />
-                          <Input type="text" placeholder="설명 입력" />
                         </DescriptionContent>
                       </DescriptionContainer>
                     ) : (
+                      /* 질문 처리 */
                       <QuestionBox
-                        key={item.id}
                         questionData={item}
-                        updateQuestion={updateQuestion}
-                        deleteQuestion={deleteItem}
+                        updateQuestion={(updatedData) =>
+                          setFormContent((prev) =>
+                            prev.map((q) =>
+                              q.id === item.id ? { ...q, ...updatedData } : q
+                            )
+                          )
+                        }
+                        deleteQuestion={(id) =>
+                          setFormContent((prev) =>
+                            prev.filter((q) => q.id !== id)
+                          )
+                        }
                       />
                     )}
                   </ContentContainer>
@@ -198,9 +219,9 @@ const ApplyForm = () => {
   );
 };
 
-export default ApplyForm;
+export default ApplyEdit;
 
-// 스타일 컴포넌트
+// Styled components는 apply-form.jsx와 동일
 const Page = styled.div`
   background-color: #fcfafa;
   min-height: 100vh;

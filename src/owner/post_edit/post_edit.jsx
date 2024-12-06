@@ -1,51 +1,65 @@
-import React, { useState, useContext } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useContext, useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
 import { PostContext } from "../post_context/post_context";
 
-const PostWrite = () => {
+const PostEdit = () => {
+  const { postId } = useParams();
   const navigate = useNavigate();
-  const { addPost } = useContext(PostContext);
-  const [title, setTitle] = useState("");
-  const [deadline, setDeadline] = useState("");
-  const [period, setPeriod] = useState("AM");
-  const [hour, setHour] = useState("00");
-  const [minute, setMinute] = useState("00");
-  const [description, setDescription] = useState("");
-  const [images, setImages] = useState([]);
+  const { posts, updatePost } = useContext(PostContext);
+  const post = posts.find((p) => p.id.toString() === postId);
+
+  const isOpenRecruitment = post?.deadline === "상시모집";
+  const [title, setTitle] = useState(post ? post.title : "");
+  const [deadline, setDeadline] = useState(
+    isOpenRecruitment ? "" : post ? post.deadline.split(" ")[0] : ""
+  );
+  const [period, setPeriod] = useState(
+    isOpenRecruitment ? "AM" : post ? post.deadline.split(" ")[1] : "AM"
+  );
+  const [hour, setHour] = useState(
+    isOpenRecruitment
+      ? "00"
+      : post
+      ? post.deadline.split(" ")[2]?.split(":")[0]
+      : "00"
+  );
+  const [minute, setMinute] = useState(
+    isOpenRecruitment
+      ? "00"
+      : post
+      ? post.deadline.split(" ")[2]?.split(":")[1]
+      : "00"
+  );
+  const [description, setDescription] = useState(post ? post.description : "");
+  const [images, setImages] = useState(post ? post.images : []);
   const [showPopup, setShowPopup] = useState(false);
   const [popupMessage, setPopupMessage] = useState("");
-  const [isOpenRecruitment, setIsOpenRecruitment] = useState(false); // 상시모집 상태
+  const [isRecruitmentOpen, setIsRecruitmentOpen] = useState(isOpenRecruitment);
+
+  useEffect(() => {
+    if (!post) {
+      alert("포스트를 찾을 수 없습니다.");
+      navigate("/post-manage");
+    }
+  }, [post, navigate]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
-    if (!isOpenRecruitment && (!deadline || !hour || !minute)) {
-      setPopupMessage(
-        "마감일과 마감 시간을 입력하거나 상시모집을 선택해주세요."
-      );
-      setShowPopup(true);
-      return;
-    }
-
-    const newPost = {
-      id: Date.now(),
+    const updatedPost = {
+      ...post,
       title,
-      date: new Date().toLocaleDateString(),
-      deadline: isOpenRecruitment
+      deadline: isRecruitmentOpen
         ? "상시모집"
         : `${deadline} ${period} ${hour}:${minute}`,
       description,
       images,
-      isOpenRecruitment,
     };
-
-    addPost(newPost);
+    updatePost(updatedPost);
     navigate("/post-manage");
   };
 
   const handleDateChange = (e) => {
-    if (isOpenRecruitment) return; // 상시모집인 경우 변경 무시
     const selectedDate = new Date(e.target.value);
     const currentDate = new Date();
     currentDate.setHours(0, 0, 0, 0);
@@ -57,6 +71,12 @@ const PostWrite = () => {
     } else {
       setDeadline(e.target.value);
     }
+  };
+
+  const handleTimeChange = (e, type) => {
+    if (type === "hour") setHour(e.target.value);
+    if (type === "minute") setMinute(e.target.value);
+    if (type === "period") setPeriod(e.target.value);
   };
 
   const handleImageChange = (e) => {
@@ -82,7 +102,7 @@ const PostWrite = () => {
   return (
     <Container>
       <Header>
-        <Title>새로운 홍보글 작성</Title>
+        <Title>홍보글 수정</Title>
       </Header>
       <Form onSubmit={handleSubmit}>
         <Label>
@@ -104,10 +124,8 @@ const PostWrite = () => {
             <Label>마감일</Label>
             <InputField
               type="date"
-              value={isOpenRecruitment ? "" : deadline}
+              value={deadline}
               onChange={handleDateChange}
-              disabled={isOpenRecruitment} // 상시모집일 경우 비활성화
-              required={!isOpenRecruitment} // 상시모집이 아닌 경우 필수 입력
             />
           </div>
           <div>
@@ -115,16 +133,14 @@ const PostWrite = () => {
             <TimeSelectWrapper>
               <Select
                 value={period}
-                onChange={(e) => setPeriod(e.target.value)}
-                disabled={isOpenRecruitment} // 상시모집일 경우 비활성화
+                onChange={(e) => handleTimeChange(e, "period")}
               >
                 <option value="AM">오전</option>
                 <option value="PM">오후</option>
               </Select>
               <Select
                 value={hour}
-                onChange={(e) => setHour(e.target.value)}
-                disabled={isOpenRecruitment} // 상시모집일 경우 비활성화
+                onChange={(e) => handleTimeChange(e, "hour")}
               >
                 {hourOptions.map((h) => (
                   <option key={h} value={h.toString().padStart(2, "0")}>
@@ -134,8 +150,7 @@ const PostWrite = () => {
               </Select>
               <Select
                 value={minute}
-                onChange={(e) => setMinute(e.target.value)}
-                disabled={isOpenRecruitment} // 상시모집일 경우 비활성화
+                onChange={(e) => handleTimeChange(e, "minute")}
               >
                 {minuteOptions.map((m) => (
                   <option key={m} value={m.toString().padStart(2, "0")}>
@@ -145,13 +160,6 @@ const PostWrite = () => {
               </Select>
             </TimeSelectWrapper>
           </div>
-          <OpenRecruitmentButton
-            type="button"
-            onClick={() => setIsOpenRecruitment((prev) => !prev)}
-            active={isOpenRecruitment}
-          >
-            상시모집
-          </OpenRecruitmentButton>
         </DateTimeWrapper>
         <Label>
           본문 <CharCount>({description.length} / 3500)</CharCount>
@@ -175,18 +183,21 @@ const PostWrite = () => {
             onChange={handleImageChange}
           />
           <ImagePreviewContainer>
-            {images.map((image, index) => (
-              <ImagePreview
-                key={index}
-                style={{
-                  backgroundImage: `url(${URL.createObjectURL(image)})`,
-                }}
-              />
-            ))}
+            {images.map(
+              (image, index) =>
+                image instanceof File && (
+                  <ImagePreview
+                    key={index}
+                    style={{
+                      backgroundImage: `url(${URL.createObjectURL(image)})`,
+                    }}
+                  />
+                )
+            )}
           </ImagePreviewContainer>
         </ImageUploadWrapper>
         <ButtonContainer>
-          <ListButton type="submit">작성 완료</ListButton>
+          <ListButton type="submit">수정 완료</ListButton>
         </ButtonContainer>
       </Form>
       {showPopup && (
@@ -202,7 +213,7 @@ const PostWrite = () => {
   );
 };
 
-export default PostWrite;
+export default PostEdit;
 
 const Container = styled.div`
   width: 80%;
@@ -236,13 +247,7 @@ const InputField = styled.input`
   border: 1px solid #ddd;
   border-radius: 5px;
   width: 100%;
-  font-family: inherit; /* 다른 글씨체와 통일 */
-`;
-
-const CharCount = styled.span`
-  font-size: 12px;
-  color: #888;
-  margin-left: 8px;
+  font-family: inherit;
 `;
 
 const TextArea = styled.textarea`
@@ -252,8 +257,8 @@ const TextArea = styled.textarea`
   border-radius: 5px;
   width: 100%;
   height: 250px;
-  font-family: inherit; /* 다른 글씨체와 통일 */
-  resize: none; /* 크기 조절 비활성화 */
+  font-family: inherit;
+  resize: none;
 `;
 
 const Label = styled.label`
@@ -263,7 +268,7 @@ const Label = styled.label`
 
 const DateTimeWrapper = styled.div`
   display: flex;
-  gap: 30px; /* 마감일과 마감 시간 간격을 조금 띄움 */
+  gap: 30px;
 `;
 
 const TimeSelectWrapper = styled.div`
@@ -277,7 +282,7 @@ const Select = styled.select`
   border: 1px solid #ddd;
   border-radius: 5px;
   font-family: inherit;
-  height: 42px; /* 마감일 선택 박스와 동일한 높이 */
+  height: 42px;
 `;
 
 const ImageUploadWrapper = styled.div`
@@ -329,7 +334,6 @@ const ListButton = styled.button`
   }
 `;
 
-/* 팝업창 관련 스타일 */
 const Popup = styled.div`
   position: fixed;
   top: 50%;
@@ -362,17 +366,8 @@ const Overlay = styled.div`
   background: rgba(0, 0, 0, 0.5);
   z-index: 999;
 `;
-
-const OpenRecruitmentButton = styled.button`
-  margin-left: 15px;
-  background-color: ${(props) => (props.active ? "#B10D15" : "#F0F0F0")};
-  color: ${(props) => (props.active ? "white" : "black")};
-  border: 1px solid #ddd;
-  padding: 10px 20px;
-  border-radius: 5px;
-  cursor: pointer;
-
-  &:hover {
-    background-color: ${(props) => (props.active ? "#9C0C13" : "#E0E0E0")};
-  }
+const CharCount = styled.span`
+  font-size: 12px;
+  color: #888;
+  margin-left: 8px;
 `;

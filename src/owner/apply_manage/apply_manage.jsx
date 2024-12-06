@@ -11,6 +11,26 @@ const ApplyManage = () => {
     setForms(savedForms);
   }, []);
 
+  const deleteForm = (id) => {
+    const updatedForms = forms.filter((form) => form.id !== id);
+    localStorage.setItem("savedForms", JSON.stringify(updatedForms));
+    setForms(updatedForms);
+  };
+
+  const copyForm = (id) => {
+    const formToCopy = forms.find((form) => form.id === id);
+    if (formToCopy) {
+      const copiedForm = {
+        ...formToCopy,
+        id: Date.now().toString(),
+        title: `${formToCopy.title} (사본)`,
+      };
+      const updatedForms = [...forms, copiedForm];
+      localStorage.setItem("savedForms", JSON.stringify(updatedForms));
+      setForms(updatedForms);
+    }
+  };
+
   return (
     <Container>
       <Header>
@@ -24,23 +44,32 @@ const ApplyManage = () => {
         </ClubTags>
       </Header>
       <TabMenu>
-        <Tab active={false} onClick={() => navigate("/post-manage")}>
-          홍보글 작성
-        </Tab>
-        <Tab active={true}>지원폼 관리</Tab>
+        <Tab onClick={() => navigate("/post-manage")}>홍보글 작성</Tab>
+        <Tab active>지원폼 관리</Tab>
       </TabMenu>
       <ApplyButtonContainer>
         <ApplyButton onClick={() => navigate("/apply-form")}>
-          지원서 생성하기
+          새로운 지원폼 작성하기
         </ApplyButton>
       </ApplyButtonContainer>
       <FormList>
         {forms.map((form) => (
           <FormItem key={form.id}>
-            <FormTitle>{form.title}</FormTitle>
-            <FormDescription>
-              {form.description.slice(0, 50)}...
-            </FormDescription>
+            <FormContent onClick={() => navigate(`/apply-edit/${form.id}`)}>
+              <FormTitle>{form.title}</FormTitle>
+              <FormDescription>{form.description}</FormDescription>
+            </FormContent>
+            <MoreOptions>
+              <OptionButton onClick={() => deleteForm(form.id)}>
+                삭제하기
+              </OptionButton>
+              <OptionButton onClick={() => navigate(`/apply-edit/${form.id}`)}>
+                수정하기
+              </OptionButton>
+              <OptionButton onClick={() => copyForm(form.id)}>
+                사본 만들기
+              </OptionButton>
+            </MoreOptions>
           </FormItem>
         ))}
       </FormList>
@@ -50,6 +79,7 @@ const ApplyManage = () => {
 
 export default ApplyManage;
 
+// Styled Components
 const Container = styled.div`
   width: 80%;
   margin: 0 auto;
@@ -67,7 +97,7 @@ const Header = styled.div`
 const ClubLogo = styled.div`
   width: 128px;
   height: 128px;
-  background-color: #ddd;
+  background-color: #ddd; /* 임시 로고 */
   border-radius: 50%;
   margin-bottom: 15px;
 `;
@@ -114,7 +144,6 @@ const Tab = styled.div`
   color: ${(props) => (props.active ? "#B10D15" : "#888")};
   border-bottom: ${(props) => (props.active ? "2px solid #B10D15" : "none")};
 `;
-
 const ApplyButtonContainer = styled.div`
   display: flex;
   justify-content: flex-start;
@@ -151,22 +180,44 @@ const FormList = styled.div`
 `;
 
 const FormItem = styled.div`
-  width: 250px;
-  background-color: #f9f9f9;
-  padding: 20px;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  padding: 15px;
+  border: 1px solid #ddd;
   border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  background-color: #fff;
+`;
+
+const FormContent = styled.div`
+  flex: 1;
+  cursor: pointer;
 `;
 
 const FormTitle = styled.h3`
   font-size: 18px;
-  color: #b10d15;
-  margin-bottom: 10px;
+  margin-bottom: 5px;
 `;
 
 const FormDescription = styled.p`
   font-size: 14px;
   color: #555;
-  overflow: hidden;
-  text-overflow: ellipsis;
+`;
+
+const MoreOptions = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+`;
+
+const OptionButton = styled.button`
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 5px 10px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #eee;
+  }
 `;
