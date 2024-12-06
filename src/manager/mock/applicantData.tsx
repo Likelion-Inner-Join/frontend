@@ -114,7 +114,7 @@ export const applicantData: Applicant[] = [
     studentNumber: "20211506",
     formResult: "pass",
     meetingResult: "pass",
-    formScore: 80,
+    formScore: 90,
     meetingScore: 75,
     meetingStartTime: "2024-01-01 16:00",
     meetingEndTime: "2024-01-01 16:30",
