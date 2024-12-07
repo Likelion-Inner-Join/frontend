@@ -3,6 +3,8 @@ import styled from "styled-components";
 import InterviewerList from "../components/InterviewerList";
 import InformationBox from "../components/InformationBox";
 import ResultTable from "../components/ResultTable";
+import EvaluationHeader from "../components/EvaluationHeader";
+import MyButton from "../components/MyButton";
 import { applicantData } from "../mock/applicantData";
 import { positionData } from "../mock/positionData";
 import { useNavigate } from "react-router-dom";
@@ -60,10 +62,18 @@ const MeetEvaluate = () => {
         isEmail={false}
       />
       <Container>
-        <Title>
-          <h1>트라이파시 12기 단장단 / 기획단 모집합니다 ! ✨</h1>
-          <p>2021년 3월 8일 마감</p>
-        </Title>
+        <EvaluationHeader />
+        <Buttons>
+          <EvalButton>
+            <img src="/images/manager/check.svg" />
+            합불 부여하기
+          </EvalButton>
+          <MyButton
+            content="다음 단계"
+            buttonType="RED"
+            onClick={() => navigate("/meet-table")}
+          />
+        </Buttons>
         <InfoCaption>
           {passList.length + failList.length + restList.length}명 중{" "}
           {passList.length}명이 합격했어요 !
@@ -101,10 +111,8 @@ const MeetEvaluate = () => {
           restList={restList}
           passList={passList}
           failList={failList}
+          isColor={true}
         />
-        <NextButton onClick={() => navigate("/final-result")}>
-          다음 단계
-        </NextButton>
       </Container>
     </Wrapper>
   );
@@ -124,35 +132,47 @@ const Container = styled.div`
   flex-direction: column;
   width: 100%;
   height: 100vh;
-  padding: 0px 10%;
-  padding-top: 60px;
+  padding: 0px 5%;
   overflow-y: auto;
   background-color: #fff;
 `;
 
-const Title = styled.div`
+const Buttons = styled.div`
   display: flex;
-  justify-content: space-between;
-  margin-bottom: 47px;
+  width: 100%;
+  justify-content: flex-end;
+  gap: 24px;
+  margin-bottom: 15px;
+`;
 
-  h1 {
-    overflow: hidden;
-    color: #000;
-    text-overflow: ellipsis;
-    font-family: Pretendard;
-    font-size: 16px;
-    font-style: normal;
-    font-weight: 500;
-    letter-spacing: -0.32px;
+const EvalButton = styled.div`
+  display: inline-flex;
+  gap: 10px;
+  text-align: center;
+  padding: 12px 16px;
+  border-radius: 30px;
+  background-color: #fff;
+
+  color: #cc141d;
+  border: 1px solid #cc141d;
+  font-family: Pretendard;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 150%; /* 24px */
+  letter-spacing: -0.32px;
+  transition: background-color 0.3s ease-in-out;
+
+  &:hover {
+    cursor: pointer;
+    background-color: #f9f9f9;
   }
-  p {
-    color: #767676;
-    font-family: Pretendard;
-    font-size: 14px;
-    font-style: normal;
-    font-weight: 400;
-    line-height: 150%; /* 21px */
-    letter-spacing: -0.28px;
+
+  &:active {
+    cursor: pointer;
+    background-color: #f0f0f0;
+    color: #000;
+    border-color: #000;
   }
 `;
 
@@ -203,7 +223,7 @@ const InfoRatio = styled.div`
 `;
 
 const Style = styled.div`
-  margin-top: 80px;
+  margin-top: 70px;
 `;
 
 const NextButton = styled.div`

@@ -65,13 +65,12 @@ const Wrapper = styled.div`
 
 const InfoBox = styled.div`
   display: flex;
-  width: 630px;
   height: 60px;
   margin-top: 12px;
   padding: 18px 40px;
   align-items: center;
   justify-content: center;
-  gap: 48px;
+  gap: 36px;
   border-radius: 16px;
   background: #f9f9f9;
   font-family: Pretendard;
@@ -95,7 +94,7 @@ const Count = styled.div<{ state: string }>`
   font-style: normal;
   font-weight: 600;
   letter-spacing: -0.36px;
-  margin-left: 40px;
+  margin-left: 35px;
   margin-right: 3px;
 
   color: ${({ state }) => {

@@ -171,7 +171,7 @@ const ApplicantList = ({ data1, data2, isEmail }: ApplicantListProps) => {
                 {isEmail ? (
                   <AddButton>
                     <img
-                      src="/images/manager/directionBt.svg"
+                      src="/images/manager/mail.svg"
                       alt="수신자 추가 버튼"
                     />
                   </AddButton>
@@ -243,11 +243,10 @@ const EmailButton = styled.div`
   border-radius: 20px;
   border-radius: 24px;
   border: 1px solid #cc141d;
-  background: #fff;
   cursor: pointer;
 
   &:hover {
-    background: #fff3f3;
+    background-color: #fff;
   }
 
   p {

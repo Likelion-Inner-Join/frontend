@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import ApplicantList from "../components/ApplicantList";
+import InterviewerList from "../components/InterviewerList";
+import MyButton from "../components/MyButton";
 import { applicantData } from "../mock/applicantData";
 import { positionData } from "../mock/positionData";
+import { PromotionData } from "../mock/PromotionDetail";
 import { useNavigate } from "react-router-dom";
 interface Applicant {
   applicationId: number;
@@ -22,13 +25,37 @@ interface Applicant {
   meetingEndTime: string;
 }
 
+interface PromotionImage {
+  imageId: number;
+  imageUrl: string;
+}
+
+interface PromotionInfo {
+  postId: number;
+  clubId: number;
+  title: string;
+  createdAt: string;
+  startTime: string;
+  endTime: string;
+  body: string;
+  status: string;
+  type: string;
+  field: string;
+  fieldType: string;
+  image: PromotionImage[];
+}
+
 const WriteEmail = () => {
   const [passList, setPassList] = useState<Applicant[]>([]);
   const [failList, setFailList] = useState<Applicant[]>([]);
   const [receiverList, setReceiverList] = useState<Applicant[]>([]);
   const [selectedTab, setSelectedTab] = useState("");
-
+  const [promotionInfo, setPromotionInfo] = useState<PromotionInfo>();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    setPromotionInfo(PromotionData[0].result);
+  }, []);
 
   const selectBtnClick = (selected: string) => {
     setSelectedTab(selected);
@@ -41,6 +68,17 @@ const WriteEmail = () => {
     }
   };
 
+  function parseISODateTime(isoString: string) {
+    const date = new Date(isoString);
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    const hours = date.getHours();
+    const minutes = date.getMinutes();
+
+    return { year, month, day, hours, minutes };
+  }
+
   const addReceiver = (id: number) => {};
 
   const removeReceiver = (id: number) => {
@@ -50,12 +88,32 @@ const WriteEmail = () => {
   };
 
   useEffect(() => {
-    setPassList(
-      applicantData.filter((applicant) => applicant.formResult === "pass")
-    );
-    setFailList(
-      applicantData.filter((applicant) => applicant.formResult === "fail")
-    );
+    if (
+      promotionInfo?.status === "OPEN" ||
+      promotionInfo?.status === "INTERVIEW"
+    ) {
+      setPassList(
+        applicantData.filter((applicant) => applicant.formResult === "pass")
+      );
+      setFailList(
+        applicantData.filter((applicant) => applicant.formResult === "fail")
+      );
+    } else {
+      setPassList(
+        applicantData.filter(
+          (applicant) =>
+            applicant.formResult === "pass" &&
+            applicant.meetingResult === "pass"
+        )
+      );
+      setFailList(
+        applicantData.filter(
+          (applicant) =>
+            applicant.formResult === "fail" ||
+            applicant.meetingResult === "fail"
+        )
+      );
+    }
   }, []);
 
   useEffect(() => {
@@ -67,23 +125,47 @@ const WriteEmail = () => {
 
   return (
     <Wrapper>
-      <ApplicantList
-        data1={applicantData}
-        data2={positionData}
-        isEmail={true}
-      />
+      {promotionInfo?.status === "OPEN" ||
+      promotionInfo?.status === "INTERVIEW" ? (
+        <ApplicantList
+          data1={applicantData}
+          data2={positionData}
+          isEmail={true}
+        />
+      ) : (
+        <InterviewerList
+          data1={applicantData}
+          data2={positionData}
+          isEmail={true}
+        />
+      )}
       <Container>
-        <SendButton onClick={() => navigate("/email-send")}>
-          전송하기
-        </SendButton>
+        <Title>
+          <h1>{promotionInfo?.title}</h1>
+          <p>
+            {parseISODateTime(String(promotionInfo?.endTime)).year}년{" "}
+            {parseISODateTime(String(promotionInfo?.endTime)).month}월{" "}
+            {parseISODateTime(String(promotionInfo?.endTime)).day}일 마감
+          </p>
+        </Title>
+        <Caption>
+          <h1>이메일 보내기</h1>
+          <Buttons>
+            <MyButton
+              content="전송하기"
+              buttonType="RED"
+              onClick={() => navigate("/email-send")}
+            />
+          </Buttons>
+        </Caption>
         <Sender>
-          <Caption>관리자 메일 주소</Caption>
+          <EmailCaption>관리자 메일 주소</EmailCaption>
           <Input>
             <input></input>
           </Input>
         </Sender>
         <Receiver>
-          <Caption>받는 사람</Caption>
+          <EmailCaption>받는 사람</EmailCaption>
           <ReceiverContainer>
             <SelectTab>
               <SelectButton
@@ -108,7 +190,8 @@ const WriteEmail = () => {
             <ReceiverBox>
               {receiverList.map((receiver, index) => (
                 <ReceiverItem key={receiver.applicationId}>
-                  <p>{receiver.name}</p>
+                  {receiver.name}
+                  <p>{receiver.studentNumber}</p>
                   <img
                     src="/images/manager/cancel.svg"
                     alt="삭제"
@@ -119,12 +202,12 @@ const WriteEmail = () => {
             </ReceiverBox>
           </ReceiverContainer>
         </Receiver>
-        <Title>
-          <Caption>제목</Caption>{" "}
+        <EmailTitle>
+          <EmailCaption>제목</EmailCaption>{" "}
           <Input>
             <input></input>
           </Input>
-        </Title>
+        </EmailTitle>
         <Body>
           <textarea placeholder="메일 내용을 입력하세요" />
         </Body>
@@ -149,29 +232,57 @@ const Container = styled.div`
   flex-direction: column;
   width: 60%;
   height: 100vh;
-  align-items: center;
 `;
 
-const SendButton = styled.div`
-  align-self: flex-end;
+const Title = styled.div`
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 30px;
   margin-top: 50px;
-  margin-bottom: 20px;
-  padding: 12px 32px;
-  gap: 10px;
-  border-radius: 30px;
-  background: #b10d15;
-  color: #fff;
-  text-align: center;
-  font-family: Pretendard;
-  font-size: 14px;
-  font-style: normal;
-  font-weight: 600;
-  line-height: 150%; /* 21px */
-  letter-spacing: -0.28px;
 
-  &:hover {
-    cursor: pointer;
+  h1 {
+    overflow: hidden;
+    color: #000;
+    text-overflow: ellipsis;
+    font-family: Pretendard;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 500;
+    letter-spacing: -0.32px;
   }
+
+  p {
+    color: #767676;
+    font-family: Pretendard;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 150%; /* 21px */
+    letter-spacing: -0.28px;
+  }
+`;
+
+const Caption = styled.div`
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+
+  h1 {
+    color: #000;
+    font-family: Pretendard;
+    font-size: 24px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 150%; /* 36px */
+    letter-spacing: -0.48px;
+  }
+`;
+
+const Buttons = styled.div`
+  display: flex;
+  gap: 24px;
 `;
 
 const Sender = styled.div`
@@ -189,14 +300,14 @@ const Receiver = styled.div`
   margin-bottom: 10px;
 `;
 
-const Title = styled.div`
+const EmailTitle = styled.div`
   display: flex;
   width: 100%;
   align-items: center;
   margin-bottom: 10px;
 `;
 
-const Caption = styled.div`
+const EmailCaption = styled.div`
   width: 150px;
   color: #000;
   font-family: Pretendard;
@@ -256,12 +367,12 @@ const SelectButton = styled.div<{ selected: boolean }>`
   cursor: pointer;
 
   color: ${({ selected }) => {
-    if (selected) return "#88181C";
+    if (selected) return "#CC141D";
     return "#767676";
   }};
 
   border: ${({ selected }) => {
-    if (selected) return "1px solid #88181C";
+    if (selected) return "1px solid #CC141D";
     return "1px solid #ddd;";
   }};
 `;
@@ -289,7 +400,7 @@ const ReceiverItem = styled.div`
   gap: 6px;
   border-radius: 30px;
   background: #f9f9f9;
-  color: #767676;
+  color: #000;
   font-family: Pretendard;
   font-size: 16px;
   font-style: normal;
@@ -297,6 +408,10 @@ const ReceiverItem = styled.div`
   line-height: 150%; /* 24px */
   letter-spacing: -0.32px;
   white-space: nowrap;
+
+  p {
+    color: #424242;
+  }
 
   img {
     width: 12px;

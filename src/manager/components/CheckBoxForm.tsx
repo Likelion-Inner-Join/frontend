@@ -27,8 +27,8 @@ const CheckBoxForm = ({ quest }: FormProps) => {
                     answerItem.questionId === quest.questionid &&
                     answerItem.answer === item
                 )
-                  ? "/images/manager/checked.svg" // 선택된 경우 이미지 경로
-                  : "/images/manager/unchecked.svg" // 선택되지 않은 경우 이미지 경로
+                  ? "/images/manager/checked.svg"
+                  : "/images/manager/unchecked.svg"
               }
               alt={item}
               style={{ width: "100%", height: "100%" }}

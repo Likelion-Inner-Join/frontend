@@ -5,7 +5,7 @@ import { documentData } from "../mock/DocumentData";
 import TextForm from "./TextForm";
 import DropDownForm from "./DropDownForm";
 import CheckBoxForm from "./CheckBoxForm";
-
+import { answerData } from "../mock/DocumentData";
 interface Applicant {
   applicationId: number;
   userId: number;
@@ -39,9 +39,12 @@ interface DocViewProps {
 const DocView = ({ applicant }: DocViewProps) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [questionList, setQuestionList] = useState<Question[]>();
+  const [formResult, setFormResult] = useState(applicant?.formResult || "null");
+  const [currentScore, setCurrentScore] = useState(answerData);
+  const [totalScore, setTotalScore] = useState(applicant?.formScore);
 
   const closeDocument = () => {
-    searchParams.delete("apply"); // 'tab' 파라미터 삭제
+    searchParams.delete("apply");
     setSearchParams(searchParams);
   };
 
@@ -49,6 +52,8 @@ const DocView = ({ applicant }: DocViewProps) => {
     if (documentData.length > 0) {
       setQuestionList(documentData[0].questionList);
     }
+
+    console.log(questionList);
   }, []);
 
   const renderQuestionAnswer = (question: Question) => {
@@ -62,6 +67,34 @@ const DocView = ({ applicant }: DocViewProps) => {
       default:
         return <div>알 수 없는 질문 유형</div>;
     }
+  };
+
+  const handleFormResultChange = (newResult: string) => {
+    setFormResult(newResult);
+  };
+
+  const calculateTotalScore = (
+    scores: { questionId: number; score: number }[]
+  ) => {
+    return scores.reduce((sum, ans) => sum + ans.score, 0);
+  };
+
+  const getScoreByQuestionId = (questionId: number) => {
+    const answer = currentScore.answers.find(
+      (ans) => ans.questionId === questionId
+    );
+    return answer?.score || 0;
+  };
+
+  const handleScoreChange = (questionId: number, newScore: number) => {
+    setCurrentScore((prevState) => {
+      const updatedScores = prevState.answers.map((ans) =>
+        ans.questionId === questionId ? { ...ans, score: newScore } : ans
+      );
+      const newTotalScore = calculateTotalScore(updatedScores); // 총점 계산
+      setTotalScore(newTotalScore); // 총점 상태 업데이트
+      return { ...prevState, answers: updatedScores };
+    });
   };
 
   return (
@@ -83,6 +116,29 @@ const DocView = ({ applicant }: DocViewProps) => {
             {applicant?.email}
           </ApplicantInfo>
         </TitleContainer>
+        <ResultContainer>
+          <p>합불 결과</p>
+          <ResultTab>
+            <Result onClick={() => handleFormResultChange("null")}>
+              <CheckBox selected={formResult === "null"} />
+              <p>미평가</p>
+            </Result>
+            <Result onClick={() => handleFormResultChange("pass")}>
+              <CheckBox selected={formResult === "pass"} />
+              <p>합격</p>
+            </Result>
+            <Result onClick={() => handleFormResultChange("fail")}>
+              <CheckBox selected={formResult === "fail"} />
+              <p>불합격</p>
+            </Result>
+          </ResultTab>
+        </ResultContainer>
+        <ScoreContainer>
+          <p>지원서 채점</p>
+          <TotalScore>
+            총점 <p>{totalScore}</p>점
+          </TotalScore>
+        </ScoreContainer>
         <ContentContainer>
           {questionList?.map((quest, questionid) => (
             <Content>
@@ -90,6 +146,20 @@ const DocView = ({ applicant }: DocViewProps) => {
                 {quest.number}. &nbsp;{quest.question}
               </Question>
               <Answer>{renderQuestionAnswer(quest)}</Answer>
+              <Score>
+                <p>채점</p>
+                <input
+                  type="number"
+                  defaultValue={getScoreByQuestionId(quest.questionid)}
+                  onChange={(e) =>
+                    handleScoreChange(
+                      quest.questionid,
+                      parseInt(e.target.value, 10) || 0
+                    )
+                  }
+                />
+                <p>점</p>
+              </Score>
             </Content>
           ))}
         </ContentContainer>
@@ -130,7 +200,7 @@ const DocumentPopUp = styled.div`
   height: 90%;
   align-items: flex-start;
   padding: 20px 10px 20px 30px;
-  border-radius: 8px;
+  border-radius: 8px 8px 0px 0px;
   background: #fcfafa;
 `;
 
@@ -139,7 +209,8 @@ const TitleContainer = styled.div`
   padding: 0px 8px;
   flex-direction: column;
   align-items: flex-start;
-  gap: 20px;
+  gap: 10px;
+  margin-bottom: 20px;
 `;
 
 const Title = styled.div`
@@ -150,6 +221,113 @@ const Title = styled.div`
   font-weight: 700;
   line-height: normal;
   letter-spacing: -0.56px;
+`;
+
+const ResultContainer = styled.div`
+  display: flex;
+  margin-right: 10px;
+  padding: 0px 8px;
+  padding-bottom: 20px;
+  justify-content: space-between;
+  align-items: center;
+  align-self: stretch;
+  border-bottom: solid 1px #ddd;
+
+  p {
+    color: #000;
+    font-family: Pretendard;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: normal;
+    letter-spacing: -0.4px;
+  }
+`;
+
+const ResultTab = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 24px;
+`;
+
+const CheckBox = styled.div<{ selected: boolean }>`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #fff;
+  border-radius: 100px;
+
+  border: ${({ selected }) => {
+    if (selected) return "9px solid #CC141D";
+    return "1px solid #ddd";
+  }};
+
+  padding: ${({ selected }) => {
+    if (selected) return "3px";
+    return "11px";
+  }};
+
+  cursor: pointer;
+`;
+
+const Result = styled.div`
+  display: flex;
+  padding: 4px 0px;
+  align-items: center;
+  gap: 8px;
+
+  p {
+    color: var #222;
+    font-family: Pretendard;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 150%; /* 24px */
+  }
+`;
+
+const ScoreContainer = styled.div`
+  display: flex;
+  margin-right: 10px;
+  padding: 0px 8px;
+  padding-top: 20px;
+  justify-content: space-between;
+  align-items: center;
+  align-self: stretch;
+
+  p {
+    color: #000;
+    font-family: Pretendard;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: normal;
+    letter-spacing: -0.4px;
+  }
+`;
+
+const TotalScore = styled.div`
+  display: flex;
+  align-items: center;
+  color: #000;
+  font-family: Pretendard;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: normal;
+  letter-spacing: -0.32px;
+
+  p {
+    margin-left: 6px;
+    margin-right: 3px;
+    color: #606060;
+    font-family: Pretendard;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: normal;
+    letter-spacing: -0.4px;
+  }
 `;
 
 const ApplicantInfo = styled.div`
@@ -170,11 +348,11 @@ const ApplicantInfo = styled.div`
 
 const ContentContainer = styled.div`
   display: flex;
-  margin-top: 30px;
+  margin-top: 15px;
   padding-right: 20px;
   flex-direction: column;
   align-items: flex-start;
-  gap: 34px;
+  gap: 20px;
   align-self: stretch;
   overflow-y: auto;
   overflow-x: hidden;
@@ -205,8 +383,48 @@ const Question = styled.div`
   font-weight: 500;
   line-height: 120%;
 `;
+
 const Answer = styled.div`
   display: flex;
   gap: 16px;
   padding-top: 0px;
+`;
+
+const Score = styled.div`
+  display: flex;
+  width: 100%;
+  justify-content: flex-end;
+  align-items: center;
+  margin-right: 10px;
+
+  p {
+    color: #000;
+    font-family: Pretendard;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 120%; /* 16.8px */
+  }
+
+  input {
+    margin-left: 20px;
+    margin-right: 5px;
+    padding-left: 5px;
+    display: flex;
+    width: 50px;
+    height: 25px;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+    border-radius: 8px;
+    background: #f0f0f0;
+
+    color: #000;
+    text-align: center;
+    font-family: Pretendard;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 150%; /* 24px */
+  }
 `;

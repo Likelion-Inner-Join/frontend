@@ -1,8 +1,11 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { applicantData } from "../mock/applicantData";
 import { positionData } from "../mock/positionData";
+import { PromotionData } from "../mock/PromotionDetail";
 import InterviewerList from "../components/InterviewerList";
-import MeetTable from "../components/MeetTable";
+import ApplicantList from "../components/ApplicantList";
+import MyButton from "../components/MyButton";
+import EvaluationHeader from "../components/EvaluationHeader";
 import styled from "styled-components";
 import DatePicker from "react-datepicker";
 import { TimePicker } from "antd";
@@ -28,7 +31,26 @@ interface Applicant {
   meetingEndTime: string;
 }
 
-// 날짜별로 지원자를 그룹화한 타입 정의
+interface PromotionImage {
+  imageId: number;
+  imageUrl: string;
+}
+
+interface PromotionInfo {
+  postId: number;
+  clubId: number;
+  title: string;
+  createdAt: string;
+  startTime: string;
+  endTime: string;
+  body: string;
+  status: string;
+  type: string;
+  field: string;
+  fieldType: string;
+  image: PromotionImage[];
+}
+
 interface TimeGroup {
   [time: string]: Applicant[];
 }
@@ -42,15 +64,14 @@ const MeetArrange = () => {
   const getMeetingTimeData = (data: Applicant[]): MeetingScheduleData[] => {
     const groupedData = data.reduce<Record<string, Applicant[]>>(
       (acc, applicant) => {
-        const date = applicant.meetingStartTime.split(" ")[0]; // 날짜 추출
-        if (!acc[date]) acc[date] = []; // 날짜 키가 없으면 초기화
-        acc[date].push(applicant); // 지원자 추가
+        const date = applicant.meetingStartTime.split(" ")[0];
+        if (!acc[date]) acc[date] = [];
+        acc[date].push(applicant);
         return acc;
       },
       {}
     );
 
-    // 날짜별 시간 정렬 및 포맷 변환
     const sortedData = Object.entries(groupedData).map(([date, applicants]) => {
       const timeGroups = applicants
         .sort(
@@ -82,6 +103,11 @@ const MeetArrange = () => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedStartTime, setSelectedStartTime] = useState<string>("--");
   const [selectedEndTime, setSelectedEndTime] = useState<string>("--");
+  const [promotionInfo, setPromotionInfo] = useState<PromotionInfo>();
+
+  useEffect(() => {
+    setPromotionInfo(PromotionData[0].result);
+  }, []);
 
   const handleDropdownChange = (
     event: React.ChangeEvent<HTMLSelectElement>
@@ -103,24 +129,42 @@ const MeetArrange = () => {
 
   return (
     <Wrapper>
-      <InterviewerList
-        data1={applicantData}
-        data2={positionData}
-        isEmail={false}
-      />
+      {promotionInfo?.status === "OPEN" ? (
+        <ApplicantList
+          data1={applicantData}
+          data2={positionData}
+          isEmail={false}
+        />
+      ) : (
+        <InterviewerList
+          data1={applicantData}
+          data2={positionData}
+          isEmail={false}
+        />
+      )}
       <Container>
-        <Title>
-          <h1>트라이파시 12기 단장단 / 기획단 모집합니다 ! ✨</h1>
-          <p>2021년 3월 8일 마감</p>
-        </Title>
+        <HeaderWrapper>
+          {" "}
+          <EvaluationHeader />
+        </HeaderWrapper>
         <MeetTitle>
           <MeetCaptionContainer>
             <MeetCaption>면접시간 설정</MeetCaption>
             <p>해당 범위는 발송 이후 수정이 불가합니다.</p>
           </MeetCaptionContainer>
-          <NextButton onClick={() => navigate("/result")}>
-            <p>다음 단계</p>
-          </NextButton>
+          {promotionInfo?.status === "OPEN" ? (
+            <MyButton
+              content="다음 단계"
+              buttonType="RED"
+              onClick={() => navigate("/result")}
+            />
+          ) : (
+            <MyButton
+              content="다음 단계"
+              buttonType="RED"
+              onClick={() => navigate("/meet-eval")}
+            />
+          )}
         </MeetTitle>
         <MeetPeriodContainer>
           <MeetPeriod>
@@ -131,11 +175,11 @@ const MeetArrange = () => {
           </MeetPeriod>
         </MeetPeriodContainer>
         <TableConatiner>
-          <TableButtonBox>
+          <TableButtonBox isOpen={newMeetingIsOpen}>
             <img
               src="/images/manager/add.svg"
               alt="면접시간 추가하기"
-              onClick={() => setNewMeetingIsOpen(true)}
+              onClick={() => setNewMeetingIsOpen(!newMeetingIsOpen)}
             />
           </TableButtonBox>
           <MeetTablesContainer>
@@ -208,7 +252,11 @@ const MeetArrange = () => {
                   </MeetSettingDetail>
                 </MeetSettingDetailBox>
                 <MeetSettingButtons>
-                  <CancelButton>취소</CancelButton>
+                  <CancelButton
+                    onClick={() => setNewMeetingIsOpen(!newMeetingIsOpen)}
+                  >
+                    취소
+                  </CancelButton>
                   <MakeButton>면접시간 생성</MakeButton>
                 </MeetSettingButtons>
               </MeetSettingBox>
@@ -253,6 +301,9 @@ const MeetArrange = () => {
             </MeetTables>
           </MeetTablesContainer>
         </TableConatiner>
+        <RestConainer>
+          <p>미배치 인원</p>
+        </RestConainer>
       </Container>
     </Wrapper>
   );
@@ -270,38 +321,14 @@ const Container = styled.div`
   flex-direction: column;
   width: 100%;
   height: 100vh;
-  padding-left: 10%;
-  padding-top: 60px;
+  padding-left: 5%;
   overflow-y: auto;
   overflow-x: hidden;
   background-color: #fff;
 `;
 
-const Title = styled.div`
-  display: flex;
-  justify-content: space-between;
-  padding-right: 10%;
-  margin-bottom: 25px;
-
-  h1 {
-    overflow: hidden;
-    color: #000;
-    text-overflow: ellipsis;
-    font-family: Pretendard;
-    font-size: 16px;
-    font-style: normal;
-    font-weight: 500;
-    letter-spacing: -0.32px;
-  }
-  p {
-    color: #767676;
-    font-family: Pretendard;
-    font-size: 14px;
-    font-style: normal;
-    font-weight: 400;
-    line-height: 150%; /* 21px */
-    letter-spacing: -0.28px;
-  }
+const HeaderWrapper = styled.div`
+  padding-right: 7.6%;
 `;
 
 const MeetTitle = styled.div`
@@ -309,7 +336,7 @@ const MeetTitle = styled.div`
   width: 100%;
   justify-content: space-between;
   align-items: center;
-  padding-right: 10%;
+  padding-right: 7.7%;
   margin-bottom: 10px;
 `;
 
@@ -317,27 +344,6 @@ const MeetCaptionContainer = styled.div`
   display: flex;
   align-items: center;
   gap: 11px;
-`;
-
-const NextButton = styled.div`
-  display: flex;
-  text-align: center;
-  width: 120px;
-  padding: 12px 30px;
-  border-radius: 30px;
-  background-color: #b10d15;
-  color: #fff;
-  font-family: Pretendard;
-  font-size: 16px;
-  font-style: normal;
-  font-weight: 600;
-  line-height: 150%; /* 24px */
-  letter-spacing: -0.32px;
-  right: 5%;
-
-  &:hover {
-    cursor: pointer;
-  }
 `;
 
 const MeetCaption = styled.div`
@@ -375,10 +381,10 @@ const TableConatiner = styled.div`
   display: inline-flex;
   width: 100%;
   flex-direction: column;
-  margin-top: 60px;
+  margin-top: 40px;
 `;
 
-const TableButtonBox = styled.div`
+const TableButtonBox = styled.div<{ isOpen: boolean }>`
   display: inline-flex;
   align-items: center;
   gap: 24px;
@@ -388,6 +394,8 @@ const TableButtonBox = styled.div`
     width: 30px;
     height: 30px;
     cursor: pointer;
+    transition: transform 0.3s ease-in-out;
+    transform: ${({ isOpen }) => (isOpen ? "rotate(45deg)" : "rotate(0deg)")};
   }
 `;
 
@@ -452,6 +460,7 @@ const TableTimeContainer = styled.div`
 
 const TableTimeBox = styled.div`
   display: flex;
+  min-width: 300px;
   justify-content: flex-start;
   align-items: center;
   gap: 30px;
@@ -647,6 +656,7 @@ const CancelButton = styled.div`
   font-weight: 600;
   line-height: 150%; /* 24px */
   letter-spacing: -0.32px;
+  cursor: pointer;
 `;
 
 const MakeButton = styled.div`
@@ -665,6 +675,23 @@ const MakeButton = styled.div`
   font-weight: 600;
   line-height: 150%; /* 24px */
   letter-spacing: -0.32px;
+  cursor: pointer;
+`;
+
+const RestConainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  margin-top: 50px;
+  gap: 15px;
+
+  p {
+    color: #000;
+    font-family: Pretendard;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 130%; /* 26px */
+  }
 `;
 
 const CustomInput = styled.input`
