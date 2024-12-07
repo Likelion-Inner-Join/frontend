@@ -319,7 +319,6 @@ const EmailButton = styled.div`
   border-radius: 20px;
   border-radius: 24px;
   border: 1px solid #cc141d;
-  background: #fff;
   cursor: pointer;
 
   &:hover {

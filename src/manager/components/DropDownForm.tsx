@@ -49,12 +49,12 @@ const CheckBox = styled.div<{ selected: boolean }>`
   border-radius: 100px;
 
   border: ${({ selected }) => {
-    if (selected) return "8px solid #CC141D";
+    if (selected) return "9px solid #CC141D";
     return "1px solid #ddd";
   }};
 
   padding: ${({ selected }) => {
-    if (selected) return "4px";
+    if (selected) return "3px";
     return "11px";
   }};
 `;

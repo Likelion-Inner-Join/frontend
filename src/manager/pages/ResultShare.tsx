@@ -3,8 +3,11 @@ import styled from "styled-components";
 import ApplicantList from "../components/ApplicantList";
 import InformationBox from "../components/InformationBox";
 import ResultTable from "../components/ResultTable";
+import EvaluationHeader from "../components/EvaluationHeader";
+import MyButton from "../components/MyButton";
 import { applicantData } from "../mock/applicantData";
 import { positionData } from "../mock/positionData";
+import { PromotionData } from "../mock/PromotionDetail";
 import { useNavigate } from "react-router-dom";
 interface Applicant {
   applicationId: number;
@@ -24,16 +27,47 @@ interface Applicant {
   meetingEndTime: string;
 }
 
+interface PromotionImage {
+  imageId: number;
+  imageUrl: string;
+}
+
+interface PromotionInfo {
+  postId: number;
+  clubId: number;
+  title: string;
+  createdAt: string;
+  startTime: string;
+  endTime: string;
+  body: string;
+  status: string;
+  type: string;
+  field: string;
+  fieldType: string;
+  image: PromotionImage[];
+}
+
 const ResultShare = () => {
   const [restList, setRestList] = useState<Applicant[]>([]);
   const [passList, setPassList] = useState<Applicant[]>([]);
   const [failList, setFailList] = useState<Applicant[]>([]);
   const [isShared, setIsShared] = useState(false);
+  const [promotionInfo, setPromotionInfo] = useState<PromotionInfo>();
+  const [resultType, setResultType] = useState<String>("");
   const navigate = useNavigate();
 
   const shareButtonClick = () => {
     if (!isShared) setIsShared(!isShared);
   };
+
+  useEffect(() => {
+    setPromotionInfo(PromotionData[0].result);
+  }, []);
+
+  useEffect(() => {
+    if (promotionInfo?.type === "FORM") setResultType("최종");
+    if (promotionInfo?.type === "MEET") setResultType("서류");
+  }, [promotionInfo]);
 
   useEffect(() => {
     setPassList(
@@ -55,27 +89,28 @@ const ResultShare = () => {
         isEmail={false}
       />
       <Container>
-        <Title>
-          <h1>트라이파시 12기 단장단 / 기획단 모집합니다 ! ✨</h1>
-          <p>2021년 3월 8일 마감</p>
-        </Title>
+        <EvaluationHeader />
         {isShared ? (
-          <Caption>서류 결과가 지원자에게 공유되었습니다!</Caption>
+          <Caption>{resultType} 결과가 지원자에게 공유되었습니다!</Caption>
         ) : (
-          <Caption>서류 결과를 지원자에게 공유하시겠습니까?</Caption>
+          <Caption>{resultType} 결과를 지원자에게 공유하시겠습니까?</Caption>
         )}
         <ButtonBox>
           <ShareButton onClick={shareButtonClick} isShared={isShared}>
             공유하기
           </ShareButton>
           {isShared ? (
-            <EmailButton onClick={() => navigate("/email-write")}>
-              이메일로 알리기
-            </EmailButton>
+            <MyButton
+              content="이메일로 알리기"
+              buttonType="WHITE"
+              onClick={() => navigate("/email-write")}
+            />
           ) : (
-            <FixButton onClick={() => navigate("/doc-eval")}>
-              수정하기
-            </FixButton>
+            <MyButton
+              content="수정하기"
+              buttonType="WHITE"
+              onClick={() => navigate("/doc-eval")}
+            />
           )}
         </ButtonBox>
         <InformationBox
@@ -88,10 +123,8 @@ const ResultShare = () => {
           restList={restList}
           passList={passList}
           failList={failList}
+          isColor={false}
         />
-        <NextButton onClick={() => navigate("/meet-eval")}>
-          다음 단계
-        </NextButton>
       </Container>
     </Wrapper>
   );
@@ -111,39 +144,13 @@ const Container = styled.div`
   flex-direction: column;
   width: 100%;
   height: 100vh;
-  padding: 0px 10%;
-  padding-top: 60px;
+  padding: 0px 5%;
   overflow-y: auto;
   background-color: #fff;
 `;
 
-const Title = styled.div`
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 47px;
-
-  h1 {
-    overflow: hidden;
-    color: #000;
-    text-overflow: ellipsis;
-    font-family: Pretendard;
-    font-size: 16px;
-    font-style: normal;
-    font-weight: 500;
-    letter-spacing: -0.32px;
-  }
-  p {
-    color: #767676;
-    font-family: Pretendard;
-    font-size: 14px;
-    font-style: normal;
-    font-weight: 400;
-    line-height: 150%; /* 21px */
-    letter-spacing: -0.28px;
-  }
-`;
-
 const Caption = styled.div`
+  margin-top: 80px;
   color: #000;
   text-align: center;
   font-family: Pretendard;
@@ -174,55 +181,36 @@ const ShareButton = styled.div<{ isShared: boolean }>`
   border-radius: 30px;
   text-align: center;
   color: #fff;
+  transition: background-color 0.3s ease-in-out;
 
   margin-left: ${({ isShared }) => {
-    if (isShared) return "30px";
+    if (isShared) return "44px";
     return "0px";
   }};
 
   background-color: ${({ isShared }) => {
-    if (isShared) return "#ddd";
-    return "#b10d15";
+    if (isShared) return "#C0C0C0";
+    return "#CC141D";
   }};
 
   &:hover {
     cursor: ${({ isShared }) => {
       if (!isShared) return "pointer";
     }};
+    background-color: ${({ isShared }) => {
+      if (!isShared) return "#B10D15";
+    }};
   }
-`;
 
-const FixButton = styled.div`
-  width: 120px;
-  padding: 12px 30px;
-  border-radius: 30px;
-  border: 1px solid #b10d15;
-  background-color: #fff;
-  text-align: center;
-  color: #b10d15;
-
-  &:hover {
-    cursor: pointer;
-  }
-`;
-
-const EmailButton = styled.div`
-  width: 150px;
-  padding: 12px 30px;
-  border-radius: 30px;
-  border: 1px solid #b10d15;
-  background-color: #fff;
-  font-size: 14px;
-  text-align: center;
-  color: #b10d15;
-
-  &:hover {
-    cursor: pointer;
+  &:active {
+    background-color: ${({ isShared }) => {
+      if (!isShared) return "#000";
+    }};
   }
 `;
 
 const Style = styled.div`
-  margin-top: 56px;
+  margin-top: 30px;
 `;
 
 const NextButton = styled.div`

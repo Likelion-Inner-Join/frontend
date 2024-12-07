@@ -1,21 +1,70 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import ApplicantList from "../components/ApplicantList";
+import InterviewerList from "../components/InterviewerList";
+import MyButton from "../components/MyButton";
 import { applicantData } from "../mock/applicantData";
 import { positionData } from "../mock/positionData";
+import { PromotionData } from "../mock/PromotionDetail";
 import { useNavigate } from "react-router-dom";
+
+interface PromotionImage {
+  imageId: number;
+  imageUrl: string;
+}
+
+interface PromotionInfo {
+  postId: number;
+  clubId: number;
+  title: string;
+  createdAt: string;
+  startTime: string;
+  endTime: string;
+  body: string;
+  status: string;
+  type: string;
+  field: string;
+  fieldType: string;
+  image: PromotionImage[];
+}
 
 const SendEmail = () => {
   const [isSended, setIsSended] = useState(true);
+  const [redirectPage, setRedirectPage] = useState("");
+  const [promotionInfo, setPromotionInfo] = useState<PromotionInfo>();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    setPromotionInfo(PromotionData[0].result);
+  }, []);
+
+  useEffect(() => {
+    if (promotionInfo?.status === "OPEN") setRedirectPage("/meet-table");
+    else if (promotionInfo?.status === "INTERVIEW") setRedirectPage("/result");
+    else if (promotionInfo?.status === "FORM_REVIEW")
+      setRedirectPage("/meet-table");
+    else if (promotionInfo?.status === "INTERVIEW_REVIEW")
+      setRedirectPage("/final-result");
+    else if (promotionInfo?.status === "CLOSED")
+      setRedirectPage("/post-manage");
+  }, [promotionInfo]);
 
   return (
     <Wrapper>
-      <ApplicantList
-        data1={applicantData}
-        data2={positionData}
-        isEmail={true}
-      />
+      {promotionInfo?.status === "OPEN" ||
+      promotionInfo?.status === "INTERVIEW" ? (
+        <ApplicantList
+          data1={applicantData}
+          data2={positionData}
+          isEmail={true}
+        />
+      ) : (
+        <InterviewerList
+          data1={applicantData}
+          data2={positionData}
+          isEmail={true}
+        />
+      )}
       <Container>
         <img src="/images/manager/success.svg" />
         {isSended ? (
@@ -23,9 +72,19 @@ const SendEmail = () => {
         ) : (
           <Caption>메일을 전송하고 있습니다</Caption>
         )}
-        <FinishButton onClick={() => navigate("/post-manage")}>
-          평가 종료
-        </FinishButton>
+        {promotionInfo?.status === "CLOSED" ? (
+          <MyButton
+            content="평가종료"
+            buttonType="RED"
+            onClick={() => navigate("/post-manage")}
+          />
+        ) : (
+          <MyButton
+            content="돌아가기"
+            buttonType="RED"
+            onClick={() => navigate(redirectPage)}
+          />
+        )}
       </Container>
     </Wrapper>
   );

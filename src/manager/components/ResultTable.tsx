@@ -23,14 +23,22 @@ interface ResultTableProps {
   restList: Applicant[];
   passList: Applicant[];
   failList: Applicant[];
+  isColor: boolean;
 }
 
-const ResultTable = ({ restList, passList, failList }: ResultTableProps) => {
+const ResultTable = ({
+  restList,
+  passList,
+  failList,
+  isColor,
+}: ResultTableProps) => {
   return (
     <Wrapper>
       {restList.length > 0 && (
         <div>
-          <TableTitle state="null">미평가</TableTitle>
+          <TableTitle state="null" isColor={isColor}>
+            미평가
+          </TableTitle>
           <TableContainer>
             {restList?.map((applicant, index) => (
               <TableItem
@@ -38,14 +46,17 @@ const ResultTable = ({ restList, passList, failList }: ResultTableProps) => {
                 loc={index}
                 length={restList.length}
               >
-                {applicant.name}
+                {applicant.name} <br />
+                {applicant.studentNumber}
               </TableItem>
             ))}
           </TableContainer>
         </div>
       )}
       <div>
-        <TableTitle state="pass">합격</TableTitle>
+        <TableTitle state="pass" isColor={isColor}>
+          합격
+        </TableTitle>
         <TableContainer>
           {passList?.map((applicant, index) => (
             <TableItem
@@ -53,13 +64,16 @@ const ResultTable = ({ restList, passList, failList }: ResultTableProps) => {
               loc={index}
               length={passList.length}
             >
-              {applicant.name}
+              {applicant.name} <br />
+              {applicant.studentNumber}
             </TableItem>
           ))}
         </TableContainer>
       </div>
       <div>
-        <TableTitle state="fail">불합격</TableTitle>
+        <TableTitle state="fail" isColor={isColor}>
+          불합격
+        </TableTitle>
         <TableContainer>
           {failList?.map((applicant, index) => (
             <TableItem
@@ -67,7 +81,8 @@ const ResultTable = ({ restList, passList, failList }: ResultTableProps) => {
               loc={index}
               length={failList.length}
             >
-              {applicant.name}
+              {applicant.name} <br />
+              {applicant.studentNumber}
             </TableItem>
           ))}
         </TableContainer>
@@ -85,39 +100,43 @@ const Wrapper = styled.div`
   font-family: Pretendard;
 `;
 
-const TableTitle = styled.div<{ state: string }>`
+const TableTitle = styled.div<{ state: string; isColor: boolean }>`
   text-align: center;
-  width: 200px;
+  width: 250px;
   padding: 6px 12px;
   border-radius: 10px 10px 0px 0px;
-  font-size: 18px;
+  font-size: 16px;
   font-style: normal;
-  font-weight: 500;
+  font-weight: 600;
   line-height: 150%; /* 27px */
   letter-spacing: -0.36px;
 
-  background-color: ${({ state }) => {
+  background-color: ${({ state, isColor }) => {
+    if (!isColor) return "#F9F9F9";
     if (state === "pass") return "#F3FFFB";
-    if (state === "fail") return "#fff3f3;";
+    if (state === "fail") return "#fff3f3;";  
     return "#F9F9F9";
   }};
 
-  color: ${({ state }) => {
+  color: ${({ state, isColor }) => {
+    if (!isColor) return "#000";
     if (state === "pass") return "#188865";
-    if (state === "fail") return "#88181C";
+    if (state === "fail") return "#B10D15";
     return "#555";
   }};
 
   border: ${({ state }) => {
-    if (state === "pass") return "1px solid #188865";
-    if (state === "fail") return "1px solid #88181C";
-    return "1px solid #555";
+    if (state === "pass") return "1px solid #EBFAF0";
+    if (state === "fail") return "1px solid #FBEEEE";
+    return "1px solid #f0f0f0";
   }};
+
+  border-bottom: none;
 `;
 
 const TableContainer = styled.div`
   display: flex;
-  width: 200px;
+  width: 250px;
   padding: 12px 0px;
   padding-left: 16px;
   justify-content: flex-start;
@@ -127,12 +146,14 @@ const TableContainer = styled.div`
   flex-wrap: wrap;
   border-radius: 0px 0px 20px 20px;
   border: 1px solid #f0f0f0;
+  border-top: none;
 `;
 
 const TableItem = styled.div<{ loc: number; length: number }>`
   display: flex;
   padding: 16px 24px;
   align-items: center;
+  text-align: center;
   font-size: 14px;
   font-style: normal;
   font-weight: 500;
