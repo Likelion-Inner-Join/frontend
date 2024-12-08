@@ -1,12 +1,14 @@
+import { useNavigate } from "react-router-dom";
+import { POST } from "../../common/api/axios";
 import { Form, TFormFieldProps } from "../../common/ui";
-import { validateClubName, validatePassword } from "../utils/utils";
+import { validatePassword } from "../utils/utils";
+import { useAuth } from "../context/auth-context";
 
 const fields: TFormFieldProps[] = [
   {
-    label: "동아리명",
+    label: "아이디",
     value: "",
     type: "text",
-    validate: validateClubName,
   },
   {
     label: "비밀번호",
@@ -17,8 +19,27 @@ const fields: TFormFieldProps[] = [
 ];
 
 export const ManagerLoginForm = () => {
-  const handleFormSubmit = (values: Record<string, string | number>) => {
-    console.log(values);
+  const navigate = useNavigate();
+  const { login } = useAuth();
+
+  const handleFormSubmit = async (values: Record<string, string | number>) => {
+    try {
+      const response = await POST("club/login", {
+        id: values["아이디"],
+        password: values["비밀번호"],
+      });
+      if (response.isSuccess) {
+        alert("로그인 성공");
+
+        login("club");
+
+        navigate("/");
+      } else {
+        console.log(response.errorMessage);
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (

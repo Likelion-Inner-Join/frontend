@@ -4,11 +4,10 @@ import {
   validateClubCategoty,
   validateClubName,
   validateEmail,
-  validateName,
   validatePassword,
-  validateStudentId,
 } from "../utils/utils";
 import { useNavigate } from "react-router-dom";
+import { POST } from "../../common/api/axios";
 
 const clubCategories = [
   { label: "봉사분과", value: 1 },
@@ -36,10 +35,15 @@ const fields: TFormFieldProps[] = [
     section: "동아리 정보",
   },
   {
-    label: "학번",
+    label: "학교",
     value: "",
     type: "text",
-    validate: validateStudentId,
+    section: "동아리 정보",
+  },
+  {
+    label: "아이디",
+    value: "",
+    type: "text",
     section: "관리자 정보",
   },
   {
@@ -47,13 +51,6 @@ const fields: TFormFieldProps[] = [
     value: "",
     type: "email",
     validate: validateEmail,
-    section: "관리자 정보",
-  },
-  {
-    label: "이름",
-    value: "",
-    type: "text",
-    validate: validateName,
     section: "관리자 정보",
   },
   {
@@ -71,21 +68,40 @@ export const ManagerSignupForm = () => {
   const [formData, setFormData] = useState<Record<string, string | number>>({
     동아리명: "",
     "동아리 분류": "",
-    학번: "",
+    학교: "",
+    아이디: "",
     이메일: "",
-    이름: "",
     비밀번호: "",
   });
 
-  const handleFormSubmit = (values: Record<string, string | number>) => {
+  const handleFormSubmit = async (values: Record<string, string | number>) => {
     const isStep1 = step === 1;
     if (isStep1) {
       setFormData((prevData) => ({ ...prevData, ...values }));
       setStep(2);
     } else {
       const completeData = { ...formData, ...values };
-      console.log(completeData);
-      navigate("/verification");
+
+      try {
+        const response = await POST("club/signup", {
+          name: completeData["이름"],
+          id: completeData["아이디"],
+          password: completeData["비밀번호"],
+          email: completeData["이메일"],
+          school: completeData["학교"],
+          category: completeData["동아리 분류"],
+        });
+        if (response.isSuccess) {
+          alert("회원가입 성공");
+          navigate("/login");
+        } else {
+          console.log(response.errorMessage);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+
+      navigate("/login");
     }
   };
 

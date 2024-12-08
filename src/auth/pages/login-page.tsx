@@ -2,8 +2,13 @@ import { useState } from "react";
 import { styled } from "styled-components";
 import { ApplicantLoginForm, ManagerLoginForm } from "../components";
 import { Tab } from "../../common/ui";
+import { useAuth } from "../context/auth-context";
 
 export const LoginPage = () => {
+  const { authState } = useAuth();
+
+  console.log(authState);
+
   const [activeTab, setActiveTab] = useState<string>("manager");
 
   const tabs = [
