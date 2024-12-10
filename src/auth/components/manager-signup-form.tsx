@@ -89,13 +89,16 @@ export const ManagerSignupForm = () => {
           password: completeData["비밀번호"],
           email: completeData["이메일"],
           school: completeData["학교"],
-          category: completeData["동아리 분류"],
+          category:
+            completeData["동아리 분류"] /* FIXME: 동아리 분류 어떻게 할 건지 */,
         });
         if (response.isSuccess) {
           alert("회원가입 성공");
           navigate("/login");
         } else {
-          console.log(response.errorMessage);
+          console.log(
+            response.errorMessage
+          ); /* FIXME: FormError로 표시할지, alert 만들지? */
         }
       } catch (error) {
         console.log(error);

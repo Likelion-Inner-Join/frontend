@@ -31,7 +31,7 @@ export const ManagerLoginForm = () => {
       if (response.isSuccess) {
         alert("로그인 성공");
 
-        login("club");
+        login("club", { name: "" });
 
         navigate("/");
       } else {

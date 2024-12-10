@@ -2,20 +2,28 @@ import { createContext, useState, useContext, ReactNode } from "react";
 
 type UserRole = "club" | "user" | null;
 
+type User = {
+  name: string;
+};
+
 type TAuthState = {
   isAuthenticated: boolean;
   role: UserRole;
+  user: User;
 };
 
 type TAuthContextType = {
   authState: TAuthState;
-  login: (role: UserRole) => void;
+  login: (role: UserRole, user: User) => void;
   logout: () => void;
 };
 
 const initialAuthState: TAuthState = {
   isAuthenticated: false,
   role: null,
+  user: {
+    name: "",
+  },
 };
 
 const AuthContext = createContext<TAuthContextType | null>(null);
@@ -23,8 +31,8 @@ const AuthContext = createContext<TAuthContextType | null>(null);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [authState, setAuthState] = useState<TAuthState>(initialAuthState);
 
-  const login = (role: UserRole) => {
-    setAuthState({ isAuthenticated: true, role });
+  const login = (role: UserRole, user: User) => {
+    setAuthState({ isAuthenticated: true, role, user });
   };
 
   const logout = () => {
