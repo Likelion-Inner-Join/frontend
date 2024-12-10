@@ -56,7 +56,7 @@ const StyledButton = styled.button<{ size: string; $variant: string }>`
       ? "18px"
       : size === "full"
       ? "18px"
-      : "14px"};
+      : "16px"};
   font-weight: bold;
   transition: background-color 0.3s ease;
   opacity: ${({ disabled }) => (disabled ? 0.6 : 1)};

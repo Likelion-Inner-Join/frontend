@@ -13,6 +13,4 @@ export const ApplicantPage = ({ children }: PropsWithChildren<{}>) => {
 
 const Page = styled.div``;
 
-const Content = styled.div`
-  margin: 5%;
-`;
+const Content = styled.div``;

@@ -1,6 +1,6 @@
 export const baseTheme = {
   typography: {
-    fontFamily: "'Roboto', sans-serif",
+    fontFamily: "'Pretendard', sans-serif",
     fontSize: "16px",
   },
   color: {

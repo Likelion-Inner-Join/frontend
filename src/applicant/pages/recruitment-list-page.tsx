@@ -1,139 +1,257 @@
-import { useState } from "react";
-import { styled, keyframes } from "styled-components";
-import { Carousel, Tab } from "../../common/ui";
-import { RecruitmentCard } from "../components";
-import { recruitmentCardListData } from "../mock/recruitment-card-list-data";
+import styled from "styled-components";
+
+import { RecruitmentCard, CategoryFilter, SearchBar } from "../components";
 import { ApplicantPage } from "../page";
+import { DropdownFilter } from "../components/dropdown-filter";
 
 export const RecruitmentListPage = () => {
-  const [activeTab, setActiveTab] = useState<string>("전체");
-  const [filteredCards, setFilteredCards] = useState(recruitmentCardListData);
-  const [isAnimating, setIsAnimating] = useState(false);
-
-  const tabs = [
-    { label: "전체", value: "전체" },
-    { label: "봉사분과", value: "봉사분과" },
-    { label: "사회교양분과", value: "사회교양분과" },
-    { label: "연행예술분과", value: "연행예술분과" },
-    { label: "종교분과", value: "종교분과" },
-    { label: "체육분과", value: "체육분과" },
-    { label: "학술분과", value: "학술분과" },
-  ];
-
-  const handleTabChange = (tab: string) => {
-    setIsAnimating(true);
-    setTimeout(() => {
-      setActiveTab(tab);
-      setFilteredCards(
-        tab === "전체"
-          ? recruitmentCardListData
-          : recruitmentCardListData.filter((card) => card.category === tab)
-      );
-      setIsAnimating(false);
-    }, 200);
-  };
-
   return (
     <ApplicantPage>
-      <CarouselTitle>
-        📌 모집 마감이 얼마 남지 않았어요! 바로 지원해볼까요?
-      </CarouselTitle>
-      <Carousel />
-
       <Container>
-        <TabContainer className="tab-container">
-          <Tab tabs={tabs} activeTab={activeTab} onTabClick={handleTabChange} />
-        </TabContainer>
-        <CardListContainer isAnimating={isAnimating}>
-          {filteredCards.map((card) => (
-            <RecruitmentCard
-              key={card.clubId}
-              clubId={card.clubId}
-              imageUrl={card.imageUrl}
-              status={card.status}
-              recruitmentStartDate={card.recruitmentStartDate}
-              recruitmentEndDate={card.recruitmentEndDate}
-              category={card.category}
-              name={card.name}
-              tags={card.tags}
-            />
-          ))}
-        </CardListContainer>
+        <LeftSidebar>
+          <CategoryFilter
+            title="동아리·소모임"
+            categories={[
+              { id: "all", label: "전체" },
+              { id: "volunteer", label: "봉사·사회" },
+              { id: "art", label: "예술·공연" },
+              { id: "religion", label: "종교" },
+              { id: "sports", label: "체육" },
+              { id: "friendship", label: "친목" },
+              { id: "it", label: "IT" },
+              { id: "others", label: "기타" },
+            ]}
+          />
+          <CategoryFilter
+            title="학회"
+            categories={[
+              { id: "all", label: "전체" },
+              { id: "business", label: "경영" },
+              { id: "engineering", label: "공학" },
+              { id: "social-science", label: "사회과학" },
+              { id: "humanities", label: "인문학" },
+              { id: "languages", label: "언어" },
+              { id: "arts", label: "예술" },
+              { id: "natural-science", label: "자연과학" },
+              { id: "others", label: "기타" },
+            ]}
+          />
+        </LeftSidebar>
+
+        <RightContent>
+          <>
+            <FilterBar>
+              <div style={{ display: "flex", alignItems: "center" }}>
+                <DropdownFilter
+                  label="모집상태"
+                  options={[
+                    { id: "all", label: "전체" },
+                    { id: "open", label: "모집 중" },
+                    { id: "closed", label: "모집 마감" },
+                  ]}
+                />
+                <DropdownFilter
+                  label="평가"
+                  options={[
+                    { id: "all", label: "전체" },
+                    { id: "form-only", label: "서류평가만" },
+                    { id: "form-and-meeting", label: "서류 및 면접" },
+                    { id: "meeting-only", label: "면접만" },
+                  ]}
+                />
+              </div>
+              <SearchBar />
+            </FilterBar>
+            <CardList>
+              <RecruitmentCard
+                id="1"
+                image="https://via.placeholder.com/360x168"
+                category="IT분과"
+                evaluation="FORM_ONLY"
+                title="떠나자! 바다로!"
+                recruitmentStatus={{
+                  status: "모집중",
+                  dDay: "1",
+                }}
+                tags={["IT", "프론트엔드", "백엔드"]}
+              />
+              <RecruitmentCard
+                id="2"
+                image="https://via.placeholder.com/360x168"
+                category="디자인분과"
+                evaluation="FORM_AND_MEETING"
+                title="UX 디자인 워크숍"
+                recruitmentStatus={{
+                  status: "모집마감",
+                }}
+                tags={["디자인", "UI/UX", "Figma"]}
+              />
+              <RecruitmentCard
+                id="3"
+                image="https://via.placeholder.com/360x168"
+                category="창업분과"
+                evaluation="MEETING_ONLY"
+                title="스타트업 아이디어톤"
+                recruitmentStatus={{
+                  status: "모집중",
+                  dDay: "5",
+                }}
+                tags={["스타트업", "아이디어", "창업"]}
+              />
+              <RecruitmentCard
+                id="4"
+                image="https://via.placeholder.com/360x168"
+                category="예술분과"
+                evaluation="FORM_ONLY"
+                title="아트갤러리 프로젝트"
+                recruitmentStatus={{
+                  status: "모집마감",
+                }}
+                tags={["예술", "그림", "문화"]}
+              />
+              <RecruitmentCard
+                id="5"
+                image="https://via.placeholder.com/360x168"
+                category="문화분과"
+                evaluation="FORM_AND_MEETING"
+                title="세계 문화 탐방"
+                recruitmentStatus={{
+                  status: "모집중",
+                  dDay: "3",
+                }}
+                tags={["문화", "여행", "세계"]}
+              />
+              <RecruitmentCard
+                id="1"
+                image="https://via.placeholder.com/360x168"
+                category="IT분과"
+                evaluation="FORM_ONLY"
+                title="떠나자! 바다로!"
+                recruitmentStatus={{
+                  status: "모집중",
+                  dDay: "1",
+                }}
+                tags={["IT", "프론트엔드", "백엔드"]}
+              />
+              <RecruitmentCard
+                id="2"
+                image="https://via.placeholder.com/360x168"
+                category="디자인분과"
+                evaluation="FORM_AND_MEETING"
+                title="UX 디자인 워크숍"
+                recruitmentStatus={{
+                  status: "모집마감",
+                }}
+                tags={["디자인", "UI/UX", "Figma"]}
+              />
+              <RecruitmentCard
+                id="3"
+                image="https://via.placeholder.com/360x168"
+                category="창업분과"
+                evaluation="MEETING_ONLY"
+                title="스타트업 아이디어톤"
+                recruitmentStatus={{
+                  status: "모집중",
+                  dDay: "5",
+                }}
+                tags={["스타트업", "아이디어", "창업"]}
+              />
+              <RecruitmentCard
+                id="4"
+                image="https://via.placeholder.com/360x168"
+                category="예술분과"
+                evaluation="FORM_ONLY"
+                title="아트갤러리 프로젝트"
+                recruitmentStatus={{
+                  status: "모집마감",
+                }}
+                tags={["예술", "그림", "문화"]}
+              />
+              <RecruitmentCard
+                id="5"
+                image="https://via.placeholder.com/360x168"
+                category="문화분과"
+                evaluation="FORM_AND_MEETING"
+                title="세계 문화 탐방"
+                recruitmentStatus={{
+                  status: "모집중",
+                  dDay: "3",
+                }}
+                tags={["문화", "여행", "세계"]}
+              />
+              <RecruitmentCard
+                id="3"
+                image="https://via.placeholder.com/360x168"
+                category="창업분과"
+                evaluation="MEETING_ONLY"
+                title="스타트업 아이디어톤"
+                recruitmentStatus={{
+                  status: "모집중",
+                  dDay: "5",
+                }}
+                tags={["스타트업", "아이디어", "창업"]}
+              />
+              <RecruitmentCard
+                id="4"
+                image="https://via.placeholder.com/360x168"
+                category="예술분과"
+                evaluation="FORM_ONLY"
+                title="아트갤러리 프로젝트"
+                recruitmentStatus={{
+                  status: "모집마감",
+                }}
+                tags={["예술", "그림", "문화"]}
+              />
+              <RecruitmentCard
+                id="5"
+                image="https://via.placeholder.com/360x168"
+                category="문화분과"
+                evaluation="FORM_AND_MEETING"
+                title="세계 문화 탐방"
+                recruitmentStatus={{
+                  status: "모집중",
+                  dDay: "3",
+                }}
+                tags={["문화", "여행", "세계"]}
+              />
+            </CardList>
+          </>
+        </RightContent>
       </Container>
     </ApplicantPage>
   );
 };
 
-const CarouselTitle = styled.div`
-  font-size: 1.5rem;
-  font-weight: bold;
-  text-align: left;
-  margin-left: 1rem;
-  margin-bottom: 1rem;
-  color: #333;
-`;
-
 const Container = styled.div`
   display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  min-height: 100vh;
-  width: 100%;
-  flex-direction: column;
-  overflow-y: auto;
-  padding-top: 5%;
 `;
 
-const TabContainer = styled.div`
+const LeftSidebar = styled.div`
+  width: 300px;
+  border-right: 1px solid #f0f0f0;
   display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  width: 100%;
-  margin-bottom: 20px;
-  gap: 10px;
-
-  @media (max-width: 768px) {
-    justify-content: flex-start;
-    padding: 0 10px;
-  }
+  flex-direction: column;
 `;
 
-const CardListContainer = styled.div<{ isAnimating: boolean }>`
+const RightContent = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  width: calc(100% - 400px);
+`;
+
+const FilterBar = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin: 2%;
+`;
+
+const CardList = styled.div`
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  grid-gap: 60px;
-  animation: ${(props) => (props.isAnimating ? fadeOut : fadeIn)} 0.2s
-    ease-in-out;
-
-  @media (max-width: 1024px) {
-    grid-template-columns: repeat(3, 1fr);
-  }
-  @media (max-width: 768px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  @media (max-width: 480px) {
-    grid-template-columns: repeat(1, 1fr);
-  }
+  grid-template-columns: repeat(4, minmax(390px, 1fr));
+  gap: 24px;
+  overflow-x: auto;
 `;
-
-const fadeIn = keyframes`
-    from {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  `;
-
-const fadeOut = keyframes`
-    from {
-      opacity: 1;
-      transform: translateY(0);
-    }
-    to {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-  `;
