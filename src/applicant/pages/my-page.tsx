@@ -1,11 +1,19 @@
 import { ApplicantPage } from "../page";
-import { MyApplicationStatusSection, MyInfoSection } from "../components";
+import { BasicInfoSection, SchoolInfoSection } from "../components";
 
 export const MyPage = () => {
   return (
     <ApplicantPage>
-      <MyInfoSection />
-      <MyApplicationStatusSection />
+      <BasicInfoSection />
+      <div
+        style={{
+          height: "1px",
+          backgroundColor: "#e0e0e0",
+          margin: "20px auto",
+          width: "912px",
+        }}
+      />
+      <SchoolInfoSection />
     </ApplicantPage>
   );
 };

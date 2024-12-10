@@ -5,3 +5,5 @@ export * from "./category-filter";
 export * from "./dropdown-filter";
 export * from "./search-bar";
 export * from "./recruitment-card";
+export * from "./basic-info-section";
+export * from "./school-info-section";
