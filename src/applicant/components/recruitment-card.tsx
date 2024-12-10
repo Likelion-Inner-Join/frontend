@@ -1,145 +1,183 @@
 import styled from "styled-components";
-import { Button } from "../../common/ui";
+import { AiOutlineHeart } from "react-icons/ai";
 import { useNavigate } from "react-router-dom";
-import { format } from "date-fns";
 
-const RecruitmentStatus = {
-  in_progress: "모집중",
-  completed: "모집완료",
-};
-
-const formatDate = (dateString: string) => {
-  return format(new Date(dateString), "yyyy-MM-dd HH:mm");
-};
-
-export type TRecruitmentCardProps = {
-  clubId: string;
-  imageUrl: string;
-  status: keyof typeof RecruitmentStatus;
-  recruitmentStartDate: string;
-  recruitmentEndDate: string;
+type TCardProps = {
+  id: string;
+  image: string;
   category: string;
-  name: string;
+  evaluation: "FORM_ONLY" | "FORM_AND_MEETING" | "MEETING_ONLY";
+  title: string;
+  recruitmentStatus:
+    | { status: "모집중"; dDay: string }
+    | { status: "모집마감" };
   tags: string[];
 };
 
+const getEvaluationText = (evaluation: TCardProps["evaluation"]) => {
+  switch (evaluation) {
+    case "FORM_ONLY":
+      return "서류 평가만";
+    case "FORM_AND_MEETING":
+      return "서류 및 면접";
+    case "MEETING_ONLY":
+      return "면접만";
+    default:
+      return "";
+  }
+};
+
 export const RecruitmentCard = ({
-  clubId,
-  imageUrl,
-  status,
+  id,
+  image,
   category,
-  name,
+  evaluation,
+  title,
+  recruitmentStatus,
   tags,
-  recruitmentStartDate,
-  recruitmentEndDate,
-}: TRecruitmentCardProps) => {
+}: TCardProps) => {
   const navigate = useNavigate();
 
   return (
-    <CardContainer>
-      <ImageContainer>
-        <ProfileImage src={imageUrl} alt="Club Logo" />
-      </ImageContainer>
-      <StatusLabel>{RecruitmentStatus[status]}</StatusLabel>
-      <RecruitmentPeriod>
-        {formatDate(recruitmentStartDate)} ~ {formatDate(recruitmentEndDate)}
-      </RecruitmentPeriod>
-      <ClubCategory>{category}</ClubCategory>
-      <ClubName>{name}</ClubName>
+    <CardContainer
+      onClick={() => {
+        navigate(`/recruitment/${id}`);
+      }}
+    >
+      <ImageWrapper>
+        <CardImage src={image} alt="Card Image" />
+      </ImageWrapper>
+      <CardContent>
+        <CategoryTags>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+            }}
+          >
+            <Category>{category}</Category>
+            <Evaluation>{getEvaluationText(evaluation)}</Evaluation>
+          </div>
+          <HeartIcon>
+            <AiOutlineHeart />
+          </HeartIcon>
+        </CategoryTags>
+        <Title>{title}</Title>
 
-      <TagsContainer>
-        {tags.map((tag, index) => (
-          <Tag key={index}>#{tag}</Tag>
-        ))}
-      </TagsContainer>
-      <ButtonContainer>
-        <Button
-          label="모집 공고 보러가기"
-          onClick={() => {
-            navigate(`/recruitment/${clubId}`);
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
           }}
-        />
-      </ButtonContainer>
+        >
+          {recruitmentStatus.status === "모집중" ? (
+            <RecruitmentStatus>D-{recruitmentStatus.dDay}</RecruitmentStatus>
+          ) : (
+            <div
+              style={{ fontSize: "20px", fontWeight: 500, color: "#606060" }}
+            >
+              모집마감
+            </div>
+          )}
+          <Tags>
+            {tags.map((tag, index) => (
+              <Tag key={index}>#{tag}</Tag>
+            ))}
+          </Tags>
+        </div>
+      </CardContent>
     </CardContainer>
   );
 };
 
 const CardContainer = styled.div`
-  width: 100%;
-  padding: 25px;
-  border-radius: 12px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  text-align: center;
-  background-color: #fff;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: space-between;
-`;
-
-const ImageContainer = styled.div`
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-`;
-
-const ProfileImage = styled.img`
-  width: 100%;
-  height: 100%;
+  min-width: 390px;
+  min-height: 360px;
+  border: 1px solid #e0e0e0;
   border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+  &:hover {
+    cursor: pointer;
+    color: #d32f2f;
+    transform: translateY(-3px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  }
+`;
+
+const ImageWrapper = styled.div`
+  width: 100%;
+`;
+
+const CardImage = styled.img`
+  width: 100%;
+  height: 180px;
   object-fit: cover;
-  border: 1px solid #ddd;
 `;
 
-const StatusLabel = styled.div`
-  display: inline-flex;
-  justify-content: center;
-  width: auto;
-  margin-top: 20px;
-  padding: 6px 15px;
-  color: ${(props) => props.theme.color.primary};
-  background-color: #fff;
-  border: 1px solid #ddd;
-  border-radius: 20px;
-  font-size: 16px;
-  font-weight: 800;
-`;
-
-const RecruitmentPeriod = styled.div`
-  margin-top: 10px;
-  font-size: 14px;
-  color: #555;
-`;
-
-const ClubCategory = styled.div`
-  margin-top: 20px;
+const HeartIcon = styled.div`
+  font-size: 24px;
   color: #888;
-  font-size: 14px;
+  cursor: pointer;
+
+  &:hover {
+    color: #d32f2f;
+  }
 `;
 
-const ClubName = styled.div`
-  margin-top: 2px;
-  font-weight: bold;
-  font-size: 20px;
-  color: #333;
+const CardContent = styled.div`
+  padding: 20px;
 `;
 
-const TagsContainer = styled.div`
+const CategoryTags = styled.div`
   display: flex;
-  justify-content: center;
-  gap: 5px;
-  margin-top: 10px;
+  justify-content: space-between;
+  margin-bottom: 8px;
+`;
+
+const Category = styled.div`
+  font-size: 16px;
+  font-weight: 500;
+  color: #767676;
+`;
+
+const Evaluation = styled.div`
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  border-radius: 20px;
+  padding: 8px;
+  background-color: #f9f9f9;
+`;
+
+const Title = styled.div`
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 25px;
+`;
+
+const RecruitmentStatus = styled.div`
+  font-size: 20px;
+  font-weight: 500;
+  color: #cc141d;
+  margin-bottom: 8px;
+`;
+
+const Tags = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 `;
 
 const Tag = styled.div`
-  background-color: ${(props) => props.theme.color.primaryLight};
-  padding: 5px 10px;
-  border-radius: 15px;
-  font-size: 12px;
-  color: #333;
-`;
-
-const ButtonContainer = styled.div`
-  margin-top: 30px;
+  font-size: 14px;
+  font-weight: 400;
+  color: #000;
+  background-color: #ffeded;
+  border-radius: 20px;
+  padding: 8px;
 `;
