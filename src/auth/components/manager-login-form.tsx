@@ -33,7 +33,7 @@ export const ManagerLoginForm = () => {
 
         login("club", { name: "" });
 
-        navigate("/");
+        navigate("/post-manage");
       } else {
         console.log(response.errorMessage);
       }
