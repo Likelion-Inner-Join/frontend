@@ -82,8 +82,8 @@ export const ApplicationCalendar = () => {
               <>
                 <DateLabel
                   isToday={
-                    date.toISOString().split("T")[0] ===
-                    new Date().toISOString().split("T")[0]
+                    date.toLocaleDateString() ===
+                    new Date().toLocaleDateString()
                   }
                 >
                   {date.getDate()}
