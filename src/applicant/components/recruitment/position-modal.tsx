@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { styled } from "styled-components";
-import { Button } from "../../common/ui";
 import { FaCheck } from "react-icons/fa";
+import { Button } from "../../../common/ui";
 
 type TModalProps = {
   closeModal: () => void;

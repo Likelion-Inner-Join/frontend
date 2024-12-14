@@ -35,40 +35,52 @@ const StyledButton = styled.button<{ size: string; $variant: string }>`
     size === "small"
       ? "12px 16px"
       : size === "large"
-      ? "12px 24px"
+      ? "12px 32px"
       : size === "full"
       ? "16px 24px"
       : "10px 12px"};
-  background-color: ${({ $variant: variant, theme }) =>
-    variant === "primary"
-      ? theme.color.primary
-      : variant === "secondary"
-      ? theme.color.secondary
-      : "red"};
+  background-color: ${({ $variant, theme, disabled }) => {
+    if (disabled) {
+      return "#c0c0c0";
+    }
+    switch ($variant) {
+      case "primary":
+        return theme.color.primary;
+      case "secondary":
+        return theme.color.secondary;
+      default:
+        return "red";
+    }
+  }};
   color: #fff;
   border: none;
-  border-radius: 8px;
-  cursor: pointer;
+  border-radius: ${({ size }) => (size === "large" ? "30px" : "8px")};
+  cursor: ${({ disabled }) => (disabled ? "not-allowed" : "pointer")};
   font-size: ${({ size }) =>
     size === "small"
       ? "12px"
       : size === "large"
-      ? "18px"
+      ? "16px"
       : size === "full"
       ? "18px"
       : "16px"};
-  font-weight: bold;
+  font-weight: 600;
   transition: background-color 0.3s ease;
-  opacity: ${({ disabled }) => (disabled ? 0.6 : 1)};
-  pointer-events: ${({ disabled }) => (disabled ? "none" : "auto")};
   width: ${({ size }) => (size === "full" ? "100%" : "auto")};
 
   &:hover {
-    background-color: ${({ $variant: variant, theme }) =>
-      variant === "primary"
-        ? theme.color.primaryHover
-        : variant === "secondary"
-        ? theme.color.secondaryHover
-        : "darkred"};
+    background-color: ${({ $variant, theme, disabled }) => {
+      if (disabled) {
+        return "#c0c0c0";
+      }
+      switch ($variant) {
+        case "primary":
+          return theme.color.primaryHover;
+        case "secondary":
+          return theme.color.secondaryHover;
+        default:
+          return "darked";
+      }
+    }};
   }
 `;
