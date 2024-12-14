@@ -58,7 +58,7 @@ export const RecruitmentPostingList = ({ clubId }: { clubId: string }) => {
   const clubList = getClubDataList(clubId);
 
   useEffect(() => {
-    const mockPositions = ["디자이너", "프론트 개발자", "백엔드 개발자"];
+    const mockPositions = ["디자이너", "프론트엔드", "백엔드"];
     setPositions(mockPositions);
   }, []);
 
@@ -124,7 +124,15 @@ export const RecruitmentPostingList = ({ clubId }: { clubId: string }) => {
             <Button
               label="지원하기"
               size="large"
-              onClick={() => setIsModalOpen(true)}
+              onClick={() => {
+                if (positions.length === 1) {
+                  navigate(`/application/${clubId}`, {
+                    state: { position: positions[0] },
+                  });
+                } else {
+                  setIsModalOpen(true);
+                }
+              }}
               disabled={club.recruitmentStatus === "closed"}
             />
           </div>

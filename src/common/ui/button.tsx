@@ -2,7 +2,7 @@ import styled from "styled-components";
 
 type TButtonProps = {
   label: string;
-  onClick: () => void;
+  onClick?: () => void;
   disabled?: boolean;
   size?: "small" | "medium" | "large" | "full";
   variant?: "primary" | "secondary" | "danger";
@@ -67,6 +67,7 @@ const StyledButton = styled.button<{ size: string; $variant: string }>`
   font-weight: 600;
   transition: background-color 0.3s ease;
   width: ${({ size }) => (size === "full" ? "100%" : "auto")};
+  line-height: 24px;
 
   &:hover {
     background-color: ${({ $variant, theme, disabled }) => {

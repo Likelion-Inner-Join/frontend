@@ -1,12 +1,18 @@
-import { styled } from "styled-components";
+import { CSSProperties, styled } from "styled-components";
 import { Navbar } from "../common/ui";
-import { PropsWithChildren } from "react";
+import { ReactNode } from "react";
 
-export const ApplicantPage = ({ children }: PropsWithChildren<{}>) => {
+export const ApplicantPage = ({
+  children,
+  style,
+}: {
+  children: ReactNode;
+  style?: CSSProperties;
+}) => {
   return (
     <Page>
       <Navbar />
-      <Content>{children}</Content>
+      <Content style={style}>{children}</Content>
     </Page>
   );
 };
