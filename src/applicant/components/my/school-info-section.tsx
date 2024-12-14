@@ -60,7 +60,7 @@ export const SchoolInfoSection = () => {
             {isEditing ? (
               <Input
                 type="text"
-                name="name"
+                name="university"
                 value={userInfo.university}
                 onChange={handleInputChange}
               />
@@ -72,8 +72,8 @@ export const SchoolInfoSection = () => {
             <Th>학과</Th>
             {isEditing ? (
               <Input
-                type="email"
-                name="email"
+                type="text"
+                name="major"
                 value={userInfo.major}
                 onChange={handleInputChange}
               />
@@ -85,8 +85,8 @@ export const SchoolInfoSection = () => {
             <Th>학번</Th>
             {isEditing ? (
               <Input
-                type="password"
-                name="password"
+                type="text"
+                name="studentId"
                 value={userInfo.studentId}
                 onChange={handleInputChange}
               />

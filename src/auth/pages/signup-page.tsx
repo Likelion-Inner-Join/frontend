@@ -41,6 +41,8 @@ const Container = styled.div`
     z-index: 10;
     width: 100%;
     padding: 10px 0;
+    display: flex;
+    justify-content: center;
   }
 
   .form-container {

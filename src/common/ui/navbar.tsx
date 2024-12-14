@@ -3,12 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "./button";
 import { useAuth } from "../../auth/context/auth-context";
 import profileImage from "../../assets/user-profile.png";
-import { useState } from "react";
 
 export const Navbar = () => {
   const { authState } = useAuth();
   const navigate = useNavigate();
-  const [selected, setSelected] = useState("category");
+
+  const currentPath = window.location.pathname;
+  const isActive = (path: string) => currentPath === path;
 
   return (
     <Container>
@@ -20,21 +21,18 @@ export const Navbar = () => {
         >
           이너조인
         </Logo>
-        {/* FIXME: 페이지 변해도 선택된 상태 유지하도록 */}
         <NavLinks>
           <NavLink
-            selected={selected === "category"}
+            selected={isActive("/")}
             onClick={() => {
-              setSelected("category");
               navigate("/");
             }}
           >
             카테고리
           </NavLink>
           <NavLink
-            selected={selected === "application-manage"}
+            selected={isActive("/my/application-manage")}
             onClick={() => {
-              setSelected("application-manage");
               navigate("/my/application-manage");
             }}
           >
@@ -44,7 +42,7 @@ export const Navbar = () => {
       </Left>
 
       <Right>
-        {authState.isAuthenticated ? (
+        {!authState.isAuthenticated ? (
           <ProfileWrapper
             onClick={() => {
               navigate("/my/info");

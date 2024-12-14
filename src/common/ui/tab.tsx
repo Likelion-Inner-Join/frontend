@@ -24,12 +24,9 @@ export const Tab = ({ tabs, activeTab, onTabClick }: TTabProps) => {
 
 const TabContainer = styled.div`
   display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  max-width: 90%;
-  margin: 0 auto 40px auto;
+  justify-content: left;
   gap: 50px;
-  padding: 0 40px;
+  padding: 24px;
 `;
 
 const StyledTab = styled.button<{ $isActive: boolean }>`

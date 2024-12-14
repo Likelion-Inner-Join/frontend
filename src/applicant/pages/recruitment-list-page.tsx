@@ -2,7 +2,7 @@ import styled from "styled-components";
 
 import { RecruitmentCard, CategoryFilter, SearchBar } from "../components";
 import { ApplicantPage } from "../page";
-import { DropdownFilter } from "../components/dropdown-filter";
+import { DropdownFilter } from "../components/recruitment-list/dropdown-filter";
 
 export const RecruitmentListPage = () => {
   return (

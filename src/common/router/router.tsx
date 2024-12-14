@@ -9,6 +9,7 @@ import {
   MyPage,
   RecruitmentListPage,
   RecruitmentPage,
+  ApplicationManagePage,
 } from "../../applicant/pages";
 import PostManage from "../../owner/post_manage/post_manage";
 import PostWrite from "../../owner/post_write/post_write";
@@ -29,7 +30,8 @@ export const ROUTES = {
   DOC_EVALUATE: "/doc-eval",
   APPLY_FORM_VIEW: "/doc-eval/applyID",
   VERIFICATION: "/verification",
-  MY: "/my",
+  MY: "/my/info",
+  APPLICATION_MANAGE: "/my/application-manage",
   RECRUITMENT: "/recruitment/:clubId",
   APPLICATION: "/application/:clubId",
   RESULTSHARE: "/result",
@@ -67,6 +69,10 @@ export const router = createBrowserRouter([
   {
     path: ROUTES.MY,
     element: <MyPage />,
+  },
+  {
+    path: ROUTES.APPLICATION_MANAGE,
+    element: <ApplicationManagePage />,
   },
   {
     path: ROUTES.RECRUITMENT,
