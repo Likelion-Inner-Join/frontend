@@ -42,7 +42,7 @@ export const Navbar = () => {
       </Left>
 
       <Right>
-        {!authState.isAuthenticated ? (
+        {authState.isAuthenticated ? (
           <ProfileWrapper
             onClick={() => {
               navigate("/my/info");

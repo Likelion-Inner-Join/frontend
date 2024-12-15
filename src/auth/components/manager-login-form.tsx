@@ -1,7 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { POST } from "../../common/api/axios";
 import { Form, TFormFieldProps } from "../../common/ui";
-import { validatePassword } from "../utils/utils";
 import { useAuth } from "../context/auth-context";
 
 const fields: TFormFieldProps[] = [
@@ -14,7 +13,6 @@ const fields: TFormFieldProps[] = [
     label: "비밀번호",
     value: "",
     type: "password",
-    validate: validatePassword,
   },
 ];
 

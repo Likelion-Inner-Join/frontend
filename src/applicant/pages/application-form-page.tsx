@@ -112,6 +112,7 @@ export const ApplicationFormPage = () => {
 const FormContainer = styled.div`
   width: 1380px;
   margin: 0 auto;
+  padding-bottom: 60px;
 `;
 
 const Header = styled.div`

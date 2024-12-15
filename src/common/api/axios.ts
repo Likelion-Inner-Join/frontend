@@ -1,10 +1,13 @@
 import axios from "axios";
 
+axios.defaults.withCredentials = true;
+
 const ApiInstance = axios.create({
-  baseURL: process.env.BASE_URL,
-  withCredentials: true,
+  baseURL: "https://innerjoin.duckdns.org/",
   headers: {
     "Content-Type": "application/json",
+    "Access-Control-Allow-Origin": `http://localhost:3000`,
+    "Access-Control-Allow-Credentials": "true",
   },
 });
 
