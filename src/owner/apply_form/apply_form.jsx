@@ -195,6 +195,18 @@ const ApplyForm = () => {
                               })
                             }
                           />
+                          {/* 추가된 설명 입력 부분 */}
+                          <Input
+                            type="text"
+                            placeholder="설명 입력*"
+                            value={item.description || ""}
+                            onChange={(e) =>
+                              updateQuestion(item.id, {
+                                description: e.target.value,
+                              })
+                            }
+                            isDescriptionInput
+                          />
                         </DescriptionContent>
                       </DescriptionContainer>
                     ) : (
@@ -214,7 +226,7 @@ const ApplyForm = () => {
               질문 추가
             </ActionButton>
 
-            <ActionButton onClick={addBorder}>경계선 추가</ActionButton>
+            {/* <ActionButton onClick={addBorder}>경계선 추가</ActionButton> */}
             <ActionButton onClick={addDescription}>설명글 추가</ActionButton>
           </RightPanel>
         </MainContent>
@@ -373,7 +385,10 @@ const DescriptionContent = styled.div`
 
 const Input = styled.input`
   padding: 10px;
-  font-size: ${(props) => (props.isQuestionInput ? "18px" : "16px")};
+  font-size: ${(props) =>
+    props.isDescriptionInput
+      ? "14px"
+      : "16px"}; /* 설명 입력은 글씨 크기 작게 */
   border: 1px solid #ddd;
   border-radius: 5px;
   width: 100%;

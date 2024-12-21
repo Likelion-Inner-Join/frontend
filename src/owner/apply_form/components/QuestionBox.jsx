@@ -133,10 +133,10 @@ const QuestionBox = ({ questionData, updateQuestion, deleteQuestion }) => {
               </Dropdown>
             )}
           </DropdownContainer>
-          <RequiredToggle
+          {/* <RequiredToggle
             isRequired={questionData.isRequired || false}
             onToggle={toggleRequired}
-          />
+          /> */}
         </LeftSection>
         <DeleteButton onClick={() => setShowDeleteModal(true)}>
           삭제

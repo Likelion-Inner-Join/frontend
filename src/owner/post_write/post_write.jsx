@@ -40,9 +40,37 @@ const PostWrite = () => {
     };
   }, []);
 
-  const handleSubmit = (e) => {
+  // const handleSubmit = (e) => {
+  //   e.preventDefault();
+
+  //   if (!isOpenRecruitment && (!deadline || !hour || !minute)) {
+  //     setPopupMessage(
+  //       "마감일과 마감 시간을 입력하거나 상시모집을 선택해주세요."
+  //     );
+  //     setShowPopup(true);
+  //     return;
+  //   }
+
+  //   const newPost = {
+  //     id: Date.now(),
+  //     title,
+  //     date: new Date().toLocaleDateString(),
+  //     deadline: isOpenRecruitment
+  //       ? "상시모집"
+  //       : `${deadline} ${period} ${hour}:${minute}`,
+  //     description,
+  //     images,
+  //     isOpenRecruitment,
+  //   };
+
+  //   addPost(newPost);
+  //   navigate("/post-manage");
+  // };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // 마감일과 마감 시간이 제대로 입력되었는지 확인
     if (!isOpenRecruitment && (!deadline || !hour || !minute)) {
       setPopupMessage(
         "마감일과 마감 시간을 입력하거나 상시모집을 선택해주세요."
@@ -51,20 +79,48 @@ const PostWrite = () => {
       return;
     }
 
+    // 폼 데이터 준비
     const newPost = {
-      id: Date.now(),
       title,
       date: new Date().toLocaleDateString(),
       deadline: isOpenRecruitment
         ? "상시모집"
         : `${deadline} ${period} ${hour}:${minute}`,
       description,
-      images,
       isOpenRecruitment,
     };
 
-    addPost(newPost);
-    navigate("/post-manage");
+    // FormData 객체를 사용하여 multipart/form-data 형식으로 데이터 구성
+    const formData = new FormData();
+    formData.append("post", JSON.stringify(newPost)); // post 객체는 JSON 문자열로 전송
+    images.forEach((image) => {
+      formData.append("images", image); // 이미지 파일들 추가
+    });
+
+    // API에 데이터 전송
+    try {
+      const response = await fetch("/posts", {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+        },
+        body: formData,
+      });
+
+      const data = await response.json();
+      if (data.isSuccess) {
+        // 요청이 성공하면 포스트 관리 페이지로 이동
+        navigate("/post-manage");
+      } else {
+        // 실패한 경우 팝업 메시지 표시
+        setPopupMessage(data.message);
+        setShowPopup(true);
+      }
+    } catch (error) {
+      // 네트워크 오류 등 발생 시 처리
+      setPopupMessage("서버와의 연결에 실패했습니다.");
+      setShowPopup(true);
+    }
   };
 
   const handleDateChange = (e) => {
