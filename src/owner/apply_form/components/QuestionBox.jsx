@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import styled from "styled-components";
 import RequiredToggle from "../RequiredToggle";
 import MultipleChoice from "./MultipleChoice";
@@ -76,12 +76,19 @@ const QuestionBox = ({ questionData, updateQuestion, deleteQuestion }) => {
   };
 
   const handleTypeChange = (newType) => {
+    const initialData = {
+      multiple_choice: { options: [""] },
+      checkbox: { options: [""] },
+      short_answer: {},
+      paragraph: {},
+      date: {},
+      time: {},
+    };
     updateQuestion(questionData.id, {
       type: newType,
-      question: "",
-      description: "",
-      options:
-        newType === "multiple_choice" || newType === "checkbox" ? [""] : [],
+      ...initialData[newType],
+      question: "", // 새 유형일 경우 질문 초기화
+      description: "", // 새 유형일 경우 설명 초기화
     });
     setShowTypeDropdown(false);
   };
@@ -182,7 +189,6 @@ const getTypeLabel = (type) => {
 
 export default QuestionBox;
 
-// 스타일 컴포넌트
 const Container = styled.div`
   border: 1px solid #ddd;
   border-radius: 5px;

@@ -1,13 +1,45 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 
-const EssayQuestion = () => {
+const EssayQuestion = ({ questionData, updateQuestion }) => {
+  const [question, setQuestion] = useState(questionData.question || ""); // 질문 내용 상태
+  const [description, setDescription] = useState(
+    questionData.description || ""
+  ); // 질문 설명 상태
+
+  // questionData 변경 시 상태 동기화
+  useEffect(() => {
+    setQuestion(questionData.question || "");
+    setDescription(questionData.description || "");
+  }, [questionData]);
+
+  const handleQuestionChange = (e) => {
+    const value = e.target.value;
+    setQuestion(value);
+    updateQuestion(questionData.id, { question: value });
+  };
+
+  const handleDescriptionChange = (e) => {
+    const value = e.target.value;
+    setDescription(value);
+    updateQuestion(questionData.id, { description: value });
+  };
+
   return (
     <QuestionContainer>
       <Body>
-        <Input placeholder="질문 입력*" isQuestionInput />
+        <Input
+          placeholder="질문 입력*"
+          isQuestionInput
+          value={question}
+          onChange={handleQuestionChange}
+        />
 
-        <Input placeholder="설명 입력" />
+        <Input
+          placeholder="설명 입력"
+          value={description}
+          onChange={handleDescriptionChange}
+        />
         <TextLimit>지원자의 서술형 답변 (2000자 이내)</TextLimit>
       </Body>
     </QuestionContainer>
@@ -22,40 +54,9 @@ const QuestionContainer = styled.div`
   gap: 10px;
 `;
 
-const Header = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-`;
-
-const QuestionType = styled.div``;
-
-const TypeButton = styled.button`
-  background: #f9f9f9;
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
-  padding: 8px 16px;
-  font-size: 14px;
-  cursor: pointer;
-`;
-
-const RequiredToggle = styled.label`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-`;
-
-const OptionsMenu = styled.div`
-  font-size: 20px;
-  cursor: pointer;
-`;
-
 const Body = styled.div`
   display: flex;
   flex-direction: column;
-
   gap: 10px;
 `;
 

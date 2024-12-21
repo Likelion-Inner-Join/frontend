@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { PostContext } from "../post_context/post_context";
@@ -16,6 +16,29 @@ const PostWrite = () => {
   const [showPopup, setShowPopup] = useState(false);
   const [popupMessage, setPopupMessage] = useState("");
   const [isOpenRecruitment, setIsOpenRecruitment] = useState(false); // 상시모집 상태
+  const [forms, setForms] = useState([]); // 지원폼 리스트
+  const [selectedForm, setSelectedForm] = useState(""); // 선택된 지원폼
+  const [showFormDropdown, setShowFormDropdown] = useState(false); // 드롭다운 상태
+  const dropdownRef = useRef(null);
+
+  // 로컬 스토리지에서 지원폼 리스트 불러오기
+  useEffect(() => {
+    const savedForms = JSON.parse(localStorage.getItem("savedForms")) || [];
+    setForms(savedForms);
+  }, []);
+
+  // 드롭다운 외부 클릭 감지
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowFormDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -185,6 +208,41 @@ const PostWrite = () => {
             ))}
           </ImagePreviewContainer>
         </ImageUploadWrapper>
+        {/* 지원폼 선택하기 */}
+        <FormSelectWrapper ref={dropdownRef}>
+          <Label>지원폼 선택</Label>
+          <FormSelectButton
+            onClick={(e) => {
+              e.preventDefault(); // 기본 submit 동작 방지
+              e.stopPropagation(); // 클릭 이벤트 전파 방지
+              setShowFormDropdown((prev) => !prev);
+            }}
+          >
+            {selectedForm || "지원폼 선택하기"}
+          </FormSelectButton>
+          {showFormDropdown && (
+            <Dropdown>
+              {forms.length > 0 ? (
+                forms.map((form) => (
+                  <DropdownOption
+                    key={form.id}
+                    onClick={(e) => {
+                      e.preventDefault(); // 기본 submit 동작 방지
+                      e.stopPropagation(); // 클릭 이벤트 전파 방지
+                      setSelectedForm(form.title);
+                      setShowFormDropdown(false);
+                    }}
+                  >
+                    {form.title}
+                  </DropdownOption>
+                ))
+              ) : (
+                <NoFormsMessage>저장된 지원폼이 없습니다.</NoFormsMessage>
+              )}
+            </Dropdown>
+          )}
+        </FormSelectWrapper>
+
         <ButtonContainer>
           <ListButton type="submit">작성 완료</ListButton>
         </ButtonContainer>
@@ -375,4 +433,48 @@ const OpenRecruitmentButton = styled.button`
   &:hover {
     background-color: ${(props) => (props.active ? "#9C0C13" : "#E0E0E0")};
   }
+`;
+
+const FormSelectWrapper = styled.div`
+  position: relative;
+  width: 100%;
+`;
+
+const FormSelectButton = styled.button`
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background-color: #f9f9f9;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #f2f2f2;
+  }
+`;
+
+const Dropdown = styled.div`
+  position: absolute;
+  width: 100%;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+`;
+
+const DropdownOption = styled.div`
+  padding: 10px;
+  cursor: pointer;
+  &:hover {
+    background-color: #f2f2f2;
+  }
+`;
+
+const NoFormsMessage = styled.div`
+  padding: 10px;
+  text-align: center;
+  color: #888;
 `;

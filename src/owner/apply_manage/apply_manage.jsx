@@ -6,17 +6,30 @@ const ApplyManage = () => {
   const navigate = useNavigate();
   const [forms, setForms] = useState([]);
 
+  // 로컬 스토리지에서 데이터 로드
   useEffect(() => {
-    const savedForms = JSON.parse(localStorage.getItem("savedForms")) || [];
-    setForms(savedForms);
+    const loadForms = () => {
+      const savedForms = JSON.parse(localStorage.getItem("savedForms")) || [];
+      setForms(savedForms);
+    };
+
+    loadForms();
+
+    // 로컬 스토리지 변경 감지 (다른 탭에서 수정된 경우)
+    window.addEventListener("storage", loadForms);
+    return () => window.removeEventListener("storage", loadForms);
   }, []);
 
+  // 폼 삭제
   const deleteForm = (id) => {
-    const updatedForms = forms.filter((form) => form.id !== id);
-    localStorage.setItem("savedForms", JSON.stringify(updatedForms));
-    setForms(updatedForms);
+    if (window.confirm("정말로 이 폼을 삭제하시겠습니까?")) {
+      const updatedForms = forms.filter((form) => form.id !== id);
+      localStorage.setItem("savedForms", JSON.stringify(updatedForms));
+      setForms(updatedForms);
+    }
   };
 
+  // 폼 사본 만들기
   const copyForm = (id) => {
     const formToCopy = forms.find((form) => form.id === id);
     if (formToCopy) {
@@ -25,7 +38,7 @@ const ApplyManage = () => {
         id: Date.now().toString(),
         title: `${formToCopy.title} (사본)`,
       };
-      const updatedForms = [...forms, copiedForm];
+      const updatedForms = [copiedForm, ...forms]; // 사본을 맨 위로 추가
       localStorage.setItem("savedForms", JSON.stringify(updatedForms));
       setForms(updatedForms);
     }

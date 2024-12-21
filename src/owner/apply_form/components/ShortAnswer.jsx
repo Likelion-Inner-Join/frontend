@@ -1,8 +1,24 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 
 const ShortAnswer = ({ questionData, updateQuestion }) => {
+  const [question, setQuestion] = useState(questionData.question || ""); // 질문 내용 상태
+  const [description, setDescription] = useState(
+    questionData.description || ""
+  ); // 질문 설명 상태
+
+  // questionData 변경 시 상태 동기화
+  useEffect(() => {
+    setQuestion(questionData.question || "");
+    setDescription(questionData.description || "");
+  }, [questionData]);
+
   const handleQuestionChange = (field, value) => {
+    if (field === "question") {
+      setQuestion(value);
+    } else if (field === "description") {
+      setDescription(value);
+    }
     updateQuestion(questionData.id, { [field]: value });
   };
 
@@ -12,13 +28,13 @@ const ShortAnswer = ({ questionData, updateQuestion }) => {
         type="text"
         placeholder="질문 입력*"
         isQuestionInput
-        value={questionData.question || ""}
+        value={question}
         onChange={(e) => handleQuestionChange("question", e.target.value)}
       />
       <Input
         type="text"
         placeholder="설명 입력"
-        value={questionData.description || ""}
+        value={description}
         onChange={(e) => handleQuestionChange("description", e.target.value)}
       />
       <Placeholder>지원자의 단답형 답변 (200자 이내)</Placeholder>

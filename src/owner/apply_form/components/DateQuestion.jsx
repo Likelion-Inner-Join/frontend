@@ -1,13 +1,35 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 
 const DateQuestion = ({ questionData, updateQuestion }) => {
-  const handleInputChange = (e) => {
-    updateQuestion(questionData.id, { question: e.target.value });
+  const [question, setQuestion] = useState(questionData.question || ""); // 질문 내용 상태
+  const [description, setDescription] = useState(
+    questionData.description || ""
+  ); // 질문 설명 상태
+  const [selectedDate, setSelectedDate] = useState(""); // 선택된 날짜 상태
+
+  // questionData 변경 시 상태 초기화
+  useEffect(() => {
+    setQuestion(questionData.question || "");
+    setDescription(questionData.description || "");
+  }, [questionData]);
+
+  const handleQuestionChange = (e) => {
+    const value = e.target.value;
+    setQuestion(value);
+    updateQuestion(questionData.id, { question: value });
   };
 
   const handleDescriptionChange = (e) => {
-    updateQuestion(questionData.id, { description: e.target.value });
+    const value = e.target.value;
+    setDescription(value);
+    updateQuestion(questionData.id, { description: value });
+  };
+
+  const handleDateChange = (e) => {
+    const value = e.target.value;
+    setSelectedDate(value);
+    updateQuestion(questionData.id, { selectedDate: value });
   };
 
   return (
@@ -16,22 +38,23 @@ const DateQuestion = ({ questionData, updateQuestion }) => {
         type="text"
         placeholder="질문 입력*"
         isQuestionInput
-        value={questionData.question}
-        onChange={handleInputChange}
+        value={question}
+        onChange={handleQuestionChange}
       />
       <InputField
         type="text"
         placeholder="설명 입력"
-        value={questionData.description}
+        value={description}
         onChange={handleDescriptionChange}
       />
-      <Placeholder>______년 __월 __일</Placeholder>
+      <DateInput type="date" value={selectedDate} onChange={handleDateChange} />
     </Container>
   );
 };
 
 export default DateQuestion;
 
+// 스타일 컴포넌트
 const Container = styled.div`
   display: flex;
   flex-direction: column;
@@ -47,12 +70,19 @@ const InputField = styled.input`
   box-sizing: border-box;
 `;
 
-const Placeholder = styled.div`
+const DateInput = styled.input`
   padding: 10px;
-  font-size: 16px;
-  color: #888;
-  border: 1px dashed #ddd;
+  font-size: 16px; /* 다른 입력 필드와 동일한 글씨 크기 */
+  font-family: inherit; /* 부모 요소의 글꼴을 상속받도록 설정 */
+  border: 1px solid #ddd;
   border-radius: 5px;
+  width: 100%;
+  box-sizing: border-box;
   background-color: #f9f9f9;
-  text-align: center;
+  color: #555;
+  cursor: pointer;
+
+  &::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+  }
 `;

@@ -104,12 +104,7 @@ const PostManage = () => {
           <Tag>#백엔드</Tag>
         </ClubTags>
       </Header>
-      {/* <TabMenu>
-        <Tab active={true}>홍보글 작성</Tab>
-        <Tab active={false} onClick={() => navigate("/apply-manage")}>
-          지원폼 관리
-        </Tab>
-      </TabMenu> */}
+
       <TabMenu>
         <Tab active={true}>홍보글 작성</Tab>
         <Tab active={false} onClick={() => navigate("/apply-manage")}>
