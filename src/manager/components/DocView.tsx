@@ -2,67 +2,199 @@ import React, { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import styled from "styled-components";
 import { documentData } from "../mock/DocumentData";
+import { documentDetailData } from "../mock/DocumentData";
 import TextForm from "./TextForm";
 import DropDownForm from "./DropDownForm";
 import CheckBoxForm from "./CheckBoxForm";
-import { answerData } from "../mock/DocumentData";
-interface Applicant {
-  applicationId: number;
-  userId: number;
-  name: string;
-  email: string;
-  phoneNum: string;
-  school: string;
-  major: string;
-  position: string;
-  studentNumber: string;
-  formResult: string;
-  meetingResult: string;
-  formScore: number;
-  meetingScore: number;
-  meetingStartTime: string;
-  meetingEndTime: string;
-}
-
-interface Question {
-  questionid: number;
-  number: number;
-  question: string;
-  type: string;
-  list?: string[];
-}
+import { ApplicantType, QuestionType, AnswerType } from "../global/types";
+import { GET, PUT, POST } from "../../common/api/axios";
 
 interface DocViewProps {
-  applicant?: Applicant;
+  applicant?: ApplicantType;
 }
 
 const DocView = ({ applicant }: DocViewProps) => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [questionList, setQuestionList] = useState<Question[]>();
-  const [formResult, setFormResult] = useState(applicant?.formResult || "null");
-  const [currentScore, setCurrentScore] = useState(answerData);
-  const [totalScore, setTotalScore] = useState(applicant?.formScore);
+  const [questionList, setQuestionList] = useState<QuestionType[]>();
+  const [answerList, setAnswerList] = useState<AnswerType[]>();
+  const [updatedAnswerList, setUpdatedAnswerList] = useState<AnswerType[]>();
+  const [formResult, setFormResult] = useState(
+    applicant?.formResult || "PENDING"
+  );
+  const [totalScore, setTotalScore] = useState(0);
+  const [meetingScore, setMeetingScore] = useState(0);
+
+  useEffect(() => {
+    getFormDetails();
+    getApplicantDetails();
+  }, []);
+
+  const getFormDetails = async () => {
+    try {
+      //const res = await GET(`form/${formId}`); API
+      const res = documentData;
+
+      if (res.isSuccess) {
+        setQuestionList(res.result.questionList);
+      } else {
+        console.log(res.message);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const getApplicantDetails = async () => {
+    try {
+      //const res = await GET(`application/${applicant?.applicantId}`);
+      const res = documentDetailData;
+
+      if (res.isSuccess) {
+        setAnswerList(res.result.answers);
+        setUpdatedAnswerList(res.result.answers);
+        setTotalScore(res.result.formScore);
+      } else {
+        console.log(res.message);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const postFormResult = async () => {
+    try {
+      // const res = await PUT(`application/${applicant?.applicantId}`, {
+      //   formResult: `${formResult}`,
+      //   meetingResult: `${applicant?.meetingResult}`,
+      //   meetingStartTime: `${applicant?.meetingStartTime}`,
+      //   meetingEndTime: `${applicant?.meetingEndTime}`,
+      // });
+      const res = {
+        isSuccess: true,
+        code: 0,
+        message: "string",
+        result: {
+          applicationId: 0,
+          recruitingId: 0,
+          positionName: "string",
+          recruitmentStatus: "OPEN",
+          formId: 0,
+          formTitle: "string",
+          formDescription: "string",
+          clubId: 0,
+          clubName: "string",
+          postId: 0,
+          postTitle: "string",
+          applicantId: 0,
+          name: "string",
+          email: "string",
+          phoneNum: "string",
+          school: "string",
+          major: "string",
+          studentNumber: "string",
+          formResult: "PENDING",
+          formScore: 0,
+          meetingResult: "PENDING",
+          meetingScore: 0,
+          meetingStartTime: "2024-12-15T18:05:32.415Z",
+          meetingEndTime: "2024-12-15T18:05:32.415Z",
+          answers: [
+            {
+              questionId: 0,
+              question: "string",
+              answer: "string",
+              score: 0,
+              questionType: "TEXT",
+            },
+          ],
+        },
+      };
+
+      if (res.isSuccess) {
+        alert("서류 결과 수정 성공");
+      } else {
+        console.log(res.message);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const postFormScore = async () => {
+    try {
+      const updatedScore = answerList?.map(({ questionId, score }) => ({
+        questionId,
+        score,
+      }));
+
+      // const res = await POST("application/formscore", {
+      //   applicationId: `${applicant?.applicantId}`,
+      //   score: updatedScore,
+      // });
+      const res = {
+        isSuccess: true,
+        code: 0,
+        message: "string",
+        result: {
+          applicationId: 0,
+          recruitingId: 0,
+          positionName: "string",
+          recruitmentStatus: "OPEN",
+          formId: 0,
+          formTitle: "string",
+          formDescription: "string",
+          clubId: 0,
+          clubName: "string",
+          postId: 0,
+          postTitle: "string",
+          applicantId: 0,
+          name: "string",
+          email: "string",
+          phoneNum: "string",
+          school: "string",
+          major: "string",
+          studentNumber: "string",
+          formResult: "PENDING",
+          formScore: 0,
+          meetingResult: "PENDING",
+          meetingScore: 0,
+          meetingStartTime: "2024-12-15T18:05:32.415Z",
+          meetingEndTime: "2024-12-15T18:05:32.415Z",
+          answers: [
+            {
+              questionId: 0,
+              question: "string",
+              answer: "string",
+              score: 0,
+              questionType: "TEXT",
+            },
+          ],
+        },
+      };
+
+      if (res.isSuccess) {
+        alert("서류 점수 수정 성공");
+      } else {
+        console.log(res.message);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const closeDocument = () => {
+    postFormScore();
     searchParams.delete("apply");
     setSearchParams(searchParams);
   };
 
-  useEffect(() => {
-    if (documentData.length > 0) {
-      setQuestionList(documentData[0].questionList);
-    }
-
-    console.log(questionList);
-  }, []);
-
-  const renderQuestionAnswer = (question: Question) => {
+  const renderQuestionAnswer = (question: QuestionType) => {
     switch (question.type) {
-      case "text":
+      case "TEXT":
         return <TextForm quest={question} />;
-      case "dropdown":
+      case "DROPDOWN":
         return <DropDownForm quest={question} />;
-      case "checkbox":
+      case "CHECKBOX":
         return <CheckBoxForm quest={question} />;
       default:
         return <div>알 수 없는 질문 유형</div>;
@@ -71,6 +203,7 @@ const DocView = ({ applicant }: DocViewProps) => {
 
   const handleFormResultChange = (newResult: string) => {
     setFormResult(newResult);
+    postFormResult();
   };
 
   const calculateTotalScore = (
@@ -80,20 +213,23 @@ const DocView = ({ applicant }: DocViewProps) => {
   };
 
   const getScoreByQuestionId = (questionId: number) => {
-    const answer = currentScore.answers.find(
-      (ans) => ans.questionId === questionId
-    );
+    const answer = answerList?.find((ans) => ans.questionId === questionId);
     return answer?.score || 0;
   };
 
   const handleScoreChange = (questionId: number, newScore: number) => {
-    setCurrentScore((prevState) => {
-      const updatedScores = prevState.answers.map((ans) =>
+    setUpdatedAnswerList((prevState) => {
+      if (!prevState) return [];
+
+      const updatedScores = prevState.map((ans) =>
         ans.questionId === questionId ? { ...ans, score: newScore } : ans
       );
-      const newTotalScore = calculateTotalScore(updatedScores); // 총점 계산
-      setTotalScore(newTotalScore); // 총점 상태 업데이트
-      return { ...prevState, answers: updatedScores };
+
+      const newTotalScore = calculateTotalScore(updatedScores);
+
+      setTotalScore(newTotalScore);
+
+      return updatedScores;
     });
   };
 
@@ -119,20 +255,35 @@ const DocView = ({ applicant }: DocViewProps) => {
         <ResultContainer>
           <p>합불 결과</p>
           <ResultTab>
-            <Result onClick={() => handleFormResultChange("null")}>
-              <CheckBox selected={formResult === "null"} />
+            <Result onClick={() => handleFormResultChange("PENDING")}>
+              <CheckBox selected={formResult === "PENDING"} />
               <p>미평가</p>
             </Result>
-            <Result onClick={() => handleFormResultChange("pass")}>
-              <CheckBox selected={formResult === "pass"} />
+            <Result onClick={() => handleFormResultChange("PASS")}>
+              <CheckBox selected={formResult === "PASS"} />
               <p>합격</p>
             </Result>
-            <Result onClick={() => handleFormResultChange("fail")}>
-              <CheckBox selected={formResult === "fail"} />
+            <Result onClick={() => handleFormResultChange("FAIL")}>
+              <CheckBox selected={formResult === "FAIL"} />
               <p>불합격</p>
             </Result>
           </ResultTab>
         </ResultContainer>
+        <ScoreContainer>
+          <p>면접 채점</p>
+          <TotalScore>
+            총점{" "}
+            <p>
+              {" "}
+              <input
+                type="number"
+                defaultValue={meetingScore}
+                onChange={(e) => setMeetingScore(parseInt(e.target.value))}
+              />
+            </p>
+            점
+          </TotalScore>
+        </ScoreContainer>
         <ScoreContainer>
           <p>지원서 채점</p>
           <TotalScore>
@@ -150,10 +301,10 @@ const DocView = ({ applicant }: DocViewProps) => {
                 <p>채점</p>
                 <input
                   type="number"
-                  defaultValue={getScoreByQuestionId(quest.questionid)}
+                  defaultValue={getScoreByQuestionId(quest.questionId)}
                   onChange={(e) =>
                     handleScoreChange(
-                      quest.questionid,
+                      quest.questionId,
                       parseInt(e.target.value, 10) || 0
                     )
                   }

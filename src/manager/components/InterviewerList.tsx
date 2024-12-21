@@ -2,32 +2,15 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import styled from "styled-components";
 import DocView from "./DocView";
-
-interface Applicant {
-  applicationId: number;
-  userId: number;
-  name: string;
-  email: string;
-  phoneNum: string;
-  school: string;
-  major: string;
-  position: string;
-  studentNumber: string;
-  formResult: string;
-  meetingResult: string;
-  formScore: number;
-  meetingScore: number;
-  meetingStartTime: string;
-  meetingEndTime: string;
-}
+import { ApplicantType } from "../global/types";
 
 interface Position {
-  id: string;
-  name: string;
+  recruitingId: number;
+  formId: number;
+  jobTitle: string;
 }
-
 interface ApplicantListProps {
-  data1: Applicant[];
+  data1: ApplicantType[];
   data2: Position[];
   isEmail: boolean;
 }
@@ -38,9 +21,11 @@ const InterviewerList = ({ data1, data2, isEmail }: ApplicantListProps) => {
   const [selectedState, setSelectedState] = useState("전체");
   const [selectedPositions, setSelectedPositions] = useState<string[]>([]);
   const [isDocumentOpen, setIsDocumentOpen] = useState(false);
-  const [selectedApplicant, setSelectedApplicant] = useState<Applicant>();
+  const [selectedApplicant, setSelectedApplicant] = useState<ApplicantType>();
   const [searchParams] = useSearchParams();
-  const [filteredApplicants, setFilteredApplicants] = useState<Applicant[]>([]);
+  const [filteredApplicants, setFilteredApplicants] = useState<ApplicantType[]>(
+    []
+  );
 
   const currApplyID = searchParams.get("apply");
   const navigate = useNavigate();
@@ -57,26 +42,22 @@ const InterviewerList = ({ data1, data2, isEmail }: ApplicantListProps) => {
     }
   };
 
-  const openDocument = (applicant: Applicant) => {
+  const openDocument = (applicant: ApplicantType) => {
     setSelectedApplicant(applicant);
     setIsDocumentOpen(true);
     navigate(`?apply=${applicant.applicationId}`);
   };
 
-  const parseDateTime = (dateTimeStr: string) => {
-    const [datePart, timePart] = dateTimeStr.split(" ");
-    const [year, month, day] = datePart.split("-");
-    const [hour, minute, second] = timePart.split(":");
+  function parseISODateTime(isoString: string) {
+    const date = new Date(isoString);
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    const hours = date.getHours();
+    const minutes = date.getMinutes();
 
-    return {
-      year,
-      month: parseInt(month, 10),
-      day: parseInt(day, 10),
-      hour,
-      minute,
-      second,
-    };
-  };
+    return { year, month, day, hours, minutes };
+  }
 
   const handleMeetingDateChange = (applicationId: number, value: string) => {
     setFilteredApplicants((prev) =>
@@ -124,24 +105,24 @@ const InterviewerList = ({ data1, data2, isEmail }: ApplicantListProps) => {
         const matchState =
           selectedState === "전체" ||
           (selectedState === "합격" &&
-            applicant.formResult === "pass" &&
-            applicant.meetingResult === "pass") ||
+            applicant.formResult === "PASS" &&
+            applicant.meetingResult === "PASS") ||
           (selectedState === "불합격" &&
-            (applicant.formResult === "fail" ||
-              applicant.meetingResult === "fail")) ||
+            (applicant.formResult === "FAIL" ||
+              applicant.meetingResult === "FAIL")) ||
           (selectedState === "미평가" &&
-            applicant.formResult === "pass" &&
-            applicant.meetingResult === "null");
+            applicant.formResult === "PASS" &&
+            applicant.meetingResult === "PENDING");
 
         const matchPosition =
           selectedPositions.length === 0 ||
-          selectedPositions.includes(applicant.position);
+          selectedPositions.includes(applicant.positionName);
 
         return matchState && matchPosition;
       })
       .sort((a, b) => {
-        if (a.formResult === "fail" && b.formResult !== "fail") return 1;
-        if (a.formResult !== "fail" && b.formResult === "fail") return -1;
+        if (a.formResult === "FAIL" && b.formResult !== "FAIL") return 1;
+        if (a.formResult !== "FAIL" && b.formResult === "FAIL") return -1;
         return 0;
       });
 
@@ -150,13 +131,13 @@ const InterviewerList = ({ data1, data2, isEmail }: ApplicantListProps) => {
 
   const getIconByState = (state: string) => {
     switch (state) {
-      case "passpass":
+      case "PASSPASS":
         return "/images/manager/pass.svg";
-      case "failfail":
+      case "FAILFAIL":
         return "/images/manager/fail.svg";
-      case "failnull":
+      case "FAILPENDING":
         return "/images/manager/fail.svg";
-      case "passfail":
+      case "PASSFAIL":
         return "/images/manager/fail.svg";
       default:
         return "/images/manager/neutral.svg";
@@ -188,7 +169,7 @@ const InterviewerList = ({ data1, data2, isEmail }: ApplicantListProps) => {
                   selected={selectedState}
                 >
                   <p>{state}</p>
-                  {index < stateList.length - 1 && <div>|</div>}
+                  {index < stateList.length - 1 && <Seperator />}
                 </StateItem>
               ))}
             </StateContainer>
@@ -196,36 +177,42 @@ const InterviewerList = ({ data1, data2, isEmail }: ApplicantListProps) => {
           <Position>
             <h2>전형</h2>
             <PositionContainer>
-              <PositionItem key="전체">
+              <PositionItem
+                key="전체"
+                selected={selectedPositions.length === 0}
+              >
                 <input
                   type="checkbox"
                   checked={selectedPositions.length === 0}
                   onChange={() => handlePositionChange("전체")}
                 />
                 <p>전체</p>
+                {data2.length > 1 && <Seperator />}
               </PositionItem>
               {data2.map((pos, index) => (
-                <PositionItem key={pos.id}>
-                  <p>|</p>
+                <PositionItem
+                  key={pos.recruitingId}
+                  selected={selectedPositions.includes(pos.jobTitle)}
+                >
                   <input
                     type="checkbox"
-                    checked={selectedPositions.includes(pos.name)}
-                    onChange={() => handlePositionChange(pos.name)}
+                    checked={selectedPositions.includes(pos.jobTitle)}
+                    onChange={() => handlePositionChange(pos.jobTitle)}
                   />
-                  <p>{pos.name}</p>
+                  <p>{pos.jobTitle}</p>
+                  {index < data2.length - 1 && <Seperator />}
                 </PositionItem>
               ))}
             </PositionContainer>
           </Position>
         </Filter>
         <Applicant>
-          {filteredApplicants.map((applicant: Applicant) => (
+          {filteredApplicants.map((applicant: ApplicantType) => (
             <ApplicantItem
               key={applicant.applicationId}
-              onClick={() => openDocument(applicant)}
               formResult={applicant.formResult}
             >
-              <div>
+              <div onClick={() => openDocument(applicant)}>
                 <OrderItem></OrderItem>
                 <img
                   src={getIconByState(
@@ -234,13 +221,20 @@ const InterviewerList = ({ data1, data2, isEmail }: ApplicantListProps) => {
                   alt={`${applicant.formResult} 아이콘`}
                 />
                 <ApplicantName>{applicant.name}</ApplicantName>
-                <ApplicantInfo>{applicant.position}</ApplicantInfo>
+                <ApplicantInfo>{applicant.positionName}</ApplicantInfo>
               </div>
               <div>
                 <MeetingSchedule>
                   <MeetingDate
                     type="date"
-                    value={applicant.meetingStartTime.split(" ")[0]}
+                    // value={applicant.meetingStartTime.split(" ")[0]}
+                    value={`${
+                      parseISODateTime(applicant.meetingStartTime).year
+                    }-${String(
+                      parseISODateTime(applicant.meetingStartTime).month
+                    ).padStart(2, "0")}-${String(
+                      parseISODateTime(applicant.meetingStartTime).day
+                    ).padStart(2, "0")}`}
                     onChange={(e) =>
                       handleMeetingDateChange(
                         applicant.applicationId,
@@ -250,7 +244,11 @@ const InterviewerList = ({ data1, data2, isEmail }: ApplicantListProps) => {
                   />
                   <MeetingTime
                     type="time"
-                    value={applicant.meetingStartTime.split(" ")[1]}
+                    value={`${String(
+                      parseISODateTime(applicant.meetingStartTime).hours
+                    ).padStart(2, "0")}:${String(
+                      parseISODateTime(applicant.meetingStartTime).minutes
+                    ).padStart(2, "0")}`}
                     onChange={(e) =>
                       handleMeetingTimeChange(
                         applicant.applicationId,
@@ -338,15 +336,22 @@ const EmailButton = styled.div`
 
 const Filter = styled.div`
   display: flex;
+  width: 100%;
   flex-direction: column;
-  width: 320px;
   justify-content: space-between;
   align-items: flex-start;
   padding: 0px 18px;
   padding-right: 40px;
   margin-bottom: 28px;
   flex-shrink: 0;
-  gap: 12px;
+  gap: 9px;
+`;
+
+const Seperator = styled.div`
+  width: 1px;
+  height: 16px;
+  background-color: #ddd;
+  margin: 0px 12px;
 `;
 
 const State = styled.div`
@@ -365,24 +370,24 @@ const State = styled.div`
 
 const StateContainer = styled.div`
   display: flex;
-  gap: 12px;
+  flex-wrap: wrap;
   align-items: center;
   margin-left: 32px;
 `;
 
 const StateItem = styled.div<{ state: string; selected: string }>`
   display: flex;
-  gap: 12px;
   color: #767676;
   font-family: Pretendard;
-  font-size: 12px;
+  font-size: 14px;
   font-style: normal;
   font-weight: 500;
   letter-spacing: -0.24px;
+  margin-bottom: 3px;
 
   p {
     color: ${({ state, selected }) => {
-      if (state === selected) return "#88181C";
+      if (state === selected) return "#cc141d";
       return "#767676";
     }};
     cursor: pointer;
@@ -405,25 +410,33 @@ const Position = styled.div`
 
 const PositionContainer = styled.div`
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   margin-left: 32px;
 `;
 
-const PositionItem = styled.div`
+const PositionItem = styled.div<{ selected: boolean }>`
   display: flex;
+  align-items: center;
+  margin-bottom: 3px;
 
   input {
     margin-right: 3px;
+    width: 15px;
+    height: 15px;
+    accent-color: #cc141d;
   }
 
   p {
-    color: #767676;
+    color: ${({ selected }) => {
+      if (selected) return "#cc141d;";
+      return "#767676";
+    }};
     font-family: Pretendard;
-    font-size: 12px;
+    font-size: 14px;
     font-style: normal;
     font-weight: 500;
     letter-spacing: -0.24px;
-    margin-right: 12px;
   }
 `;
 
@@ -449,7 +462,6 @@ const ApplicantItem = styled.div<{ formResult: string }>`
   border-bottom: 1px solid #eaeaea;
   color: #000000;
   font-family: Pretendard;
-  cursor: pointer;
   opacity: ${({ formResult }) => {
     if (formResult === "fail") return "0.3";
     return "1";
@@ -458,6 +470,7 @@ const ApplicantItem = styled.div<{ formResult: string }>`
   div {
     display: flex;
     align-items: center;
+    cursor: pointer;
   }
 `;
 

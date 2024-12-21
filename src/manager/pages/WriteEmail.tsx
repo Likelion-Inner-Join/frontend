@@ -7,60 +7,130 @@ import { applicantData } from "../mock/applicantData";
 import { positionData } from "../mock/positionData";
 import { PromotionData } from "../mock/PromotionDetail";
 import { useNavigate } from "react-router-dom";
-interface Applicant {
-  applicationId: number;
-  userId: number;
-  name: string;
-  email: string;
-  phoneNum: string;
-  school: string;
-  major: string;
-  position: string;
-  studentNumber: string;
-  formResult: string;
-  meetingResult: string;
-  formScore: number;
-  meetingScore: number;
-  meetingStartTime: string;
-  meetingEndTime: string;
-}
-
-interface PromotionImage {
-  imageId: number;
-  imageUrl: string;
-}
-
-interface PromotionInfo {
-  postId: number;
-  clubId: number;
-  title: string;
-  createdAt: string;
-  startTime: string;
-  endTime: string;
-  body: string;
-  status: string;
-  type: string;
-  field: string;
-  fieldType: string;
-  image: PromotionImage[];
-}
+import { ApplicantType, PostInfoType } from "../global/types";
+import { GET, POST } from "../../common/api/axios";
 
 const WriteEmail = () => {
-  const [passList, setPassList] = useState<Applicant[]>([]);
-  const [failList, setFailList] = useState<Applicant[]>([]);
-  const [receiverList, setReceiverList] = useState<Applicant[]>([]);
+  const [applicantList, setApplicantList] = useState<ApplicantType[]>([]);
+  const [passList, setPassList] = useState<ApplicantType[]>([]);
+  const [failList, setFailList] = useState<ApplicantType[]>([]);
+  const [receiverList, setReceiverList] = useState<ApplicantType[]>([]);
   const [selectedTab, setSelectedTab] = useState("");
-  const [promotionInfo, setPromotionInfo] = useState<PromotionInfo>();
+  const [postInfo, setPostInfo] = useState<PostInfoType>();
+  const [emailTitle, setEmailTitle] = useState(""); // 이메일 제목
+  const [emailBody, setEmailBody] = useState(""); // 이메일 내용
+  const [receiverIds, setReceiverIds] = useState<number[]>([]); // receiverList의 applicationID 리스트
   const navigate = useNavigate();
 
   useEffect(() => {
-    setPromotionInfo(PromotionData[0].result);
+    if (
+      postInfo?.recruitmentStatus === "OPEN" ||
+      postInfo?.recruitmentStatus === "INTERVIEW"
+    ) {
+      setPassList(
+        applicantList.filter((applicant) => applicant.formResult === "PASS")
+      );
+      setFailList(
+        applicantList.filter((applicant) => applicant.formResult === "FAIL")
+      );
+    } else {
+      setPassList(
+        applicantList.filter(
+          (applicant) =>
+            applicant.formResult === "PASS" &&
+            applicant.meetingResult === "PASS"
+        )
+      );
+      setFailList(
+        applicantList.filter(
+          (applicant) =>
+            applicant.formResult === "FAIL" ||
+            applicant.meetingResult === "FAIL"
+        )
+      );
+    }
+  }, [applicantList]);
+
+  useEffect(() => {
+    if (receiverList === applicantList) setSelectedTab("전체");
+    else if (receiverList === passList) setSelectedTab("합격자");
+    else if (receiverList === failList) setSelectedTab("불합격자");
+    else setSelectedTab("");
+  }, [receiverList]);
+
+  useEffect(() => {
+    setReceiverIds(receiverList.map((receiver) => receiver.applicationId));
+  }, [receiverList]);
+
+  const getApplicantList = async () => {
+    try {
+      //const res = await GET(`posts/${postId}/application`);
+      const res = await GET(`posts/1/application`);
+      //const res = applicantData;
+
+      if (res.isSuccess) {
+        setApplicantList(res.result.applicationList);
+      } else {
+        console.log(res.message);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const getPostDetails = async () => {
+    try {
+      //const res = await GET(`posts/${postId}`);
+      const res = await GET(`posts/1`);
+      //const res = PromotionData;
+
+      if (res.isSuccess) {
+        setPostInfo(res.result);
+      } else {
+        console.log(res.message);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    getApplicantList();
+    getPostDetails();
   }, []);
+
+  const handleSendEmail = async () => {
+    try {
+      const res = await POST("application/email", {
+        postId: 1,
+        applicationIdList: receiverIds,
+        title: emailTitle,
+        content: emailBody,
+      });
+
+      console.log(res);
+      // const res = {
+      //   isSuccess: true,
+      //   code: 0,
+      //   message: "string",
+      //   result: {},
+      // };
+
+      if (res.isSuccess) {
+        alert("이메일 전송 성공");
+        navigate("/email-send");
+      } else {
+        console.log(res.message);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const selectBtnClick = (selected: string) => {
     setSelectedTab(selected);
     if (selected === "전체") {
-      setReceiverList(applicantData);
+      setReceiverList(applicantList);
     } else if (selected === "합격자") {
       setReceiverList(passList);
     } else if (selected === "불합격자") {
@@ -86,66 +156,29 @@ const WriteEmail = () => {
       prevList.filter((receiver) => receiver.applicationId !== id)
     );
   };
-
-  useEffect(() => {
-    if (
-      promotionInfo?.status === "OPEN" ||
-      promotionInfo?.status === "INTERVIEW"
-    ) {
-      setPassList(
-        applicantData.filter((applicant) => applicant.formResult === "pass")
-      );
-      setFailList(
-        applicantData.filter((applicant) => applicant.formResult === "fail")
-      );
-    } else {
-      setPassList(
-        applicantData.filter(
-          (applicant) =>
-            applicant.formResult === "pass" &&
-            applicant.meetingResult === "pass"
-        )
-      );
-      setFailList(
-        applicantData.filter(
-          (applicant) =>
-            applicant.formResult === "fail" ||
-            applicant.meetingResult === "fail"
-        )
-      );
-    }
-  }, []);
-
-  useEffect(() => {
-    if (receiverList === applicantData) setSelectedTab("전체");
-    else if (receiverList === passList) setSelectedTab("합격자");
-    else if (receiverList === failList) setSelectedTab("불합격자");
-    else setSelectedTab("");
-  }, [receiverList]);
-
   return (
     <Wrapper>
-      {promotionInfo?.status === "OPEN" ||
-      promotionInfo?.status === "INTERVIEW" ? (
+      {postInfo?.recruitmentStatus === "OPEN" ||
+      postInfo?.recruitmentStatus === "INTERVIEW" ? (
         <ApplicantList
-          data1={applicantData}
-          data2={positionData}
+          data1={applicantList}
+          data2={postInfo?.recruitingList || []}
           isEmail={true}
         />
       ) : (
         <InterviewerList
-          data1={applicantData}
-          data2={positionData}
+          data1={applicantList}
+          data2={postInfo?.recruitingList || []}
           isEmail={true}
         />
       )}
       <Container>
         <Title>
-          <h1>{promotionInfo?.title}</h1>
+          <h1>{postInfo?.title}</h1>
           <p>
-            {parseISODateTime(String(promotionInfo?.endTime)).year}년{" "}
-            {parseISODateTime(String(promotionInfo?.endTime)).month}월{" "}
-            {parseISODateTime(String(promotionInfo?.endTime)).day}일 마감
+            {parseISODateTime(String(postInfo?.endTime)).year}년{" "}
+            {parseISODateTime(String(postInfo?.endTime)).month}월{" "}
+            {parseISODateTime(String(postInfo?.endTime)).day}일 마감
           </p>
         </Title>
         <Caption>
@@ -154,7 +187,7 @@ const WriteEmail = () => {
             <MyButton
               content="전송하기"
               buttonType="RED"
-              onClick={() => navigate("/email-send")}
+              onClick={() => handleSendEmail()}
             />
           </Buttons>
         </Caption>
@@ -205,11 +238,19 @@ const WriteEmail = () => {
         <EmailTitle>
           <EmailCaption>제목</EmailCaption>{" "}
           <Input>
-            <input></input>
+            <input
+              value={emailTitle}
+              onChange={(e) => setEmailTitle(e.target.value)}
+              placeholder="메일 제목을 입력하세요"
+            />
           </Input>
         </EmailTitle>
         <Body>
-          <textarea placeholder="메일 내용을 입력하세요" />
+          <textarea
+            value={emailBody}
+            onChange={(e) => setEmailBody(e.target.value)}
+            placeholder="메일 내용을 입력하세요"
+          />
         </Body>
       </Container>
     </Wrapper>

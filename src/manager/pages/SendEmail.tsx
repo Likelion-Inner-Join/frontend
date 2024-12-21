@@ -7,61 +7,79 @@ import { applicantData } from "../mock/applicantData";
 import { positionData } from "../mock/positionData";
 import { PromotionData } from "../mock/PromotionDetail";
 import { useNavigate } from "react-router-dom";
-
-interface PromotionImage {
-  imageId: number;
-  imageUrl: string;
-}
-
-interface PromotionInfo {
-  postId: number;
-  clubId: number;
-  title: string;
-  createdAt: string;
-  startTime: string;
-  endTime: string;
-  body: string;
-  status: string;
-  type: string;
-  field: string;
-  fieldType: string;
-  image: PromotionImage[];
-}
+import { ApplicantType, PostInfoType } from "../global/types";
+import { GET } from "../../common/api/axios";
 
 const SendEmail = () => {
+  const [applicantList, setApplicantList] = useState<ApplicantType[]>([]);
   const [isSended, setIsSended] = useState(true);
   const [redirectPage, setRedirectPage] = useState("");
-  const [promotionInfo, setPromotionInfo] = useState<PromotionInfo>();
+  const [postInfo, setPostInfo] = useState<PostInfoType>();
   const navigate = useNavigate();
 
+  const getApplicantList = async () => {
+    try {
+      //const res = await GET(`posts/${postId}/application`);
+      const res = await GET(`posts/1/application`);
+      //const res = applicantData;
+
+      if (res.isSuccess) {
+        setApplicantList(res.result.applicationList);
+      } else {
+        console.log(res.message);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const getPostDetails = async () => {
+    try {
+      //const res = await GET(`posts/${postId}`);
+      const res = await GET(`posts/1`);
+      //const res = PromotionData;
+
+      if (res.isSuccess) {
+        setPostInfo(res.result);
+        console.log(res);
+      } else {
+        console.log(res.message);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   useEffect(() => {
-    setPromotionInfo(PromotionData[0].result);
+    getApplicantList();
+    getPostDetails();
   }, []);
 
   useEffect(() => {
-    if (promotionInfo?.status === "OPEN") setRedirectPage("/meet-table");
-    else if (promotionInfo?.status === "INTERVIEW") setRedirectPage("/result");
-    else if (promotionInfo?.status === "FORM_REVIEW")
+    if (postInfo?.recruitmentStatus === "OPEN") setRedirectPage("/doc-eval");
+    else if (postInfo?.recruitmentStatus === "FORM_REVIEWED")
       setRedirectPage("/meet-table");
-    else if (promotionInfo?.status === "INTERVIEW_REVIEW")
-      setRedirectPage("/final-result");
-    else if (promotionInfo?.status === "CLOSED")
+    else if (postInfo?.recruitmentStatus === "TIME_SET")
+      setRedirectPage("/meet-table");
+    else if (postInfo?.recruitmentStatus === "INTERVIEWED")
+      setRedirectPage("/meet-eval");
+    else if (postInfo?.recruitmentStatus === "CLOSED")
       setRedirectPage("/post-manage");
-  }, [promotionInfo]);
+  }, [postInfo]);
 
   return (
     <Wrapper>
-      {promotionInfo?.status === "OPEN" ||
-      promotionInfo?.status === "INTERVIEW" ? (
+      {postInfo?.recruitmentStatus === "OPEN" ||
+      postInfo?.recruitmentStatus === "INTERVIEW" ? (
         <ApplicantList
-          data1={applicantData}
-          data2={positionData}
+          data1={applicantList}
+          data2={postInfo?.recruitingList || []}
           isEmail={true}
         />
       ) : (
         <InterviewerList
-          data1={applicantData}
-          data2={positionData}
+          data1={applicantList}
+          data2={postInfo?.recruitingList || []}
           isEmail={true}
         />
       )}
@@ -72,7 +90,7 @@ const SendEmail = () => {
         ) : (
           <Caption>메일을 전송하고 있습니다</Caption>
         )}
-        {promotionInfo?.status === "CLOSED" ? (
+        {postInfo?.recruitmentStatus === "CLOSED" ? (
           <MyButton
             content="평가종료"
             buttonType="RED"

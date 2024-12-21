@@ -8,57 +8,82 @@ import MyButton from "../components/MyButton";
 import { applicantData } from "../mock/applicantData";
 import { positionData } from "../mock/positionData";
 import { useNavigate } from "react-router-dom";
-
-interface Applicant {
-  applicationId: number;
-  userId: number;
-  name: string;
-  email: string;
-  phoneNum: string;
-  school: string;
-  major: string;
-  position: string;
-  studentNumber: string;
-  formResult: string;
-  meetingResult: string;
-  formScore: number;
-  meetingScore: number;
-  meetingStartTime: string;
-  meetingEndTime: string;
-}
+import { GET } from "../../common/api/axios";
+import { ApplicantType, PostInfoType } from "../global/types";
 
 const MeetEvaluate = () => {
-  const [restList, setRestList] = useState<Applicant[]>([]);
-  const [passList, setPassList] = useState<Applicant[]>([]);
-  const [failList, setFailList] = useState<Applicant[]>([]);
+  const [applicantList, setApplicantList] = useState<ApplicantType[]>([]);
+  const [postInfo, setPostInfo] = useState<PostInfoType>();
+  const [restList, setRestList] = useState<ApplicantType[]>([]);
+  const [passList, setPassList] = useState<ApplicantType[]>([]);
+  const [failList, setFailList] = useState<ApplicantType[]>([]);
   const navigate = useNavigate();
+
+  const getApplicantList = async () => {
+    try {
+      //const res = await GET(`posts/${postId}/application`);
+      const res = await GET(`posts/1/application`);
+      //const res = applicantData;
+
+      if (res.isSuccess) {
+        setApplicantList(res.result.applicationList);
+      } else {
+        console.log(res.message);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const getPostDetails = async () => {
+    try {
+      //const res = await GET(`posts/${postId}`);
+      const res = await GET(`posts/1`);
+      //const res = PromotionData;
+
+      if (res.isSuccess) {
+        setPostInfo(res.result);
+      } else {
+        console.log(res.message);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    getApplicantList();
+    getPostDetails();
+    //setApplicantList(applicantData.result.applicationList);
+  }, []);
 
   useEffect(() => {
     setPassList(
-      applicantData.filter(
+      applicantList.filter(
         (applicant) =>
-          applicant.formResult === "pass" && applicant.meetingResult === "pass"
+          applicant.formResult === "PASS" && applicant.meetingResult === "PASS"
       )
     );
     setFailList(
-      applicantData.filter(
+      applicantList.filter(
         (applicant) =>
-          applicant.formResult === "fail" || applicant.meetingResult === "fail"
+          applicant.formResult === "FAIL" || applicant.meetingResult === "FAIL"
       )
     );
     setRestList(
-      applicantData.filter(
+      applicantList.filter(
         (applicant) =>
-          applicant.formResult === "pass" && applicant.meetingResult === "null"
+          applicant.formResult === "PASS" &&
+          applicant.meetingResult === "PENDING"
       )
     );
-  }, [applicantData]);
+  }, [applicantList]);
 
   return (
     <Wrapper>
       <InterviewerList
-        data1={applicantData}
-        data2={positionData}
+        data1={applicantList}
+        data2={postInfo?.recruitingList || []}
         isEmail={false}
       />
       <Container>

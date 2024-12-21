@@ -9,83 +9,83 @@ import { applicantData } from "../mock/applicantData";
 import { positionData } from "../mock/positionData";
 import { PromotionData } from "../mock/PromotionDetail";
 import { useNavigate } from "react-router-dom";
-interface Applicant {
-  applicationId: number;
-  userId: number;
-  name: string;
-  email: string;
-  phoneNum: string;
-  school: string;
-  major: string;
-  position: string;
-  studentNumber: string;
-  formResult: string;
-  meetingResult: string;
-  formScore: number;
-  meetingScore: number;
-  meetingStartTime: string;
-  meetingEndTime: string;
-}
-
-interface PromotionImage {
-  imageId: number;
-  imageUrl: string;
-}
-
-interface PromotionInfo {
-  postId: number;
-  clubId: number;
-  title: string;
-  createdAt: string;
-  startTime: string;
-  endTime: string;
-  body: string;
-  status: string;
-  type: string;
-  field: string;
-  fieldType: string;
-  image: PromotionImage[];
-}
+import { ApplicantType, PostInfoType } from "../global/types";
+import { GET } from "../../common/api/axios";
 
 const ResultShare = () => {
-  const [restList, setRestList] = useState<Applicant[]>([]);
-  const [passList, setPassList] = useState<Applicant[]>([]);
-  const [failList, setFailList] = useState<Applicant[]>([]);
+  const [applicantList, setApplicantList] = useState<ApplicantType[]>([]);
+  const [restList, setRestList] = useState<ApplicantType[]>([]);
+  const [passList, setPassList] = useState<ApplicantType[]>([]);
+  const [failList, setFailList] = useState<ApplicantType[]>([]);
   const [isShared, setIsShared] = useState(false);
-  const [promotionInfo, setPromotionInfo] = useState<PromotionInfo>();
+  const [postInfo, setPostInfo] = useState<PostInfoType>();
   const [resultType, setResultType] = useState<String>("");
   const navigate = useNavigate();
+
+  const getApplicantList = async () => {
+    try {
+      //const res = await GET(`posts/${postId}/application`);
+      const res = await GET(`posts/1/application`);
+      //const res = applicantData;
+
+      if (res.isSuccess) {
+        setApplicantList(res.result.applicationList);
+      } else {
+        console.log(res.message);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const getPostDetails = async () => {
+    try {
+      //const res = await GET(`posts/${postId}`);
+      const res = await GET(`posts/1`);
+      //const res = PromotionData;
+
+      if (res.isSuccess) {
+        setPostInfo(res.result);
+        console.log(res);
+      } else {
+        console.log(res.message);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    getApplicantList();
+    getPostDetails();
+  }, []);
+
+  useEffect(() => {
+    if (postInfo?.recruitmentType === "FORM_ONLY") setResultType("최종");
+    if (postInfo?.recruitmentType === "FORM_AND_MEETING") setResultType("서류");
+  }, [postInfo]);
+
+  useEffect(() => {
+    setPassList(
+      applicantList.filter((applicant) => applicant.formResult === "PASS")
+    );
+    setFailList(
+      applicantList.filter((applicant) => applicant.formResult === "FAIL")
+    );
+    setRestList(
+      applicantList.filter((applicant) => applicant.formResult === "PENDING")
+    );
+  }, [applicantList]);
 
   const shareButtonClick = () => {
     if (!isShared) setIsShared(!isShared);
   };
 
-  useEffect(() => {
-    setPromotionInfo(PromotionData[0].result);
-  }, []);
-
-  useEffect(() => {
-    if (promotionInfo?.type === "FORM") setResultType("최종");
-    if (promotionInfo?.type === "MEET") setResultType("서류");
-  }, [promotionInfo]);
-
-  useEffect(() => {
-    setPassList(
-      applicantData.filter((applicant) => applicant.formResult === "pass")
-    );
-    setFailList(
-      applicantData.filter((applicant) => applicant.formResult === "fail")
-    );
-    setRestList(
-      applicantData.filter((applicant) => applicant.formResult === "null")
-    );
-  }, [applicantData]);
-
   return (
     <Wrapper>
       <ApplicantList
-        data1={applicantData}
-        data2={positionData}
+        data1={applicantList}
+        data2={postInfo?.recruitingList || []}
         isEmail={false}
       />
       <Container>

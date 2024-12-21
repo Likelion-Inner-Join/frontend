@@ -9,73 +9,73 @@ import MyButton from "../components/MyButton";
 import { applicantData } from "../mock/applicantData";
 import { positionData } from "../mock/positionData";
 import { PromotionData } from "../mock/PromotionDetail";
-
-interface Applicant {
-  applicationId: number;
-  userId: number;
-  name: string;
-  email: string;
-  phoneNum: string;
-  school: string;
-  major: string;
-  position: string;
-  studentNumber: string;
-  formResult: string;
-  meetingResult: string;
-  formScore: number;
-  meetingScore: number;
-  meetingStartTime: string;
-  meetingEndTime: string;
-}
-
-interface PromotionImage {
-  imageId: number;
-  imageUrl: string;
-}
-
-interface PromotionInfo {
-  postId: number;
-  clubId: number;
-  title: string;
-  createdAt: string;
-  startTime: string;
-  endTime: string;
-  body: string;
-  status: string;
-  type: string;
-  field: string;
-  fieldType: string;
-  image: PromotionImage[];
-}
+import { GET } from "../../common/api/axios";
+import { ApplicantType, PostInfoType } from "../global/types";
 
 const DocEvaluate = () => {
-  const [restList, setRestList] = useState<Applicant[]>([]);
-  const [passList, setPassList] = useState<Applicant[]>([]);
-  const [failList, setFailList] = useState<Applicant[]>([]);
-  const [promotionInfo, setPromotionInfo] = useState<PromotionInfo>();
+  const [applicantList, setApplicantList] = useState<ApplicantType[]>([]);
+  const [restList, setRestList] = useState<ApplicantType[]>([]);
+  const [passList, setPassList] = useState<ApplicantType[]>([]);
+  const [failList, setFailList] = useState<ApplicantType[]>([]);
+  const [postInfo, setPostInfo] = useState<PostInfoType>();
+  const [postId, setPostId] = useState<number>();
   const navigate = useNavigate();
 
+  const getApplicantList = async () => {
+    try {
+      //const res = await GET(`posts/${postId}/application`);
+      const res = await GET(`posts/1/application`);
+      //const res = applicantData;
+
+      if (res.isSuccess) {
+        setApplicantList(res.result.applicationList);
+        setPostId(res.result.postId);
+      } else {
+        console.log(res.message);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const getPostDetails = async () => {
+    try {
+      //const res = await GET(`posts/${postId}`);
+      const res = await GET(`posts/1`);
+      //const res = PromotionData;
+
+      if (res.isSuccess) {
+        setPostInfo(res.result);
+      } else {
+        console.log(res.message);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   useEffect(() => {
-    setPromotionInfo(PromotionData[0].result);
+    getApplicantList();
+    getPostDetails();
   }, []);
 
   useEffect(() => {
     setPassList(
-      applicantData.filter((applicant) => applicant.formResult === "pass")
+      applicantList.filter((applicant) => applicant.formResult === "PASS")
     );
     setFailList(
-      applicantData.filter((applicant) => applicant.formResult === "fail")
+      applicantList.filter((applicant) => applicant.formResult === "FAIL")
     );
     setRestList(
-      applicantData.filter((applicant) => applicant.formResult === "null")
+      applicantList.filter((applicant) => applicant.formResult === "PENDING")
     );
-  }, [applicantData]);
+  }, [applicantList]);
 
   return (
     <Wrapper>
       <ApplicantList
-        data1={applicantData}
-        data2={positionData}
+        data1={applicantList}
+        data2={postInfo?.recruitingList || []}
         isEmail={false}
       />
       <Container>
@@ -85,7 +85,7 @@ const DocEvaluate = () => {
             <img src="/images/manager/check.svg" />
             합불 부여하기
           </EvalButton>
-          {promotionInfo?.type === "FORM" ? (
+          {postInfo?.recruitmentType === "FORM_ONLY" ? (
             <MyButton
               content="다음 단계"
               buttonType="RED"
@@ -95,7 +95,7 @@ const DocEvaluate = () => {
             <MyButton
               content="다음 단계"
               buttonType="RED"
-              onClick={() => navigate("/meet-table")}
+              onClick={() => navigate("/result")}
             />
           )}
         </Buttons>
@@ -117,12 +117,15 @@ const DocEvaluate = () => {
           <div>
             <h3>경쟁률</h3>
             <p>
-              {Math.round(
-                ((passList.length + failList.length + restList.length) /
-                  passList.length) *
-                  Math.pow(10, 2)
-              ) / Math.pow(10, 2)}{" "}
-              : 1
+              {passList.length > 0
+                ? (
+                    Math.round(
+                      ((passList.length + failList.length + restList.length) /
+                        passList.length) *
+                        Math.pow(10, 2)
+                    ) / Math.pow(10, 2)
+                  ).toFixed(2) + ": 1"
+                : "0 : 0"}{" "}
             </p>
           </div>
         </InfoRatio>

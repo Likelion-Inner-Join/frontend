@@ -1,26 +1,10 @@
 import React from "react";
 import styled from "styled-components";
-interface Applicant {
-  applicationId: number;
-  userId: number;
-  name: string;
-  email: string;
-  phoneNum: string;
-  school: string;
-  major: string;
-  position: string;
-  studentNumber: string;
-  formResult: string;
-  meetingResult: string;
-  formScore: number;
-  meetingScore: number;
-  meetingStartTime: string;
-  meetingEndTime: string;
-}
+import { ApplicantType } from "../global/types";
 interface InformationBoxProps {
-  restList: Applicant[];
-  passList: Applicant[];
-  failList: Applicant[];
+  restList: ApplicantType[];
+  passList: ApplicantType[];
+  failList: ApplicantType[];
 }
 
 const InformationBox = ({
