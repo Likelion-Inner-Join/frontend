@@ -70,7 +70,6 @@ const MultipleChoice = ({ questionData, updateQuestion }) => {
       <Input
         type="text"
         placeholder="질문 입력*"
-        isQuestionInput
         value={question}
         onChange={handleQuestionChange}
       />
@@ -83,9 +82,10 @@ const MultipleChoice = ({ questionData, updateQuestion }) => {
       {options.map((option, index) => (
         <Option key={index}>
           <RadioCircle
-            isSelected={selectedOptions.includes(index)}
+            $isSelected={selectedOptions.includes(index)}
             onClick={() => handleOptionSelect(index)}
           />
+
           <OptionInput
             type="text"
             placeholder={`항목${index + 1} 입력`}
@@ -115,7 +115,7 @@ const Container = styled.div`
 
 const Input = styled.input`
   padding: 10px;
-  font-size: ${(props) => (props.isQuestionInput ? "18px" : "16px")};
+  font-size: 16px;
   border: 1px solid #ddd;
   border-radius: 5px;
   width: 100%;
@@ -131,8 +131,8 @@ const Option = styled.div`
 const RadioCircle = styled.div`
   width: 12px;
   height: 12px;
-  border: 1px solid ${(props) => (props.isSelected ? "#C0C0C0" : "#ddd")};
-  background-color: ${(props) => (props.isSelected ? "#C0C0C0" : "white")};
+  border: 1px solid ${(props) => (props.$isSelected ? "#C0C0C0" : "#ddd")};
+  background-color: ${(props) => (props.$isSelected ? "#C0C0C0" : "white")};
   border-radius: 50%;
   margin-right: 10px;
   cursor: pointer;

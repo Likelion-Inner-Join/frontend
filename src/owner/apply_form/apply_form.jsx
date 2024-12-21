@@ -26,42 +26,75 @@ const ApplyForm = () => {
   }, [formId]);
 
   // 폼 저장
-  const saveForm = () => {
-    if (!formTitle.trim()) {
-      // 제목이 없을 경우
+  const saveForm = async () => {
+    if (!(formTitle || "").trim()) {
       setPopupMessage("폼 제목을 입력해주세요.");
       setShowPopup(true);
       return;
     }
 
     if (formContent.length === 0) {
-      // 질문이 없을 경우
       setPopupMessage("폼에 최소 한 개의 질문을 추가해주세요.");
       setShowPopup(true);
       return;
     }
 
-    const savedForms = JSON.parse(localStorage.getItem("savedForms")) || [];
-    const newForm = {
-      id: formId || Date.now().toString(),
-      title: formTitle,
-      description: formDescription,
-      content: formContent,
-    };
-
-    if (formId) {
-      const updatedForms = savedForms.map((form) =>
-        form.id === formId ? newForm : form
-      );
-      localStorage.setItem("savedForms", JSON.stringify(updatedForms));
-    } else {
-      localStorage.setItem(
-        "savedForms",
-        JSON.stringify([...savedForms, newForm])
-      );
+    for (const question of formContent) {
+      // 설명글(description)은 제목 검사를 제외
+      if (question.type !== "description") {
+        if (!question.question || question.question.trim() === "") {
+          setPopupMessage("모든 질문에 제목을 입력해주세요.");
+          setShowPopup(true);
+          return;
+        }
+        if (!question.type) {
+          setPopupMessage("모든 질문의 타입을 선택해주세요.");
+          setShowPopup(true);
+          return;
+        }
+      }
     }
 
-    navigate("/apply-manage");
+    // 유효성 검증 완료 후 저장
+    await handleSaveForm();
+  };
+
+  const handleSaveForm = async () => {
+    const formData = {
+      title: formTitle,
+      description: formDescription,
+      questionList: formContent.map((item, index) => ({
+        number: index + 1, // 질문 번호
+        question: item.question, // 질문 제목
+        type: item.type.toUpperCase(), // 질문 타입 (대문자로 변환)
+        list: item.options || [], // 옵션 리스트 (객관식/체크박스일 경우만 포함)
+      })),
+    };
+
+    try {
+      const response = await fetch("/form", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const result = await response.json();
+
+      if (result.isSuccess) {
+        console.log("폼 저장 성공:", result.result);
+        navigate("/apply-manage");
+      } else {
+        console.error("폼 저장 실패:", result.message);
+        setPopupMessage(result.message || "폼 저장에 실패했습니다.");
+        setShowPopup(true);
+      }
+    } catch (error) {
+      console.error("API 호출 에러:", error);
+      setPopupMessage("폼 저장 중 오류가 발생했습니다.");
+      setShowPopup(true);
+    }
   };
 
   const closePopup = () => {
@@ -83,13 +116,13 @@ const ApplyForm = () => {
     ]);
   };
 
-  // 경계선 추가
-  const addBorder = () => {
-    setFormContent((prev) => [
-      ...prev,
-      { id: Date.now().toString(), type: "border" },
-    ]);
-  };
+  // // 경계선 추가
+  // const addBorder = () => {
+  //   setFormContent((prev) => [
+  //     ...prev,
+  //     { id: Date.now().toString(), type: "border" },
+  //   ]);
+  // };
 
   // 설명글 추가
   const addDescription = () => {
@@ -205,7 +238,7 @@ const ApplyForm = () => {
                                 description: e.target.value,
                               })
                             }
-                            isDescriptionInput
+                            $isDescriptionInput // 여기서 `$`를 사용
                           />
                         </DescriptionContent>
                       </DescriptionContainer>
@@ -386,7 +419,7 @@ const DescriptionContent = styled.div`
 const Input = styled.input`
   padding: 10px;
   font-size: ${(props) =>
-    props.isDescriptionInput
+    props.$isDescriptionInput
       ? "14px"
       : "16px"}; /* 설명 입력은 글씨 크기 작게 */
   border: 1px solid #ddd;

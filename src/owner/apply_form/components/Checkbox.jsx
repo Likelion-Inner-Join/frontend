@@ -10,30 +10,41 @@ const Checkbox = ({ questionData, updateQuestion }) => {
   ); // 질문 설명 상태
 
   useEffect(() => {
-    // questionData 변경 시 상태 동기화
     setOptions(questionData.options || [""]);
     setQuestion(questionData.question || "");
     setDescription(questionData.description || "");
   }, [questionData]);
 
   const handleInputChange = (e) => {
-    setQuestion(e.target.value);
-    updateQuestion(questionData.id, { question: e.target.value });
+    const value = e.target.value;
+    setQuestion(value);
+    updateQuestion(questionData.id, { question: value });
   };
 
   const handleDescriptionChange = (e) => {
-    setDescription(e.target.value);
-    updateQuestion(questionData.id, { description: e.target.value });
+    const value = e.target.value;
+    setDescription(value);
+    updateQuestion(questionData.id, { description: value });
   };
 
+  // const handleOptionChange = (index, value) => {
+  //   const updatedOptions = [...options];
+  //   updatedOptions[index] = value;
+  //   setOptions(updatedOptions);
+  //   updateQuestion(questionData.id, { options: updatedOptions });
+  // };
   const handleOptionChange = (index, value) => {
     const updatedOptions = [...options];
     updatedOptions[index] = value;
     setOptions(updatedOptions);
-    updateQuestion(questionData.id, { options: updatedOptions });
+    updateQuestion(questionData.id, { list: updatedOptions }); // 옵션을 list로 전달
   };
 
   const addOption = () => {
+    if (options.length >= 25) {
+      alert("최대 25개의 옵션만 추가할 수 있습니다.");
+      return;
+    }
     const updatedOptions = [...options, ""];
     setOptions(updatedOptions);
     updateQuestion(questionData.id, { options: updatedOptions });
@@ -50,7 +61,7 @@ const Checkbox = ({ questionData, updateQuestion }) => {
       <InputField
         type="text"
         placeholder="질문 입력*"
-        isQuestionInput
+        // isQuestionInput
         value={question}
         onChange={handleInputChange}
       />
@@ -90,9 +101,17 @@ const Container = styled.div`
   gap: 10px;
 `;
 
+// const InputField = styled.input`
+//   padding: 10px;
+//   font-size: ${(props) => (props.isQuestionInput ? "18px" : "16px")};
+//   border: 1px solid #ddd;
+//   border-radius: 5px;
+//   width: 100%;
+//   box-sizing: border-box;
+// `;
 const InputField = styled.input`
   padding: 10px;
-  font-size: ${(props) => (props.isQuestionInput ? "18px" : "16px")};
+  font-size: 16px;
   border: 1px solid #ddd;
   border-radius: 5px;
   width: 100%;

@@ -30,7 +30,6 @@ const EssayQuestion = ({ questionData, updateQuestion }) => {
       <Body>
         <Input
           placeholder="질문 입력*"
-          isQuestionInput
           value={question}
           onChange={handleQuestionChange}
         />
@@ -68,7 +67,7 @@ const TextLimit = styled.div`
 
 const Input = styled.input`
   padding: 10px;
-  font-size: ${(props) => (props.isQuestionInput ? "18px" : "16px")};
+  font-size: 16px;
   border: 1px solid #ddd;
   border-radius: 5px;
   width: 100%;

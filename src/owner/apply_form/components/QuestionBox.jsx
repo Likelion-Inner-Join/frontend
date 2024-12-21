@@ -75,10 +75,27 @@ const QuestionBox = ({ questionData, updateQuestion, deleteQuestion }) => {
     }
   };
 
+  // const handleTypeChange = (newType) => {
+  //   const initialData = {
+  //     multiple_choice: { options: [""] },
+  //     checkbox: { options: [""] },
+  //     short_answer: {},
+  //     paragraph: {},
+  //     date: {},
+  //     time: {},
+  //   };
+  //   updateQuestion(questionData.id, {
+  //     type: newType,
+  //     ...initialData[newType],
+  //     question: "", // 새 유형일 경우 질문 초기화
+  //     description: "", // 새 유형일 경우 설명 초기화
+  //   });
+  //   setShowTypeDropdown(false);
+  // };
   const handleTypeChange = (newType) => {
     const initialData = {
-      multiple_choice: { options: [""] },
-      checkbox: { options: [""] },
+      multiple_choice: { list: [""] }, // 옵션 리스트 초기화
+      checkbox: { list: [""] },
       short_answer: {},
       paragraph: {},
       date: {},
@@ -87,8 +104,8 @@ const QuestionBox = ({ questionData, updateQuestion, deleteQuestion }) => {
     updateQuestion(questionData.id, {
       type: newType,
       ...initialData[newType],
-      question: "", // 새 유형일 경우 질문 초기화
-      description: "", // 새 유형일 경우 설명 초기화
+      question: "",
+      description: "",
     });
     setShowTypeDropdown(false);
   };
