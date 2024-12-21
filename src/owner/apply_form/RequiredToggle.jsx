@@ -28,7 +28,7 @@ const Label = styled.span`
 const ToggleSwitch = styled.div`
   width: 40px;
   height: 20px;
-  background-color: ${(props) => (props.active ? "#B10D15" : "#c0c0c0;")};
+  background-color: ${(props) => (props.active ? "#B10D15" : "#c0c0c0")};
   border-radius: 15px;
   cursor: pointer;
   display: flex;
