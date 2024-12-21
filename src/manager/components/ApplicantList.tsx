@@ -2,32 +2,16 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import styled from "styled-components";
 import DocView from "./DocView";
-
-interface Applicant {
-  applicationId: number;
-  userId: number;
-  name: string;
-  email: string;
-  phoneNum: string;
-  school: string;
-  major: string;
-  position: string;
-  studentNumber: string;
-  formResult: string;
-  meetingResult: string;
-  formScore: number;
-  meetingScore: number;
-  meetingStartTime: string;
-  meetingEndTime: string;
-}
+import { ApplicantType } from "../global/types";
 
 interface Position {
-  id: string;
-  name: string;
+  recruitingId: number;
+  formId: number;
+  jobTitle: string;
 }
 
 interface ApplicantListProps {
-  data1: Applicant[];
+  data1: ApplicantType[];
   data2: Position[];
   isEmail: boolean;
 }
@@ -38,7 +22,7 @@ const ApplicantList = ({ data1, data2, isEmail }: ApplicantListProps) => {
   const [selectedState, setSelectedState] = useState("전체");
   const [selectedPositions, setSelectedPositions] = useState<string[]>([]);
   const [isDocumentOpen, setIsDocumentOpen] = useState(false);
-  const [selectedApplicant, setSelectedApplicant] = useState<Applicant>();
+  const [selectedApplicant, setSelectedApplicant] = useState<ApplicantType>();
   const [searchParams] = useSearchParams();
   const currApplyID = searchParams.get("apply");
   const navigate = useNavigate();
@@ -46,13 +30,13 @@ const ApplicantList = ({ data1, data2, isEmail }: ApplicantListProps) => {
   const filteredApplicants = data1.filter((applicant) => {
     const matchState =
       selectedState === "전체" ||
-      (selectedState === "합격" && applicant.formResult === "pass") ||
-      (selectedState === "불합격" && applicant.formResult === "fail") ||
-      (selectedState === "미평가" && applicant.formResult === "null");
+      (selectedState === "합격" && applicant.formResult === "PASS") ||
+      (selectedState === "불합격" && applicant.formResult === "FAIL") ||
+      (selectedState === "미평가" && applicant.formResult === "PENDING");
 
     const matchPosition =
       selectedPositions.length === 0 ||
-      selectedPositions.includes(applicant.position);
+      selectedPositions.includes(applicant.positionName);
 
     return matchState && matchPosition;
   });
@@ -69,7 +53,7 @@ const ApplicantList = ({ data1, data2, isEmail }: ApplicantListProps) => {
     }
   };
 
-  const openDocument = (applicant: Applicant) => {
+  const openDocument = (applicant: ApplicantType) => {
     setSelectedApplicant(applicant);
     setIsDocumentOpen(true);
     navigate(`?apply=${applicant.applicationId}`);
@@ -87,9 +71,9 @@ const ApplicantList = ({ data1, data2, isEmail }: ApplicantListProps) => {
 
   const getIconByState = (state: string) => {
     switch (state) {
-      case "pass":
+      case "PASS":
         return "/images/manager/pass.svg";
-      case "fail":
+      case "FAIL":
         return "/images/manager/fail.svg";
       default:
         return "/images/manager/neutral.svg";
@@ -121,7 +105,7 @@ const ApplicantList = ({ data1, data2, isEmail }: ApplicantListProps) => {
                   selected={selectedState}
                 >
                   <p>{state}</p>
-                  {index < stateList.length - 1 && <div>|</div>}
+                  {index < stateList.length - 1 && <Seperator />}
                 </StateItem>
               ))}
             </StateContainer>
@@ -129,30 +113,37 @@ const ApplicantList = ({ data1, data2, isEmail }: ApplicantListProps) => {
           <Position>
             <h2>전형</h2>
             <PositionContainer>
-              <PositionItem key="전체">
+              <PositionItem
+                key="전체"
+                selected={selectedPositions.length === 0}
+              >
                 <input
                   type="checkbox"
                   checked={selectedPositions.length === 0}
                   onChange={() => handlePositionChange("전체")}
                 />
                 <p>전체</p>
+                {data2.length > 1 && <Seperator />}
               </PositionItem>
               {data2.map((pos, index) => (
-                <PositionItem key={pos.id}>
-                  <p>|</p>
+                <PositionItem
+                  key={pos.formId}
+                  selected={selectedPositions.includes(pos.jobTitle)}
+                >
                   <input
                     type="checkbox"
-                    checked={selectedPositions.includes(pos.name)}
-                    onChange={() => handlePositionChange(pos.name)}
+                    checked={selectedPositions.includes(pos.jobTitle)}
+                    onChange={() => handlePositionChange(pos.jobTitle)}
                   />
-                  <p>{pos.name}</p>
+                  <p>{pos.jobTitle}</p>
+                  {index < data2.length - 1 && <Seperator />}
                 </PositionItem>
               ))}
             </PositionContainer>
           </Position>
         </Filter>
         <Applicant>
-          {filteredApplicants.map((applicant: Applicant) => (
+          {filteredApplicants.map((applicant: ApplicantType) => (
             <ApplicantItem
               key={applicant.applicationId}
               onClick={() => openDocument(applicant)}
@@ -167,15 +158,21 @@ const ApplicantList = ({ data1, data2, isEmail }: ApplicantListProps) => {
                 <ApplicantInfo>{applicant.studentNumber}</ApplicantInfo>
               </div>
               <div>
-                <ApplicantPosition>{applicant.position}</ApplicantPosition>
+                <ApplicantPosition>{applicant.positionName}</ApplicantPosition>
                 {isEmail ? (
-                  <AddButton>
+                  <DocButton>
                     <img
-                      src="/images/manager/mail.svg"
-                      alt="수신자 추가 버튼"
+                      src="/images/manager/directionBt.svg"
+                      alt="서류 보기 버튼"
                     />
-                  </AddButton>
+                  </DocButton>
                 ) : (
+                  // <AddButton>
+                  //   <img
+                  //     src="/images/manager/mail.svg"
+                  //     alt="수신자 추가 버튼"
+                  //   />
+                  // </AddButton>
                   <DocButton>
                     <img
                       src="/images/manager/directionBt.svg"
@@ -262,15 +259,22 @@ const EmailButton = styled.div`
 
 const Filter = styled.div`
   display: flex;
+  width: 100%;
   flex-direction: column;
-  width: 320px;
   justify-content: space-between;
   align-items: flex-start;
   padding: 0px 18px;
   padding-right: 40px;
   margin-bottom: 28px;
   flex-shrink: 0;
-  gap: 12px;
+  gap: 9px;
+`;
+
+const Seperator = styled.div`
+  width: 1px;
+  height: 16px;
+  background-color: #ddd;
+  margin: 0px 12px;
 `;
 
 const State = styled.div`
@@ -289,24 +293,24 @@ const State = styled.div`
 
 const StateContainer = styled.div`
   display: flex;
-  gap: 12px;
+  flex-wrap: wrap;
   align-items: center;
   margin-left: 32px;
 `;
 
 const StateItem = styled.div<{ state: string; selected: string }>`
   display: flex;
-  gap: 12px;
   color: #767676;
   font-family: Pretendard;
-  font-size: 12px;
+  font-size: 14px;
   font-style: normal;
   font-weight: 500;
   letter-spacing: -0.24px;
+  margin-bottom: 3px;
 
   p {
     color: ${({ state, selected }) => {
-      if (state === selected) return "#88181C";
+      if (state === selected) return "#cc141d";
       return "#767676";
     }};
     cursor: pointer;
@@ -329,25 +333,33 @@ const Position = styled.div`
 
 const PositionContainer = styled.div`
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   margin-left: 32px;
 `;
 
-const PositionItem = styled.div`
+const PositionItem = styled.div<{ selected: boolean }>`
   display: flex;
+  align-items: center;
+  margin-bottom: 3px;
 
   input {
     margin-right: 3px;
+    width: 15px;
+    height: 15px;
+    accent-color: #cc141d;
   }
 
   p {
-    color: #767676;
+    color: ${({ selected }) => {
+      if (selected) return "#cc141d;";
+      return "#767676";
+    }};
     font-family: Pretendard;
-    font-size: 12px;
+    font-size: 14px;
     font-style: normal;
     font-weight: 500;
     letter-spacing: -0.24px;
-    margin-right: 12px;
   }
 `;
 

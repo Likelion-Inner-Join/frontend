@@ -1,33 +1,19 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { PromotionData } from "../mock/PromotionDetail";
-
-interface PromotionImage {
-  imageId: number;
-  imageUrl: string;
-}
-
-interface PromotionInfo {
-  postId: number;
-  clubId: number;
-  title: string;
-  createdAt: string;
-  startTime: string;
-  endTime: string;
-  body: string;
-  status: string;
-  type: string;
-  field: string;
-  fieldType: string;
-  image: PromotionImage[];
-}
+import { PostInfoType } from "../global/types";
+import { GET } from "../../common/api/axios";
 
 const EvaluationHeader = () => {
-  const [promotionInfo, setPromotionInfo] = useState<PromotionInfo>();
+  const [postInfo, setPostInfo] = useState<PostInfoType>();
   const [isHovered, setIsHovered] = useState(false);
+  const [stageList, setStageList] = useState<string[]>([]);
+
   const handleMouseEnter = () => setIsHovered(true);
   const handleMouseLeave = () => setIsHovered(false);
-  const Stages = [
+
+  const STAGES_FORM_ONLY = ["", "서류 평가", "결과 공지"];
+  const STAGES_FORM_AND_MEETING = [
     "",
     "서류 평가",
     "결과 공지",
@@ -35,18 +21,40 @@ const EvaluationHeader = () => {
     "면접 평가",
     "최종결과 공지",
   ];
-  const maxStage = promotionInfo?.type === "FORM" ? 2 : Stages.length - 1;
-  const filteredStages = Stages.slice(0, maxStage + 1);
 
   useEffect(() => {
-    setPromotionInfo(PromotionData[0].result);
+    getPostDetails();
   }, []);
+
+  useEffect(() => {
+    if (postInfo?.recruitmentType === "FORM_ONLY") {
+      setStageList(STAGES_FORM_ONLY);
+    } else {
+      setStageList(STAGES_FORM_AND_MEETING);
+    }
+  }, [postInfo]);
+
+  const getPostDetails = async () => {
+    try {
+      //const res = await GET(`posts/${postId}`);
+      const res = await GET(`posts/1`);
+      //const res = PromotionData;
+
+      if (res.isSuccess) {
+        setPostInfo(res.result);
+      } else {
+        console.log(res.message);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   function parseISODateTime(isoString: string) {
     const date = new Date(isoString);
     const year = date.getFullYear();
     const month = date.getMonth() + 1;
-    const day = date.getDate();
+    const day = date.getDate() - 1;
     const hours = date.getHours();
     const minutes = date.getMinutes();
 
@@ -54,11 +62,17 @@ const EvaluationHeader = () => {
   }
 
   function findCurrentStatus(status: string) {
-    if (status === "OPEN") return 1;
-    else if (status === "FORM_REVIEW") return 2;
-    else if (status === "INTERVIEW") return 3;
-    else if (status === "INTERVIEW_REVIEW") return 4;
-    else if (status === "CLOSED") return 5;
+    if (postInfo?.recruitmentType === "FORM_ONLY") {
+      if (status === "OPEN") return 1;
+      else if (status === "FORM_REVIEWED") return 2;
+      else if (status === "CLOSED") return 3;
+    } else {
+      if (status === "OPEN") return 1;
+      else if (status === "FORM_REVIEWED") return 2;
+      else if (status === "TIME_SET") return 3;
+      else if (status === "INTERVIEWED") return 4;
+      else if (status === "CLOSED") return 5;
+    }
   }
 
   return (
@@ -69,10 +83,10 @@ const EvaluationHeader = () => {
       >
         {isHovered ? (
           <Stage hovered={isHovered}>
-            {filteredStages.map((stageName, index) => {
+            {stageList.map((stageName, index) => {
               if (index === 0) return null;
               const isCurrent =
-                findCurrentStatus(promotionInfo?.status || "") === index;
+                findCurrentStatus(postInfo?.recruitmentStatus || "") === index;
               return (
                 <React.Fragment key={index}>
                   <StageNumber current={isCurrent}>{index}</StageNumber>
@@ -93,20 +107,28 @@ const EvaluationHeader = () => {
         ) : (
           <Stage hovered={isHovered}>
             <StageNumber current={true}>
-              {findCurrentStatus(promotionInfo?.status || "OPEN")}
+              {findCurrentStatus(postInfo?.recruitmentStatus || "OPEN")}
             </StageNumber>
             <StageName current={false} hovered={isHovered}>
-              {Stages[findCurrentStatus(promotionInfo?.status || "OPEN") || 0]}
+              {postInfo?.recruitmentType === "FORM_ONLY"
+                ? STAGES_FORM_ONLY[
+                    findCurrentStatus(postInfo?.recruitmentStatus || "OPEN") ||
+                      0
+                  ]
+                : STAGES_FORM_AND_MEETING[
+                    findCurrentStatus(postInfo?.recruitmentStatus || "OPEN") ||
+                      0
+                  ]}
             </StageName>
           </Stage>
         )}
       </ProgressBar>
       <Title>
-        <h1>{promotionInfo?.title}</h1>
+        <h1>{postInfo?.title}</h1>
         <p>
-          {parseISODateTime(String(promotionInfo?.endTime)).year}년{" "}
-          {parseISODateTime(String(promotionInfo?.endTime)).month}월{" "}
-          {parseISODateTime(String(promotionInfo?.endTime)).day}일 마감
+          {parseISODateTime(String(postInfo?.endTime)).year}년{" "}
+          {parseISODateTime(String(postInfo?.endTime)).month}월{" "}
+          {parseISODateTime(String(postInfo?.endTime)).day}일 마감
         </p>
       </Title>
     </Wrapper>

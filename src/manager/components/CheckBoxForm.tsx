@@ -1,20 +1,34 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
-import { answerData } from "../mock/DocumentData";
+import { documentDetailData } from "../mock/DocumentData";
+import { QuestionType, AnswerType } from "../global/types";
 
 interface FormProps {
-  quest?: Question;
-}
-
-interface Question {
-  questionid: number;
-  number: number;
-  question: string;
-  type: string;
-  list?: string[];
+  quest?: QuestionType;
 }
 
 const CheckBoxForm = ({ quest }: FormProps) => {
+  const [answerList, setAnswerList] = useState<AnswerType[]>();
+
+  useEffect(() => {
+    getApplicantDetails();
+  }, []);
+
+  const getApplicantDetails = async () => {
+    try {
+      //const res = await GET(`application/${application_id}`); API
+      const res = documentDetailData;
+
+      if (res.isSuccess) {
+        setAnswerList(res.result.answers);
+      } else {
+        console.log(res.message);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <div>
       {quest?.list?.map((item: string, index: number) => (
@@ -22,9 +36,9 @@ const CheckBoxForm = ({ quest }: FormProps) => {
           <CheckBox>
             <img
               src={
-                answerData.answers.some(
+                answerList?.some(
                   (answerItem) =>
-                    answerItem.questionId === quest.questionid &&
+                    answerItem.questionId === quest.questionId &&
                     answerItem.answer === item
                 )
                   ? "/images/manager/checked.svg"

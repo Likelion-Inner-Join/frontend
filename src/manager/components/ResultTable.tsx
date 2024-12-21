@@ -1,28 +1,11 @@
 import React from "react";
 import styled from "styled-components";
-
-interface Applicant {
-  applicationId: number;
-  userId: number;
-  name: string;
-  email: string;
-  phoneNum: string;
-  school: string;
-  major: string;
-  position: string;
-  studentNumber: string;
-  formResult: string;
-  meetingResult: string;
-  formScore: number;
-  meetingScore: number;
-  meetingStartTime: string;
-  meetingEndTime: string;
-}
+import { ApplicantType } from "../global/types";
 
 interface ResultTableProps {
-  restList: Applicant[];
-  passList: Applicant[];
-  failList: Applicant[];
+  restList: ApplicantType[];
+  passList: ApplicantType[];
+  failList: ApplicantType[];
   isColor: boolean;
 }
 
@@ -36,7 +19,7 @@ const ResultTable = ({
     <Wrapper>
       {restList.length > 0 && (
         <div>
-          <TableTitle state="null" isColor={isColor}>
+          <TableTitle state="PENDING" isColor={isColor}>
             미평가
           </TableTitle>
           <TableContainer>
@@ -54,7 +37,7 @@ const ResultTable = ({
         </div>
       )}
       <div>
-        <TableTitle state="pass" isColor={isColor}>
+        <TableTitle state="PASS" isColor={isColor}>
           합격
         </TableTitle>
         <TableContainer>
@@ -71,7 +54,7 @@ const ResultTable = ({
         </TableContainer>
       </div>
       <div>
-        <TableTitle state="fail" isColor={isColor}>
+        <TableTitle state="FAIL" isColor={isColor}>
           불합격
         </TableTitle>
         <TableContainer>
@@ -113,21 +96,21 @@ const TableTitle = styled.div<{ state: string; isColor: boolean }>`
 
   background-color: ${({ state, isColor }) => {
     if (!isColor) return "#F9F9F9";
-    if (state === "pass") return "#F3FFFB";
-    if (state === "fail") return "#fff3f3;";  
+    if (state === "PASS") return "#F3FFFB";
+    if (state === "FAIL") return "#fff3f3;";
     return "#F9F9F9";
   }};
 
   color: ${({ state, isColor }) => {
     if (!isColor) return "#000";
-    if (state === "pass") return "#188865";
-    if (state === "fail") return "#B10D15";
+    if (state === "PASS") return "#188865";
+    if (state === "FAIL") return "#B10D15";
     return "#555";
   }};
 
   border: ${({ state }) => {
-    if (state === "pass") return "1px solid #EBFAF0";
-    if (state === "fail") return "1px solid #FBEEEE";
+    if (state === "PASS") return "1px solid #EBFAF0";
+    if (state === "FAIL") return "1px solid #FBEEEE";
     return "1px solid #f0f0f0";
   }};
 

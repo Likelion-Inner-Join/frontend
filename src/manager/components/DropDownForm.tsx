@@ -1,30 +1,44 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
-import { answerData } from "../mock/DocumentData";
+import { documentDetailData } from "../mock/DocumentData";
+import { QuestionType, AnswerType } from "../global/types";
 
 interface FormProps {
-  quest?: Question;
-}
-
-interface Question {
-  questionid: number;
-  number: number;
-  question: string;
-  type: string;
-  list?: string[];
+  quest?: QuestionType;
 }
 
 const DropDownForm = ({ quest }: FormProps) => {
+  const [answerList, setAnswerList] = useState<AnswerType[]>();
+
+  useEffect(() => {
+    getApplicantDetails();
+  }, []);
+
+  const getApplicantDetails = async () => {
+    try {
+      //const res = await GET(`application/${application_id}`); API
+      const res = documentDetailData;
+
+      if (res.isSuccess) {
+        setAnswerList(res.result.answers);
+      } else {
+        console.log(res.message);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <div>
       {quest?.list?.map((item: string, index: number) => (
         <ContentBox>
           <CheckBox
-            selected={answerData.answers.some(
-              (answerItem) =>
-                answerItem.questionId === quest.questionid &&
-                answerItem.answer === item
-            )}
+            // selected={answerList?.some(
+            //   (ans) =>
+            //     ans.questionId === quest.questionId && ans.answer === item
+            // )}
+            selected={true}
           />
           <Content>{item}</Content>
         </ContentBox>

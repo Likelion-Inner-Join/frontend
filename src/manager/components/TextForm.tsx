@@ -1,22 +1,36 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
-import { answerData } from "../mock/DocumentData";
+import { documentDetailData } from "../mock/DocumentData";
+import { QuestionType, AnswerType } from "../global/types";
 
 interface FormProps {
-  quest?: Question;
-}
-
-interface Question {
-  questionid: number;
-  number: number;
-  question: string;
-  type: string;
-  list?: string[];
+  quest?: QuestionType;
 }
 
 const TextForm = ({ quest }: FormProps) => {
-  const answerItem = answerData.answers.find(
-    (answer) => answer.questionId === quest?.questionid
+  const [answerList, setAnswerList] = useState<AnswerType[]>();
+
+  useEffect(() => {
+    getApplicantDetails();
+  }, []);
+
+  const getApplicantDetails = async () => {
+    try {
+      //const res = await GET(`application/${application_id}`); API
+      const res = documentDetailData;
+
+      if (res.isSuccess) {
+        setAnswerList(res.result.answers);
+      } else {
+        console.log(res.message);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const answerItem = answerList?.find(
+    (answer) => answer.questionId === quest?.questionId
   );
 
   return (
