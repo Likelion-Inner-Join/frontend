@@ -2,7 +2,8 @@ import { styled } from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { Button } from "./button";
 import { useAuth } from "../../auth/context/auth-context";
-import profileImage from "../../assets/user-profile.png";
+import profileImage from "../../assets/user-profile.svg";
+import logoImg from "../../assets/logo.svg";
 
 export const Navbar = () => {
   const { authState } = useAuth();
@@ -19,6 +20,7 @@ export const Navbar = () => {
             navigate("/");
           }}
         >
+          <img src={logoImg} alt="이너조인" />
           이너조인
         </Logo>
         <NavLinks>
@@ -88,10 +90,13 @@ const Left = styled.div`
 `;
 
 const Logo = styled.span`
+  display: flex;
+  align-items: center;
+  gap: 18px;
   font-size: 28px;
-  font-weight: bold;
+  font-weight: 700;
   cursor: pointer;
-  color: ${(props) => props.theme.color.primary};
+  color: #3e3e3e;
 `;
 
 const NavLinks = styled.div`

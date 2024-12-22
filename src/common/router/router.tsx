@@ -22,6 +22,7 @@ import SendEmail from "../../manager/pages/SendEmail";
 import MeetEvaluate from "../../manager/pages/MeetEvaluate";
 import MeetArrange from "../../manager/pages/MeetArrange";
 import ApplyEdit from "../../owner/apply_edit/apply_edit";
+import { NotFoundPage } from "../pages/not-found-page";
 
 export const ROUTES = {
   LANDING: "/",
@@ -32,7 +33,7 @@ export const ROUTES = {
   VERIFICATION: "/verification",
   MY: "/my/info",
   APPLICATION_MANAGE: "/my/application-manage",
-  RECRUITMENT: "/recruitment/:clubId",
+  RECRUITMENT: "/recruitment/:postId",
   APPLICATION: "/application/:clubId",
   RESULTSHARE: "/result",
   FINAL_RESULTSHARE: "/final-result",
@@ -180,5 +181,9 @@ export const router = createBrowserRouter([
         <MeetArrange />
       </div>
     ),
+  },
+  {
+    path: "*",
+    element: <NotFoundPage />,
   },
 ]);
