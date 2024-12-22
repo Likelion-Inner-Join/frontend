@@ -5,40 +5,21 @@ import { QuestionType, AnswerType } from "../global/types";
 
 interface FormProps {
   quest?: QuestionType;
+  answerList: AnswerType[];
 }
 
-const DropDownForm = ({ quest }: FormProps) => {
-  const [answerList, setAnswerList] = useState<AnswerType[]>();
-
-  useEffect(() => {
-    getApplicantDetails();
-  }, []);
-
-  const getApplicantDetails = async () => {
-    try {
-      //const res = await GET(`application/${application_id}`); API
-      const res = documentDetailData;
-
-      if (res.isSuccess) {
-        setAnswerList(res.result.answers);
-      } else {
-        console.log(res.message);
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
+const DropDownForm = ({ quest, answerList }: FormProps) => {
   return (
     <div>
       {quest?.list?.map((item: string, index: number) => (
         <ContentBox>
           <CheckBox
-            // selected={answerList?.some(
-            //   (ans) =>
-            //     ans.questionId === quest.questionId && ans.answer === item
-            // )}
-            selected={true}
+            selected={
+              !!answerList?.some(
+                (ans) =>
+                  ans.questionId === quest?.questionId && ans.answer === item
+              )
+            }
           />
           <Content>{item}</Content>
         </ContentBox>

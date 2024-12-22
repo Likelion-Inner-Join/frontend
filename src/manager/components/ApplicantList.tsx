@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import styled from "styled-components";
 import DocView from "./DocView";
+import { GET } from "../../common/api/axios";
 import { ApplicantType } from "../global/types";
 
 interface Position {
@@ -19,6 +20,7 @@ interface ApplicantListProps {
 const stateList = ["전체", "합격", "불합격", "미평가"];
 
 const ApplicantList = ({ data1, data2, isEmail }: ApplicantListProps) => {
+  const [applicantList, setApplicantList] = useState<ApplicantType[]>([]);
   const [selectedState, setSelectedState] = useState("전체");
   const [selectedPositions, setSelectedPositions] = useState<string[]>([]);
   const [isDocumentOpen, setIsDocumentOpen] = useState(false);
@@ -27,7 +29,7 @@ const ApplicantList = ({ data1, data2, isEmail }: ApplicantListProps) => {
   const currApplyID = searchParams.get("apply");
   const navigate = useNavigate();
 
-  const filteredApplicants = data1.filter((applicant) => {
+  const filteredApplicants = applicantList.filter((applicant) => {
     const matchState =
       selectedState === "전체" ||
       (selectedState === "합격" && applicant.formResult === "PASS") ||
@@ -60,8 +62,10 @@ const ApplicantList = ({ data1, data2, isEmail }: ApplicantListProps) => {
   };
 
   useEffect(() => {
+    getApplicantList();
+    
     if (currApplyID) {
-      const selectedApplicant = data1.find(
+      const selectedApplicant = applicantList.find(
         (applicant) => String(applicant.applicationId) === currApplyID
       );
       setSelectedApplicant(selectedApplicant);
@@ -79,6 +83,31 @@ const ApplicantList = ({ data1, data2, isEmail }: ApplicantListProps) => {
         return "/images/manager/neutral.svg";
     }
   };
+
+  const getApplicantList = async () => {
+    try {
+      //const res = await GET(`posts/${postId}/application`);
+      const res = await GET(`posts/1/application`);
+      //const res = applicantData;
+
+      if (res.isSuccess) {
+        setApplicantList(res.result.applicationList);
+        data1 = res.result.applicationList;
+      } else {
+        console.log(res.message);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    getApplicantList();
+  }, [isDocumentOpen]);
+
+  useEffect(() => {
+    getApplicantList();
+  }, []);
 
   return (
     <Wrapper>
@@ -185,7 +214,7 @@ const ApplicantList = ({ data1, data2, isEmail }: ApplicantListProps) => {
           ))}
         </Applicant>
       </Container>
-      {isDocumentOpen && <DocView applicant={selectedApplicant} />}
+      {isDocumentOpen && <DocView applicant={selectedApplicant} type="FORM" />}
     </Wrapper>
   );
 };

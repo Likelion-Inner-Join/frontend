@@ -70,7 +70,7 @@ const SendEmail = () => {
   return (
     <Wrapper>
       {postInfo?.recruitmentStatus === "OPEN" ||
-      postInfo?.recruitmentStatus === "INTERVIEW" ? (
+      postInfo?.recruitmentStatus === "FORM_REVIEWED" ? (
         <ApplicantList
           data1={applicantList}
           data2={postInfo?.recruitingList || []}

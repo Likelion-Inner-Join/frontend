@@ -7,6 +7,8 @@ export const applicantData = {
     applicationList: [
       {
         applicationId: 1,
+        recruitingId: 0, // 추가
+        recruitmentStatus: "OPEN", // 추가
         formId: 0,
         formTitle: "string",
         formDescription: "string",
@@ -22,9 +24,9 @@ export const applicantData = {
         major: "컴퓨터공학",
         studentNumber: "20211501",
         positionName: "단장단",
-        formResult: "PASS",
+        formResult: "FAIL",
         formScore: 95,
-        meetingResult: "FAIL",
+        meetingResult: "PENDING",
         meetingScore: 85,
         meetingStartTime: "2024-01-01T12:00:00.000Z",
         meetingEndTime: "2024-01-01T12:30:00.000Z",
@@ -40,6 +42,8 @@ export const applicantData = {
       },
       {
         applicationId: 2,
+        recruitingId: 0, // 추가
+        recruitmentStatus: "OPEN", // 추가
         formId: 0,
         formTitle: "string",
         formDescription: "string",
@@ -73,6 +77,8 @@ export const applicantData = {
       },
       {
         applicationId: 3,
+        recruitingId: 0, // 추가
+        recruitmentStatus: "OPEN", // 추가
         formId: 0,
         formTitle: "string",
         formDescription: "string",
@@ -106,6 +112,8 @@ export const applicantData = {
       },
       {
         applicationId: 4,
+        recruitingId: 0, // 추가
+        recruitmentStatus: "OPEN", // 추가
         formId: 0,
         formTitle: "string",
         formDescription: "string",
@@ -125,8 +133,43 @@ export const applicantData = {
         formScore: 85,
         meetingResult: "PENDING",
         meetingScore: 70,
-        meetingStartTime: "2024-01-04T15:00:00.000Z",
-        meetingEndTime: "2024-01-04T15:30:00.000Z",
+        meetingStartTime: "",
+        meetingEndTime: "",
+        answers: [
+          {
+            questionId: 0,
+            question: "string",
+            answer: "string",
+            score: 0,
+            questionType: "TEXT",
+          },
+        ],
+      },
+      {
+        applicationId: 5,
+        recruitingId: 0, // 추가
+        recruitmentStatus: "OPEN", // 추가
+        formId: 0,
+        formTitle: "string",
+        formDescription: "string",
+        clubId: 0,
+        clubName: "string",
+        postId: 0,
+        postTitle: "string",
+        applicantId: 105,
+        name: "마서아",
+        email: "ma@domain.com",
+        phoneNum: "01012340005",
+        school: "서강대학교",
+        major: "철학",
+        studentNumber: "20211505",
+        positionName: "단장단",
+        formResult: "PASS",
+        formScore: 78,
+        meetingResult: "PENDING",
+        meetingScore: 68,
+        meetingStartTime: "2024-01-05T16:00:00.000Z",
+        meetingEndTime: "2024-01-05T16:30:00.000Z",
         answers: [
           {
             questionId: 0,
@@ -139,4 +182,4 @@ export const applicantData = {
       },
     ],
   },
-};  
+};

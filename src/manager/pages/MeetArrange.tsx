@@ -29,6 +29,25 @@ type GroupedMeetings = {
   }[];
 };
 
+type Meeting = {
+  meetingTimeId: number;
+  allowedNum: number;
+  reservedNum: number;
+  applicantList: {
+    applicantId: number;
+    name: string;
+    studentNumber: string;
+  }[];
+  meetingStartTime: string;
+  meetingEndTime: string;
+};
+
+type Meeting_Applicant = {
+  applicantId: number;
+  name: string;
+  studentNumber: string;
+};
+
 const MeetArrange = () => {
   const navigate = useNavigate();
   const [applicantList, setApplicantList] = useState<ApplicantType[]>([]);
@@ -77,10 +96,12 @@ const MeetArrange = () => {
 
   const getMeetingTimes = async (recruitingId: number) => {
     try {
-      //const res = await GET(`posts/interview-times/${recruitingId}`);
-      let res;
-      if (recruitingId === 1) res = meetingTimeData1;
-      if (recruitingId === 2) res = meetingTimeData2;
+      const res = await GET(`posts/interview-times/${recruitingId}`);
+      // let res;
+      // if (recruitingId === 1) res = meetingTimeData1;
+      // if (recruitingId === 2) res = meetingTimeData2;
+
+      console.log(res);
 
       if (res?.isSuccess) {
         return res.result;
@@ -91,7 +112,6 @@ const MeetArrange = () => {
       console.log(error);
     }
   };
-
   const fetchAllMeetings = async () => {
     if (!postInfo?.recruitingList) return;
 
@@ -107,25 +127,45 @@ const MeetArrange = () => {
     meetingData.forEach((data, index) => {
       const jobTitle = postInfo?.recruitingList[index].jobTitle;
 
-      data?.meetingTimes.forEach((meeting) => {
+      data?.meetingTimes.forEach((meeting: Meeting) => {
         const date = meeting.meetingStartTime.split("T")[0]; // Extract date (YYYY-MM-DD)
+
         if (!result[date]) result[date] = [];
 
+        // Push the meeting data into the result array
         result[date].push({
           meetingStartTime: meeting.meetingStartTime,
           meetingEndTime: meeting.meetingEndTime,
           jobTitle,
-          applicants: meeting.applicantList.map((applicant) => ({
-            id: applicant.applicantId,
-            name: applicant.name,
-            studentNumber: applicant.studentNumber,
-          })),
+          applicants: meeting.applicantList.map(
+            (applicant: Meeting_Applicant) => ({
+              id: applicant.applicantId,
+              name: applicant.name,
+              studentNumber: applicant.studentNumber,
+            })
+          ),
         });
       });
     });
 
-    setGroupedMeetings(result);
-    console.log(result);
+    // Sort the dates and meetings based on meetingStartTime (date and time)
+    const sortedDates = Object.keys(result).sort((a, b) => {
+      const aDate = new Date(a);
+      const bDate = new Date(b);
+      return aDate.getTime() - bDate.getTime(); // Sort in ascending order by date
+    });
+
+    // Create a new result object with sorted dates
+    const sortedResult: GroupedMeetings = {};
+    sortedDates.forEach((date) => {
+      sortedResult[date] = result[date].sort((a, b) => {
+        const aStart = new Date(a.meetingStartTime).getTime();
+        const bStart = new Date(b.meetingStartTime).getTime();
+        return aStart - bStart; // Sort in ascending order by time
+      });
+    });
+
+    setGroupedMeetings(sortedResult);
   };
 
   useEffect(() => {
@@ -155,6 +195,17 @@ const MeetArrange = () => {
     setInterviewDuration(min);
   const handleBreakTimeChange = (min: number) => setBreakTime(min);
 
+  const formatDate = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    const seconds = String(date.getSeconds()).padStart(2, "0");
+
+    return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+  };
+
   const generateMeetingTimes = () => {
     const startTime = new Date(
       `${selectedDate.toISOString().split("T")[0]}T${selectedStartTime}`
@@ -172,15 +223,15 @@ const MeetArrange = () => {
       );
 
       if (nextMeetingEnd > endTime) break;
-
       meetingTimes.push({
-        meetingStartTime: currentTime.toISOString(),
-        meetingEndTime: nextMeetingEnd.toISOString(),
+        meetingStartTime: formatDate(currentTime), // 2024-12-12T22:00:00
+        meetingEndTime: formatDate(nextMeetingEnd), // 2024-12-12T22:15:00
       });
 
       currentTime = new Date(nextMeetingEnd.getTime() + breakTime * 60000);
     }
 
+    console.log(meetingTimes);
     return meetingTimes;
   };
 
@@ -203,14 +254,7 @@ const MeetArrange = () => {
   const handleCreateMeetingTimes = async () => {
     try {
       const newMeetingData = createMeetingData();
-      //const res = await POST("posts/interview-times", newMeetingData);
-      const res = {
-        isSuccess: true,
-        code: 0,
-        message: "string",
-        result: "string",
-      };
-      console.log(newMeetingData);
+      const res = await POST("posts/interview-times", newMeetingData);
 
       if (res.isSuccess) {
         alert("면접 시간 생성 성공");
@@ -258,13 +302,19 @@ const MeetArrange = () => {
           <EvaluationHeader />
         </HeaderWrapper>
         <MeetTitle>
-          <MeetCaptionContainer>
+          <MeetCaptionContainer
+            color={
+              postInfo?.recruitmentStatus === "OPEN" ||
+              postInfo?.recruitmentStatus === "FORM_REVIEWED"
+            }
+          >
             <MeetCaption>면접시간 설정</MeetCaption>
             <p>해당 범위는 발송 이후 수정이 불가합니다.</p>
           </MeetCaptionContainer>
-          {postInfo?.recruitmentStatus === "OPEN" ? (
+          {postInfo?.recruitmentStatus === "OPEN" ||
+          postInfo?.recruitmentStatus === "FORM_REVIEWED" ? (
             <MyButton
-              content="다음 단계"
+              content="면접시간 전송"
               buttonType="RED"
               onClick={() => navigate("/result")}
             />
@@ -298,7 +348,7 @@ const MeetArrange = () => {
                 <MeetSettingDetailBox>
                   <MeetSettingDetail>
                     <MeetingSettingInfoBox>
-                      <p>날짜</p>
+                      <p>면접 일자</p>
                       <DatePicker
                         locale={ko}
                         selected={selectedDate}
@@ -309,7 +359,7 @@ const MeetArrange = () => {
                       />
                     </MeetingSettingInfoBox>
                     <MeetingSettingInfoBox>
-                      <p>최대 인원</p>
+                      <p>타임 당 최대 인원</p>
                       <MeetingSettingInfo>
                         <input
                           type="number"
@@ -321,7 +371,7 @@ const MeetArrange = () => {
                       </MeetingSettingInfo>
                     </MeetingSettingInfoBox>
                     <MeetingSettingInfoBox>
-                      <p>전형</p>
+                      <p>면접 전형</p>
                       <select
                         value={selectedPosition}
                         onChange={handleDropdownChange}
@@ -355,6 +405,7 @@ const MeetArrange = () => {
                       <MeetingSettingInfo>
                         <input
                           type="number"
+                          defaultValue={20}
                           onChange={(e) =>
                             handleInterviewDurationChange(
                               Number(e.target.value)
@@ -369,6 +420,7 @@ const MeetArrange = () => {
                       <MeetingSettingInfo>
                         <input
                           type="number"
+                          defaultValue={10}
                           onChange={(e) =>
                             handleBreakTimeChange(Number(e.target.value))
                           }
@@ -433,17 +485,22 @@ const MeetArrange = () => {
         </TableConatiner>
         <RestContainer>
           <p>미배치 인원</p>
-          <RestApplicantsBox>
-            {applicantList
-              .filter((applicant) => applicant.meetingStartTime === "")
-              .map((applicant, index) => (
-                <RestApplicant key={index}>
-                  {applicant.name}
-                  <p>{applicant.studentNumber}</p>
-                  <p>{applicant.positionName}</p>
-                </RestApplicant>
-              ))}
-          </RestApplicantsBox>
+          {postInfo?.recruitmentStatus === "OPEN" ||
+          postInfo?.recruitmentStatus === "FORM_REVIEWED" ? (
+            <h1>면접 시간 전송 이후 적용됩니다</h1>
+          ) : (
+            <RestApplicantsBox>
+              {applicantList
+                .filter((applicant) => applicant.meetingStartTime === "")
+                .map((applicant, index) => (
+                  <RestApplicant key={index}>
+                    {applicant.name}
+                    <p>{applicant.studentNumber}</p>
+                    <p>{applicant.positionName}</p>
+                  </RestApplicant>
+                ))}
+            </RestApplicantsBox>
+          )}
         </RestContainer>
       </Container>
     </Wrapper>
@@ -481,10 +538,19 @@ const MeetTitle = styled.div`
   margin-bottom: 10px;
 `;
 
-const MeetCaptionContainer = styled.div`
+const MeetCaptionContainer = styled.div<{ color: boolean }>`
   display: flex;
   align-items: center;
   gap: 11px;
+
+  p {
+    font-family: Pretendard;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 100%; /* 12px */
+    color: ${({ color }) => (color ? "#cc141d" : "#424242")};
+  }
 `;
 
 const MeetCaption = styled.div`
@@ -610,7 +676,7 @@ const TableTimeBox = styled.div`
 
 const TableTime = styled.div`
   display: flex;
-  padding: 0px 10px;
+  padding: 5px 10px;
   flex-direction: column;
   justify-content: center;
   align-items: center;
@@ -658,6 +724,7 @@ const Interviewer = styled.div`
 const MeetSettingBox = styled.div`
   display: flex;
   width: 480px;
+  height: 550px;
   padding: 36px 24px;
   flex-direction: column;
   align-items: center;
@@ -837,6 +904,16 @@ const RestContainer = styled.div`
     font-weight: 700;
     line-height: 130%; /* 26px */
   }
+
+  h1 {
+    color: #606060;
+    font-family: Pretendard;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 150%; /* 24px */
+    letter-spacing: -0.32px;
+  }
 `;
 
 const RestApplicantsBox = styled.div`
@@ -872,7 +949,7 @@ const RestApplicant = styled.div`
 `;
 
 const CustomInput = styled.input`
-  width: 200px;
+  width: 150px;
   padding: 10px;
   border: none;
   border-radius: 6px;
@@ -886,7 +963,7 @@ const CustomInput = styled.input`
   line-height: 140%; /* 22.4px */
 
   &:focus {
-    margin-left: 33px;
+    margin-left: 70px;
     border: solid 1px #606060;
   }
 `;

@@ -5,30 +5,10 @@ import { QuestionType, AnswerType } from "../global/types";
 
 interface FormProps {
   quest?: QuestionType;
+  answerList: AnswerType[];
 }
 
-const TextForm = ({ quest }: FormProps) => {
-  const [answerList, setAnswerList] = useState<AnswerType[]>();
-
-  useEffect(() => {
-    getApplicantDetails();
-  }, []);
-
-  const getApplicantDetails = async () => {
-    try {
-      //const res = await GET(`application/${application_id}`); API
-      const res = documentDetailData;
-
-      if (res.isSuccess) {
-        setAnswerList(res.result.answers);
-      } else {
-        console.log(res.message);
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
+const TextForm = ({ quest, answerList }: FormProps) => {
   const answerItem = answerList?.find(
     (answer) => answer.questionId === quest?.questionId
   );
