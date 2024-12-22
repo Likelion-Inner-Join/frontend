@@ -410,7 +410,6 @@ const DocView = ({ applicant, type }: DocViewProps) => {
             </ResultTab>
           </ResultContainer>
         )}
-
         {type === "MEET" && applicant?.formResult === "PASS" && (
           <ScoreContainer>
             <p>면접 채점</p>
