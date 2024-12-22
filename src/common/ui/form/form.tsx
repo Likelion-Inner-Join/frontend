@@ -2,6 +2,7 @@ import { useState } from "react";
 import { styled } from "styled-components";
 import { FormFieldComponent } from "./form-field";
 import { Button } from "../button";
+// import { VerificationCodeForm } from "../../../auth/components";
 
 export type TFormFieldProps = {
   label: string;
@@ -101,6 +102,8 @@ export const Form = ({
     (field) => !section || field.section === section
   );
 
+  console.log(sectionFields);
+
   return (
     <Container>
       <FormWrapper>
@@ -115,6 +118,11 @@ export const Form = ({
               error={touched[field.label] ? formErrors[field.label] : null}
             />
           ))}
+
+          {/* <VerificationCodeForm
+            email="wjdtjdud21@sogang.ac.kr"
+            school="서강대학교"
+          /> */}
         </FormBody>
 
         <FormFooter>

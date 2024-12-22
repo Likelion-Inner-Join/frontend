@@ -5,6 +5,9 @@ import {
   validatePassword,
   validateStudentId,
   validateName,
+  validateSchoolName,
+  validateMajor,
+  validatePhoneNumber,
 } from "../utils/utils";
 import { POST } from "../../common/api/axios";
 
@@ -38,16 +41,20 @@ const fields: TFormFieldProps[] = [
     label: "학교",
     value: "",
     type: "text",
+    validate: validateSchoolName,
+    helpText: "정확한 학교명을 입력해주세요. (서강대X, 서강대학교O)",
   },
   {
     label: "학과",
     value: "",
     type: "text",
+    validate: validateMajor,
   },
   {
     label: "핸드폰 번호",
     value: "",
     type: "text",
+    validate: validatePhoneNumber,
   },
 ];
 
@@ -63,7 +70,7 @@ export const ApplicantSignupForm = () => {
         school: values["학교"],
         major: values["학과"],
         phoneNum: values["핸드폰 번호"],
-      }); /* FIXME: 입력 정보 너무 많아 보임. 정리 필요. */
+      });
       if (response.isSuccess) {
         alert("회원가입 성공");
         navigate("/login");

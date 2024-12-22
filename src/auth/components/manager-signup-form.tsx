@@ -4,7 +4,9 @@ import {
   validateClubCategoty,
   validateClubName,
   validateEmail,
+  validateId,
   validatePassword,
+  validateSchoolName,
 } from "../utils/utils";
 import { useNavigate } from "react-router-dom";
 import { POST } from "../../common/api/axios";
@@ -35,22 +37,10 @@ const fields: TFormFieldProps[] = [
     section: "동아리 정보",
   },
   {
-    label: "학교",
-    value: "",
-    type: "text",
-    section: "동아리 정보",
-  },
-  {
     label: "아이디",
     value: "",
     type: "text",
-    section: "관리자 정보",
-  },
-  {
-    label: "이메일",
-    value: "",
-    type: "email",
-    validate: validateEmail,
+    validate: validateId,
     section: "관리자 정보",
   },
   {
@@ -59,6 +49,22 @@ const fields: TFormFieldProps[] = [
     type: "password",
     validate: validatePassword,
     section: "관리자 정보",
+  },
+  {
+    label: "학교",
+    value: "",
+    type: "text",
+    validate: validateSchoolName,
+    section: "학교 정보",
+    helpText: "정확한 학교명을 입력해주세요. (서강대X, 서강대학교O)",
+  },
+  {
+    label: "이메일",
+    value: "",
+    type: "email",
+    validate: validateEmail,
+    section: "학교 정보",
+    helpText: "학교 이메일로 입력해주세요",
   },
 ];
 
@@ -75,30 +81,26 @@ export const ManagerSignupForm = () => {
   });
 
   const handleFormSubmit = async (values: Record<string, string | number>) => {
-    const isStep1 = step === 1;
-    if (isStep1) {
+    if (step < 3) {
       setFormData((prevData) => ({ ...prevData, ...values }));
-      setStep(2);
+      setStep(step + 1);
     } else {
       const completeData = { ...formData, ...values };
 
       try {
         const response = await POST("club/signup", {
           name: completeData["이름"],
-          id: completeData["아이디"],
+          loginId: completeData["아이디"],
           password: completeData["비밀번호"],
           email: completeData["이메일"],
           school: completeData["학교"],
-          category:
-            completeData["동아리 분류"] /* FIXME: 동아리 분류 어떻게 할 건지 */,
+          categoryId: completeData["동아리 분류"],
         });
         if (response.isSuccess) {
           alert("회원가입 성공");
           navigate("/login");
         } else {
-          console.log(
-            response.errorMessage
-          ); /* FIXME: FormError로 표시할지, alert 만들지? */
+          console.log(response.errorMessage);
         }
       } catch (error) {
         console.log(error);
@@ -122,10 +124,22 @@ export const ManagerSignupForm = () => {
           fields={fields}
           section="동아리 정보"
           onSubmit={handleFormSubmit}
-          submitLabel="계속"
+          submitLabel="다음"
           additionalLink={{
             label: "로그인",
             href: "/login",
+          }}
+        />
+      ) : step === 2 ? (
+        <Form
+          title="관리자 회원가입"
+          fields={fields}
+          section="학교 정보"
+          onSubmit={handleFormSubmit}
+          submitLabel="다음"
+          additionalLink={{
+            label: "돌아가기",
+            onClick: handleBack,
           }}
         />
       ) : (

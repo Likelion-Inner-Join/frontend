@@ -32,7 +32,9 @@ export const ApplicantLoginForm = () => {
       if (response.isSuccess) {
         alert("로그인 성공");
 
-        login("user", { name: "" });
+        const result = response.result;
+
+        login("user", { name: result.name });
 
         navigate("/");
       } else {

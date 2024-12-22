@@ -5,7 +5,7 @@ export const VerificationPage = () => {
   return (
     <Container>
       <div className="form-container">
-        <VerificationCodeForm />
+        <VerificationCodeForm email="" school="" />
       </div>
     </Container>
   );
