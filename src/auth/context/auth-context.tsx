@@ -1,4 +1,10 @@
-import { createContext, useState, useContext, ReactNode } from "react";
+import {
+  createContext,
+  useState,
+  useContext,
+  ReactNode,
+  useEffect,
+} from "react";
 
 type UserRole = "club" | "user" | null;
 
@@ -29,15 +35,25 @@ const initialAuthState: TAuthState = {
 const AuthContext = createContext<TAuthContextType | null>(null);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [authState, setAuthState] = useState<TAuthState>(initialAuthState);
+  const [authState, setAuthState] = useState<TAuthState>(() => {
+    const storedAuthState = localStorage.getItem("authState");
+    return storedAuthState ? JSON.parse(storedAuthState) : initialAuthState;
+  });
 
   const login = (role: UserRole, user: User) => {
-    setAuthState({ isAuthenticated: true, role, user });
+    const newAuthState = { isAuthenticated: true, role, user };
+    setAuthState(newAuthState);
+    localStorage.setItem("authState", JSON.stringify(newAuthState));
   };
 
   const logout = () => {
     setAuthState(initialAuthState);
+    localStorage.removeItem("authState");
   };
+
+  useEffect(() => {
+    localStorage.setItem("authState", JSON.stringify(authState));
+  }, [authState]);
 
   return (
     <AuthContext.Provider value={{ authState, login, logout }}>

@@ -38,7 +38,7 @@ const StyledButton = styled.button<{ size: string; $variant: string }>`
       ? "12px 32px"
       : size === "full"
       ? "16px 24px"
-      : "10px 12px"};
+      : "9px 14px"};
   background-color: ${({ $variant, theme, disabled }) => {
     if (disabled) {
       return "#c0c0c0";
