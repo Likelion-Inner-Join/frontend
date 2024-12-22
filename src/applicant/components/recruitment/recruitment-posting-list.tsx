@@ -1,155 +1,103 @@
 import { styled } from "styled-components";
-import {
-  mockRecruitmentPostingListData,
-  RecruitmentPostingListData,
-} from "./type";
 import { useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Button } from "../../../common/ui";
 import { PositionModal } from "./position-modal";
+import { TRecruitmentData } from "../../pages";
+import { calculateDday, formatDate, formatSlashDate } from "../../utils";
 
-const getClubDataList = (
-  clubId: string
-): RecruitmentPostingListData[] | null => {
-  return mockRecruitmentPostingListData;
-};
-
-const formatDate = (date: string, format: string = "yyyy-MM-dd"): string => {
-  const d = new Date(date);
-  const days = ["일", "월", "화", "수", "목", "금", "토"];
-
-  return format
-    .replace("yyyy", d.getFullYear().toString())
-    .replace("MM", String(d.getMonth() + 1).padStart(2, "0"))
-    .replace("dd", String(d.getDate()).padStart(2, "0"))
-    .replace("(요일)", `(${days[d.getDay()]})`);
-};
-
-const calculateDday = (targetDate: string | Date): string => {
-  const today = new Date();
-  const target = new Date(targetDate);
-
-  today.setHours(0, 0, 0, 0);
-  target.setHours(0, 0, 0, 0);
-
-  const difference = Math.ceil(
-    (target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
-  );
-
-  return difference > 0
-    ? `D-${difference}`
-    : difference === 0
-    ? "D-Day"
-    : `D+${Math.abs(difference)}`;
-};
-
-const formatPostDate = (dateString: string): string => {
-  return new Date(dateString)
-    .toLocaleDateString("ko-KR")
-    .replace(/\./g, "/")
-    .replace(/ /g, "");
-};
-
-export const RecruitmentPostingList = ({ clubId }: { clubId: string }) => {
+export const RecruitmentPostingList = ({
+  content,
+}: {
+  content: TRecruitmentData;
+}) => {
   const navigate = useNavigate();
-  const [positions, setPositions] = useState<string[]>([]);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-
-  const clubList = getClubDataList(clubId);
-
-  useEffect(() => {
-    const mockPositions = ["디자이너", "프론트엔드", "백엔드"];
-    setPositions(mockPositions);
-  }, []);
-
-  if (!clubList || clubList.length === 0) {
-    return <div>해당 정보를 찾을 수 없습니다.</div>;
-  }
-
   const closeModal = () => setIsModalOpen(false);
 
-  const handlePositionSelect = (position: string) => {
-    closeModal();
-    navigate(`/application/${clubId}`, { state: { position } });
-  };
+  if (!content) {
+    return <div>없어요.</div>;
+  }
 
   return (
     <ClubListWrapper>
-      {clubList.map((club, index) => (
-        <ClubCard key={index}>
-          <ContentWrapper>
-            <CenteredHeader>
-              <Title>{club.title}</Title>
-              <RecruitmentStatus>
-                {club.recruitmentStatus === "open" ? (
-                  <>
-                    <span
-                      style={{
-                        color: "#b10d15",
-                        fontSize: "14px",
-                        fontWeight: "700",
-                      }}
-                    >
-                      {`${calculateDday(club.endDate)}`}
-                    </span>
-                    <span>
-                      {`${formatDate(
-                        club.endDate,
-                        "yyyy년 MM월 dd일 (요일)"
-                      )} 마감`}
-                    </span>
-                  </>
-                ) : (
-                  <span>마감되었어요👏</span>
-                )}
-              </RecruitmentStatus>
-            </CenteredHeader>
-            <PostDate>{formatPostDate(club.postDate)} 작성</PostDate>
-            <Content
-              dangerouslySetInnerHTML={{
-                __html: club.content.replace(/\n/g, "<br />"),
-              }}
-            ></Content>
-          </ContentWrapper>
-          <ImageScroller>
-            {club.images?.map((image, imgIndex) => (
-              <Image
-                key={imgIndex}
-                src={image}
-                alt={`Club-${index}-Image-${imgIndex}`}
-              />
-            ))}
-          </ImageScroller>
-          <div style={{ display: "flex", justifyContent: "center" }}>
-            <Button
-              label="지원하기"
-              size="large"
-              onClick={() => {
-                if (positions.length === 1) {
-                  navigate(`/application/${clubId}`, {
-                    state: { position: positions[0] },
-                  });
-                } else {
-                  setIsModalOpen(true);
-                }
-              }}
-              disabled={club.recruitmentStatus === "closed"}
+      <ClubCard>
+        <ContentWrapper>
+          <CenteredHeader>
+            <Title>{content.title}</Title>
+            <RecruitmentStatus>
+              {content.recruitmentStatus === "OPEN" ? (
+                <>
+                  <span
+                    style={{
+                      color: "#b10d15",
+                      fontSize: "14px",
+                      fontWeight: "700",
+                    }}
+                  >
+                    {`${calculateDday(content.endDate)}`}
+                  </span>
+                  <span>
+                    {`${formatDate(
+                      content.endDate,
+                      "yyyy년 MM월 dd일 (요일)"
+                    )} 마감`}
+                  </span>
+                </>
+              ) : (
+                <span>마감되었어요👏</span>
+              )}
+            </RecruitmentStatus>
+          </CenteredHeader>
+          <PostDate>{formatSlashDate(content.createdAt)} 작성</PostDate>
+          <Content
+            dangerouslySetInnerHTML={{
+              __html: content.content.replace(/\n/g, "<br />"),
+            }}
+          ></Content>
+        </ContentWrapper>
+        <ImageScroller>
+          {content.image?.map((image) => (
+            <Image
+              key={image.imageId}
+              src={image.imageUrl}
+              alt="이미지가 없어요."
             />
-          </div>
-          {isModalOpen && (
-            <PositionModal
-              closeModal={closeModal}
-              positions={positions}
-              onSelect={handlePositionSelect}
-            />
-          )}
-        </ClubCard>
-      ))}
+          ))}
+        </ImageScroller>
+        <div style={{ display: "flex", justifyContent: "center" }}>
+          <Button
+            label="지원하기"
+            size="large"
+            onClick={() => {
+              if (!content.recruitingList) {
+                navigate(`/application/${content.postId}`); /*FIXME: formId? */
+              } else {
+                setIsModalOpen(true);
+              }
+            }}
+            // disabled={content.recruitmentStatus !== "OPEN"} /*FIXME: 임시 처리 */
+          />
+        </div>
+        {isModalOpen && (
+          <PositionModal
+            closeModal={closeModal}
+            recruitingList={content.recruitingList}
+            onSelect={(selectedRecruiting) => {
+              closeModal();
+              navigate(`/application/${content.postId}`, {
+                state: selectedRecruiting,
+              });
+            }}
+          />
+        )}
+      </ClubCard>
     </ClubListWrapper>
   );
 };
 
 const ClubListWrapper = styled.div`
+  height: 100vh;
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -165,7 +113,10 @@ const ClubCard = styled.div`
   background-color: white;
   border-radius: 36px;
   margin: 0 auto;
-  max-width: 1128px;
+  width: 1000px;
+  @media (max-width: 768px) {
+    width: unset;
+  }
 `;
 
 const ContentWrapper = styled.div`

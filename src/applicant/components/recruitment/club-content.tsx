@@ -1,34 +1,20 @@
 import { styled } from "styled-components";
-import { ClubData, mockClubData } from "./type";
+import { RECRUITMENT_STATUS } from "../../constants";
+import { TRecruitmentData } from "../../pages";
 
-export const ClubContent = ({ clubId }: { clubId: string }) => {
-  const getClubData = (clubId: string): ClubData | null => {
-    return mockClubData;
-  };
-  const club = getClubData(clubId);
-  if (!club) {
-    return <div>해당 정보를 찾을 수 없습니다.</div>;
-  }
-
-  const { image, category, recruitmentStatus, title, tags } = club;
-
+export const ClubContent = ({ content }: { content: TRecruitmentData }) => {
   return (
     <ClubWrapper>
       <ProfileContainer>
         <ProfileImage>
-          <img src={image} alt="Profile" />
+          <img src={content.image[0].imageUrl} alt="Profile" />
         </ProfileImage>
-        <RecruitmentStatus>{recruitmentStatus.status}</RecruitmentStatus>
+        <RecruitmentStatus>
+          {RECRUITMENT_STATUS[content.recruitmentStatus] || "없음"}
+        </RecruitmentStatus>
       </ProfileContainer>
-
-      <Category>{category}</Category>
-      <Title>{title}</Title>
-
-      <Tags>
-        {tags.map((tag, index) => (
-          <Tag key={index}>#{tag}</Tag>
-        ))}
-      </Tags>
+      <Category>{content.categoryName}</Category>
+      <Title>{content.title}</Title>
     </ClubWrapper>
   );
 };
@@ -85,19 +71,4 @@ const Title = styled.div`
   font-weight: 700;
   color: #000;
   margin-bottom: 16px;
-`;
-
-const Tags = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-`;
-
-const Tag = styled.div`
-  font-size: 14px;
-  font-weight: 400;
-  color: #000;
-  background-color: #ffeded;
-  border-radius: 20px;
-  padding: 8px;
 `;

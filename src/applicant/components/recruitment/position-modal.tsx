@@ -5,12 +5,20 @@ import { Button } from "../../../common/ui";
 
 type TModalProps = {
   closeModal: () => void;
-  positions: string[];
-  onSelect: (position: string) => void;
+  recruitingList: {
+    recruitingId: string;
+    formId: string;
+    jobTitle: string;
+  }[];
+  onSelect: (selectedRecruiting: {
+    recruitingId: string;
+    formId: string;
+    jobTitle: string;
+  }) => void;
 };
 export const PositionModal = ({
   closeModal,
-  positions,
+  recruitingList,
   onSelect,
 }: TModalProps) => {
   const [selectedPosition, setSelectedPosition] = useState<string | null>(null);
@@ -32,20 +40,22 @@ export const PositionModal = ({
           </CloseButton>
         </Header>
         <PositionList>
-          {positions.map((position) => (
-            <PositionItem key={position}>
+          {recruitingList.map((position) => (
+            <PositionItem key={position.recruitingId}>
               <Label>
                 <RadioButton
                   type="radio"
                   name="position"
-                  value={position}
-                  checked={selectedPosition === position}
-                  onChange={() => setSelectedPosition(position)}
+                  value={position.jobTitle}
+                  checked={selectedPosition === position.jobTitle}
+                  onChange={() => setSelectedPosition(position.jobTitle)}
                 />
-                <CustomCheckbox checked={selectedPosition === position}>
-                  {selectedPosition === position && <FaCheck />}
+                <CustomCheckbox
+                  checked={selectedPosition === position.jobTitle}
+                >
+                  {selectedPosition === position.jobTitle && <FaCheck />}
                 </CustomCheckbox>
-                {position}
+                {position.jobTitle}
               </Label>
             </PositionItem>
           ))}
@@ -55,7 +65,12 @@ export const PositionModal = ({
             label="지원 서류 작성하러 가기"
             onClick={() => {
               if (selectedPosition) {
-                onSelect(selectedPosition);
+                const selectedPositionDetails = recruitingList.find(
+                  (position) => position.jobTitle === selectedPosition
+                );
+                if (selectedPositionDetails) {
+                  onSelect(selectedPositionDetails);
+                }
               }
             }}
             disabled={!selectedPosition}
