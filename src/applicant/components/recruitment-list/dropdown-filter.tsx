@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 
 type TOption = {
@@ -9,10 +9,15 @@ type TOption = {
 type TDropdownFilterProps = {
   label: string;
   options: TOption[];
+  onChange: (value: string) => void;
 };
 
-export const DropdownFilter = ({ label, options }: TDropdownFilterProps) => {
-  const [selectedOption, setSelectedOption] = useState<string>("all");
+export const DropdownFilter = ({
+  label,
+  options,
+  onChange,
+}: TDropdownFilterProps) => {
+  const [selectedOption, setSelectedOption] = useState<string>("ALL");
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -20,6 +25,7 @@ export const DropdownFilter = ({ label, options }: TDropdownFilterProps) => {
 
   const handleOptionClick = (id: string) => {
     setSelectedOption(id);
+    onChange(id);
     setIsOpen(false);
   };
 
@@ -49,7 +55,7 @@ export const DropdownFilter = ({ label, options }: TDropdownFilterProps) => {
       <Label>{label}</Label>
       <SelectedArea onClick={toggleDropdown}>
         <SelectedText>{getSelectedLabel()}</SelectedText>
-        <Arrow isOpen={isOpen}>▼</Arrow>
+        <Arrow $isOpen={isOpen}>▼</Arrow>
       </SelectedArea>
       {isOpen && (
         <DropdownMenu>
@@ -95,9 +101,9 @@ const SelectedText = styled.span`
   font-weight: 500;
 `;
 
-const Arrow = styled.span<{ isOpen?: boolean }>`
+const Arrow = styled.span<{ $isOpen?: boolean }>`
   font-size: 12px;
-  transform: ${({ isOpen }) => (isOpen ? "rotate(180deg)" : "rotate(0)")};
+  transform: ${({ $isOpen }) => ($isOpen ? "rotate(180deg)" : "rotate(0)")};
 `;
 
 const DropdownMenu = styled.div`

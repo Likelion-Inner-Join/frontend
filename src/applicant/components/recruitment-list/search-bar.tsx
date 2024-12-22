@@ -2,11 +2,17 @@ import { useState } from "react";
 import styled from "styled-components";
 import { FiSearch } from "react-icons/fi";
 
-export const SearchBar = () => {
+export const SearchBar = ({
+  onSearch,
+}: {
+  onSearch: (term: string) => void;
+}) => {
   const [searchTerm, setSearchTerm] = useState("");
 
   const handleSearch = () => {
-    // FIXME: 검색 로직 추가 필요
+    if (onSearch) {
+      onSearch(searchTerm);
+    }
   };
 
   return (

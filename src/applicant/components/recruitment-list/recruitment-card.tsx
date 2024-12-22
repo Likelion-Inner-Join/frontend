@@ -1,69 +1,30 @@
 import styled from "styled-components";
-import { AiOutlineHeart } from "react-icons/ai";
 import { useNavigate } from "react-router-dom";
+import { TPostCardProps } from "../../pages";
+import { RECRUITMENT_TYPE } from "../../constants";
+import { calculateDday } from "../../utils";
 
-type TCardProps = {
-  id: string;
-  image: string;
-  category: string;
-  evaluation: "FORM_ONLY" | "FORM_AND_MEETING" | "MEETING_ONLY";
-  title: string;
-  recruitmentStatus:
-    | { status: "모집중"; dDay: string }
-    | { status: "모집마감" };
-  tags: string[];
-};
-
-const getEvaluationText = (evaluation: TCardProps["evaluation"]) => {
-  switch (evaluation) {
-    case "FORM_ONLY":
-      return "서류 평가만";
-    case "FORM_AND_MEETING":
-      return "서류 및 면접";
-    case "MEETING_ONLY":
-      return "면접만";
-    default:
-      return "";
-  }
-};
-
-export const RecruitmentCard = ({
-  id,
-  image,
-  category,
-  evaluation,
-  title,
-  recruitmentStatus,
-  tags,
-}: TCardProps) => {
+export const RecruitmentCard = ({ post }: { post: TPostCardProps }) => {
   const navigate = useNavigate();
 
   return (
     <CardContainer
       onClick={() => {
-        navigate(`/recruitment/${id}`);
+        navigate(`/recruitment/${post.postId}`);
       }}
     >
       <ImageWrapper>
-        <CardImage src={image} alt="Card Image" />
+        <CardImage src={post.image[0].imageUrl} alt="Card Image" />
       </ImageWrapper>
       <CardContent>
         <CategoryTags>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "10px",
-            }}
-          >
-            <Category>{category}</Category>
-            <Evaluation>{getEvaluationText(evaluation)}</Evaluation>
-          </div>
-          <HeartIcon>
-            <AiOutlineHeart />
-          </HeartIcon>
+          <Category>{post.categoryName}</Category>
+          <Evaluation>{RECRUITMENT_TYPE[post.recruitmentType]}</Evaluation>
         </CategoryTags>
-        <Title>{title}</Title>
+
+        <Title>
+          [{post.clubName}] {post.title}
+        </Title>
 
         <div
           style={{
@@ -72,8 +33,10 @@ export const RecruitmentCard = ({
             alignItems: "center",
           }}
         >
-          {recruitmentStatus.status === "모집중" ? (
-            <RecruitmentStatus>D-{recruitmentStatus.dDay}</RecruitmentStatus>
+          {post.recruitmentStatus === "OPEN" ? (
+            <RecruitmentStatus>
+              {`${calculateDday(post.endTime)}`}
+            </RecruitmentStatus>
           ) : (
             <div
               style={{ fontSize: "20px", fontWeight: 500, color: "#606060" }}
@@ -81,11 +44,6 @@ export const RecruitmentCard = ({
               모집마감
             </div>
           )}
-          <Tags>
-            {tags.map((tag, index) => (
-              <Tag key={index}>#{tag}</Tag>
-            ))}
-          </Tags>
         </div>
       </CardContent>
     </CardContainer>
@@ -118,23 +76,14 @@ const CardImage = styled.img`
   object-fit: cover;
 `;
 
-const HeartIcon = styled.div`
-  font-size: 24px;
-  color: #888;
-  cursor: pointer;
-
-  &:hover {
-    color: #d32f2f;
-  }
-`;
-
 const CardContent = styled.div`
   padding: 20px;
 `;
 
 const CategoryTags = styled.div`
   display: flex;
-  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
   margin-bottom: 8px;
 `;
 
@@ -164,19 +113,4 @@ const RecruitmentStatus = styled.div`
   font-weight: 500;
   color: #cc141d;
   margin-bottom: 8px;
-`;
-
-const Tags = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-`;
-
-const Tag = styled.div`
-  font-size: 14px;
-  font-weight: 400;
-  color: #000;
-  background-color: #ffeded;
-  border-radius: 20px;
-  padding: 8px;
 `;

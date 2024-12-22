@@ -7,23 +7,34 @@ export type TCategory = {
 };
 
 type TCategoryFilterProps = {
-  title: string;
   categories: TCategory[];
+  onChange: (selectedFilters: string[]) => void;
 };
 
-export const CategoryFilter = ({ title, categories }: TCategoryFilterProps) => {
-  const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
+export const CategoryFilter = ({
+  categories,
+  onChange,
+}: TCategoryFilterProps) => {
+  const [selectedFilters, setSelectedFilters] = useState<string[]>(["ALL"]);
 
   const toggleFilter = (id: string) => {
-    setSelectedFilters((prev) =>
-      prev.includes(id) ? prev.filter((filter) => filter !== id) : [...prev, id]
-    );
+    let updatedFilters;
+
+    if (id === "ALL") {
+      updatedFilters = selectedFilters.includes("ALL") ? [] : ["ALL"];
+    } else {
+      updatedFilters = selectedFilters.includes(id)
+        ? selectedFilters.filter((filter) => filter !== id)
+        : [...selectedFilters.filter((filter) => filter !== "ALL"), id];
+    }
+
+    setSelectedFilters(updatedFilters);
+    onChange(updatedFilters);
   };
 
   return (
     <FilterContainer>
       <div style={{ alignSelf: "left" }}>
-        <Title>{title}</Title>
         <FilterList>
           {categories.map((category) => (
             <FilterItem
@@ -49,13 +60,7 @@ const FilterContainer = styled.div`
   display: flex;
   flex-direction: column;
   min-width: 300px;
-`;
-
-const Title = styled.div`
-  font-size: 20px;
-  font-weight: bold;
-  margin-left: 8px;
-  margin-bottom: 20px;
+  height: 100vh;
 `;
 
 const FilterList = styled.div`
