@@ -126,9 +126,17 @@ const EvaluationHeader = () => {
       <Title>
         <h1>{postInfo?.title}</h1>
         <p>
-          {parseISODateTime(String(postInfo?.endTime)).year}년{" "}
-          {parseISODateTime(String(postInfo?.endTime)).month}월{" "}
-          {parseISODateTime(String(postInfo?.endTime)).day}일 마감
+          {postInfo?.endTime
+            ? `${new Date(postInfo.endTime).getUTCFullYear()}년 
+        ${String(new Date(postInfo.endTime).getUTCMonth() + 1).padStart(
+          2,
+          "0"
+        )}월 
+        ${String(new Date(postInfo.endTime).getUTCDate()).padStart(
+          2,
+          "0"
+        )}일 마감`
+            : "마감일 정보가 없습니다"}
         </p>
       </Title>
     </Wrapper>

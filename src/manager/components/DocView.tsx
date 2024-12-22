@@ -6,36 +6,67 @@ import { documentDetailData } from "../mock/DocumentData";
 import TextForm from "./TextForm";
 import DropDownForm from "./DropDownForm";
 import CheckBoxForm from "./CheckBoxForm";
-import { ApplicantType, QuestionType, AnswerType } from "../global/types";
+import {
+  ApplicantType,
+  QuestionType,
+  AnswerType,
+  PostInfoType,
+} from "../global/types";
 import { GET, PUT, POST } from "../../common/api/axios";
 
 interface DocViewProps {
   applicant?: ApplicantType;
+  type: string;
 }
 
-const DocView = ({ applicant }: DocViewProps) => {
+const DocView = ({ applicant, type }: DocViewProps) => {
   const [searchParams, setSearchParams] = useSearchParams();
+  const [postInfo, setPostInfo] = useState<PostInfoType>();
   const [questionList, setQuestionList] = useState<QuestionType[]>();
   const [answerList, setAnswerList] = useState<AnswerType[]>();
   const [updatedAnswerList, setUpdatedAnswerList] = useState<AnswerType[]>();
   const [formResult, setFormResult] = useState(
     applicant?.formResult || "PENDING"
   );
+  const [meetResult, setMeetResult] = useState(
+    applicant?.meetingResult || "PENDING"
+  );
   const [totalScore, setTotalScore] = useState(0);
   const [meetingScore, setMeetingScore] = useState(0);
 
   useEffect(() => {
+    getPostDetails();
     getFormDetails();
     getApplicantDetails();
-  }, []);
+    setFormResult(applicant?.formResult || "PENDING");
+    setMeetResult(applicant?.meetingResult || "PENDING");
+  }, [applicant]);
 
   const getFormDetails = async () => {
     try {
-      //const res = await GET(`form/${formId}`); API
-      const res = documentData;
+      const res = await GET(`form/${applicant?.formId}`); //API
+      //const res = documentData;
+      console.log(res);
 
       if (res.isSuccess) {
         setQuestionList(res.result.questionList);
+        console.log(res);
+      } else {
+        console.log(res.message);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const getPostDetails = async () => {
+    try {
+      //const res = await GET(`posts/${postId}`);
+      const res = await GET(`posts/1`);
+      //const res = PromotionData;
+
+      if (res.isSuccess) {
+        setPostInfo(res.result);
       } else {
         console.log(res.message);
       }
@@ -46,8 +77,8 @@ const DocView = ({ applicant }: DocViewProps) => {
 
   const getApplicantDetails = async () => {
     try {
-      //const res = await GET(`application/${applicant?.applicantId}`);
-      const res = documentDetailData;
+      const res = await GET(`application/${applicant?.applicantId}`);
+      //const res = documentDetailData;
 
       if (res.isSuccess) {
         setAnswerList(res.result.answers);
@@ -61,59 +92,36 @@ const DocView = ({ applicant }: DocViewProps) => {
     }
   };
 
-  const postFormResult = async () => {
+  const postFormResult = async (newResult: string) => {
     try {
-      // const res = await PUT(`application/${applicant?.applicantId}`, {
-      //   formResult: `${formResult}`,
-      //   meetingResult: `${applicant?.meetingResult}`,
-      //   meetingStartTime: `${applicant?.meetingStartTime}`,
-      //   meetingEndTime: `${applicant?.meetingEndTime}`,
-      // });
-      const res = {
-        isSuccess: true,
-        code: 0,
-        message: "string",
-        result: {
-          applicationId: 0,
-          recruitingId: 0,
-          positionName: "string",
-          recruitmentStatus: "OPEN",
-          formId: 0,
-          formTitle: "string",
-          formDescription: "string",
-          clubId: 0,
-          clubName: "string",
-          postId: 0,
-          postTitle: "string",
-          applicantId: 0,
-          name: "string",
-          email: "string",
-          phoneNum: "string",
-          school: "string",
-          major: "string",
-          studentNumber: "string",
-          formResult: "PENDING",
-          formScore: 0,
-          meetingResult: "PENDING",
-          meetingScore: 0,
-          meetingStartTime: "2024-12-15T18:05:32.415Z",
-          meetingEndTime: "2024-12-15T18:05:32.415Z",
-          answers: [
-            {
-              questionId: 0,
-              question: "string",
-              answer: "string",
-              score: 0,
-              questionType: "TEXT",
-            },
-          ],
-        },
-      };
+      let res;
+      if (type === "FORM") {
+        if (postInfo?.recruitmentStatus === "OPEN") return; //////////////////////////////////////////////////////////////////////////
+        res = await PUT(`application/${applicant?.applicantId}`, {
+          formResult: `${newResult}`,
+          meetingResult: `${applicant?.meetingResult}`,
+          meetingStartTime: applicant?.meetingStartTime ?? null,
+          meetingEndTime: applicant?.meetingEndTime ?? null,
+        });
+      } else if (type === "MEET") {
+        // if (
+        //   postInfo?.recruitmentStatus !== "INTERVIEWED" ||
+        //   postInfo?.recruitmentStatus === "CLOSED"
+        // )
+        //   return; ////////////////////////////////////////////////////////////////////////////////////////////////////
+        res = await PUT(`application/${applicant?.applicantId}`, {
+          formResult: `${applicant?.applicantId}`,
+          meetingResult: `${newResult}`,
+          meetingStartTime: applicant?.meetingStartTime ?? null,
+          meetingEndTime: applicant?.meetingEndTime ?? null,
+        });
+      }
 
       if (res.isSuccess) {
-        alert("서류 결과 수정 성공");
+        if (type === "FORM") alert("서류 결과 수정 성공");
+        if (type === "MEET") alert("면접 결과 수정 성공");
       } else {
-        console.log(res.message);
+        console.log(res);
       }
     } catch (error) {
       console.log(error);
@@ -121,8 +129,9 @@ const DocView = ({ applicant }: DocViewProps) => {
   };
 
   const postFormScore = async () => {
+    if (postInfo?.recruitmentStatus === "OPEN") return; ////////////////////////////////////////////////
     try {
-      const updatedScore = answerList?.map(({ questionId, score }) => ({
+      const updatedScore = updatedAnswerList?.map(({ questionId, score }) => ({
         questionId,
         score,
       }));
@@ -131,6 +140,7 @@ const DocView = ({ applicant }: DocViewProps) => {
       //   applicationId: `${applicant?.applicantId}`,
       //   score: updatedScore,
       // });
+
       const res = {
         isSuccess: true,
         code: 0,
@@ -182,20 +192,85 @@ const DocView = ({ applicant }: DocViewProps) => {
     }
   };
 
+  const postMeetScore = async () => {
+    if (
+      postInfo?.recruitmentStatus === "INTERVIEWED" ||
+      postInfo?.recruitmentStatus === "CLOSED"
+    )
+      return;
+    try {
+      // const res = await POST("application/meetingscore", {
+      //   applicationId: `${applicant?.applicantId}`,
+      //   score: meetingScore,
+      // });
+
+      const res = {
+        isSuccess: true,
+        code: 0,
+        message: "string",
+        result: {
+          applicationId: 0,
+          recruitingId: 0,
+          positionName: "string",
+          recruitmentStatus: "OPEN",
+          formId: 0,
+          formTitle: "string",
+          formDescription: "string",
+          clubId: 0,
+          clubName: "string",
+          postId: 0,
+          postTitle: "string",
+          applicantId: 0,
+          name: "string",
+          email: "string",
+          phoneNum: "string",
+          school: "string",
+          major: "string",
+          studentNumber: "string",
+          formResult: "PENDING",
+          formScore: 0,
+          meetingResult: "PENDING",
+          meetingScore: 0,
+          meetingStartTime: "2024-12-15T18:05:32.415Z",
+          meetingEndTime: "2024-12-15T18:05:32.415Z",
+          answers: [
+            {
+              questionId: 0,
+              question: "string",
+              answer: "string",
+              score: 0,
+              questionType: "TEXT",
+            },
+          ],
+        },
+      };
+
+      if (res.isSuccess) {
+        alert("면접 점수 수정 성공");
+      } else {
+        console.log(res.message);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   const closeDocument = () => {
-    postFormScore();
+    if (type === "FORM") postFormScore();
+    else if (type === "MEET") postMeetScore();
     searchParams.delete("apply");
     setSearchParams(searchParams);
   };
 
   const renderQuestionAnswer = (question: QuestionType) => {
     switch (question.type) {
-      case "TEXT":
-        return <TextForm quest={question} />;
-      case "DROPDOWN":
-        return <DropDownForm quest={question} />;
+      case "SHORTANSWER":
+      case "LONGANSWER":
+        return <TextForm quest={question} answerList={answerList || []} />;
+      case "RADIO":
+        return <DropDownForm quest={question} answerList={answerList || []} />;
       case "CHECKBOX":
-        return <CheckBoxForm quest={question} />;
+        return <CheckBoxForm quest={question} answerList={answerList || []} />;
       default:
         return <div>알 수 없는 질문 유형</div>;
     }
@@ -203,7 +278,12 @@ const DocView = ({ applicant }: DocViewProps) => {
 
   const handleFormResultChange = (newResult: string) => {
     setFormResult(newResult);
-    postFormResult();
+    postFormResult(newResult);
+  };
+
+  const handleMeetResultChange = (newResult: string) => {
+    setMeetResult(newResult);
+    postFormResult(newResult);
   };
 
   const calculateTotalScore = (
@@ -252,38 +332,103 @@ const DocView = ({ applicant }: DocViewProps) => {
             {applicant?.email}
           </ApplicantInfo>
         </TitleContainer>
-        <ResultContainer>
-          <p>합불 결과</p>
-          <ResultTab>
-            <Result onClick={() => handleFormResultChange("PENDING")}>
-              <CheckBox selected={formResult === "PENDING"} />
-              <p>미평가</p>
-            </Result>
-            <Result onClick={() => handleFormResultChange("PASS")}>
-              <CheckBox selected={formResult === "PASS"} />
-              <p>합격</p>
-            </Result>
-            <Result onClick={() => handleFormResultChange("FAIL")}>
-              <CheckBox selected={formResult === "FAIL"} />
-              <p>불합격</p>
-            </Result>
-          </ResultTab>
-        </ResultContainer>
-        <ScoreContainer>
-          <p>면접 채점</p>
-          <TotalScore>
-            총점{" "}
-            <p>
-              {" "}
+
+        {type === "FORM" || applicant?.formResult === "FAIL" ? (
+          <ResultContainer>
+            <p>서류 결과</p>
+            <ResultTab>
+              <Result
+                onClick={
+                  postInfo?.recruitmentStatus === "OPEN" ///////////////// 밑에 두개ㅗ도
+                    ? undefined
+                    : () => handleFormResultChange("PENDING")
+                }
+              >
+                <CheckBox selected={formResult === "PENDING"} />
+                <p>미평가</p>
+              </Result>
+              <Result
+                onClick={
+                  postInfo?.recruitmentStatus === "OPEN"
+                    ? undefined
+                    : () => handleFormResultChange("PASS")
+                }
+              >
+                <CheckBox selected={formResult === "PASS"} />
+                <p>합격</p>
+              </Result>
+              <Result
+                onClick={
+                  postInfo?.recruitmentStatus === "OPEN"
+                    ? undefined
+                    : () => handleFormResultChange("FAIL")
+                }
+              >
+                <CheckBox selected={formResult === "FAIL"} />
+                <p>불합격</p>
+              </Result>
+            </ResultTab>
+          </ResultContainer>
+        ) : (
+          <ResultContainer>
+            <p>면접 결과</p>
+            <ResultTab>
+              <Result
+                onClick={
+                  ////////////////////////////////////////////////////////////////////////////////////////////////////
+                  postInfo?.recruitmentStatus === "INTERVIEWED" ||
+                  postInfo?.recruitmentStatus === "CLOSED"
+                    ? () => handleMeetResultChange("PENDING")
+                    : () => handleMeetResultChange("PENDING")
+                }
+              >
+                <CheckBox selected={meetResult === "PENDING"} />
+                <p>미평가</p>
+              </Result>
+              <Result
+                onClick={
+                  postInfo?.recruitmentStatus === "INTERVIEWED" ||
+                  postInfo?.recruitmentStatus === "CLOSED"
+                    ? () => handleMeetResultChange("PASS")
+                    : () => handleMeetResultChange("PASS")
+                }
+              >
+                <CheckBox selected={meetResult === "PASS"} />
+                <p>합격</p>
+              </Result>
+              <Result
+                onClick={
+                  postInfo?.recruitmentStatus === "INTERVIEWED" ||
+                  postInfo?.recruitmentStatus === "CLOSED"
+                    ? () => handleMeetResultChange("FAIL")
+                    : () => handleMeetResultChange("FAIL")
+                }
+              >
+                <CheckBox selected={meetResult === "FAIL"} />
+                <p>불합격</p>
+              </Result>
+            </ResultTab>
+          </ResultContainer>
+        )}
+
+        {type === "MEET" && applicant?.formResult === "PASS" && (
+          <ScoreContainer>
+            <p>면접 채점</p>
+            <TotalScore>
+              총점{" "}
               <input
                 type="number"
                 defaultValue={meetingScore}
                 onChange={(e) => setMeetingScore(parseInt(e.target.value))}
+                disabled={
+                  postInfo?.recruitmentStatus === "INTERVIEWED" ||
+                  postInfo?.recruitmentStatus === "CLOSED"
+                }
               />
-            </p>
-            점
-          </TotalScore>
-        </ScoreContainer>
+              점
+            </TotalScore>
+          </ScoreContainer>
+        )}
         <ScoreContainer>
           <p>지원서 채점</p>
           <TotalScore>
@@ -308,6 +453,7 @@ const DocView = ({ applicant }: DocViewProps) => {
                       parseInt(e.target.value, 10) || 0
                     )
                   }
+                  disabled={postInfo?.recruitmentStatus !== "OPEN"}
                 />
                 <p>점</p>
               </Score>
@@ -382,7 +528,6 @@ const ResultContainer = styled.div`
   justify-content: space-between;
   align-items: center;
   align-self: stretch;
-  border-bottom: solid 1px #ddd;
 
   p {
     color: #000;
@@ -442,9 +587,11 @@ const ScoreContainer = styled.div`
   margin-right: 10px;
   padding: 0px 8px;
   padding-top: 20px;
+  padding-bottom: 20px;
   justify-content: space-between;
   align-items: center;
   align-self: stretch;
+  border-top: solid 1px #ddd;
 
   p {
     color: #000;
@@ -479,6 +626,29 @@ const TotalScore = styled.div`
     line-height: normal;
     letter-spacing: -0.4px;
   }
+
+  input {
+    display: flex;
+    width: 65px;
+    height: 30px;
+    margin: 0px 5px;
+    padding: 0px 5px;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+    border-radius: 8px;
+    background: #fff;
+
+    color: #cc141d;
+    text-align: center;
+    font-family: Pretendard;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 150%; /* 30px */
+  }
 `;
 
 const ApplicantInfo = styled.div`
@@ -499,7 +669,6 @@ const ApplicantInfo = styled.div`
 
 const ContentContainer = styled.div`
   display: flex;
-  margin-top: 15px;
   padding-right: 20px;
   flex-direction: column;
   align-items: flex-start;

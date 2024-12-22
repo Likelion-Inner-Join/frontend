@@ -2,33 +2,12 @@ import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { documentDetailData } from "../mock/DocumentData";
 import { QuestionType, AnswerType } from "../global/types";
-
 interface FormProps {
   quest?: QuestionType;
+  answerList: AnswerType[];
 }
 
-const CheckBoxForm = ({ quest }: FormProps) => {
-  const [answerList, setAnswerList] = useState<AnswerType[]>();
-
-  useEffect(() => {
-    getApplicantDetails();
-  }, []);
-
-  const getApplicantDetails = async () => {
-    try {
-      //const res = await GET(`application/${application_id}`); API
-      const res = documentDetailData;
-
-      if (res.isSuccess) {
-        setAnswerList(res.result.answers);
-      } else {
-        console.log(res.message);
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
+const CheckBoxForm = ({ quest, answerList }: FormProps) => {
   return (
     <div>
       {quest?.list?.map((item: string, index: number) => (

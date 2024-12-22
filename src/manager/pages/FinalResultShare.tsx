@@ -26,11 +26,12 @@ const FinalResultShare = () => {
 
   const getApplicantList = async () => {
     try {
-      //const res = await GET("application/list");
-      const res = applicantData;
+      //const res = await GET(`posts/${postId}/application`);
+      const res = await GET(`posts/1/application`);
+      //const res = applicantData;
 
       if (res.isSuccess) {
-        setApplicantList(applicantData.result.applicationList);
+        setApplicantList(res.result.applicationList);
       } else {
         console.log(res.message);
       }
@@ -61,6 +62,10 @@ const FinalResultShare = () => {
   }, []);
 
   useEffect(() => {
+    if (postInfo?.recruitmentStatus === "CLOSED") setIsShared(true);
+  }, [postInfo]);
+
+  useEffect(() => {
     setPassList(
       applicantList.filter(
         (applicant) =>
@@ -85,7 +90,7 @@ const FinalResultShare = () => {
   return (
     <Wrapper>
       <InterviewerList
-        data1={applicantData.result.applicationList}
+        data1={applicantList}
         data2={postInfo?.recruitingList || []}
         isEmail={false}
       />
@@ -127,9 +132,9 @@ const FinalResultShare = () => {
           failList={failList}
           isColor={false}
         />
-        <NextButton onClick={() => navigate("/post-manage")}>
+        {/* <NextButton onClick={() => navigate("/post-manage")}>
           평가 종료
-        </NextButton>
+        </NextButton> */}
       </Container>
     </Wrapper>
   );

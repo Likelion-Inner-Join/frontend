@@ -63,6 +63,8 @@ const ResultShare = () => {
   useEffect(() => {
     if (postInfo?.recruitmentType === "FORM_ONLY") setResultType("최종");
     if (postInfo?.recruitmentType === "FORM_AND_MEETING") setResultType("서류");
+
+    if (postInfo?.recruitmentStatus !== "OPEN") setIsShared(true);
   }, [postInfo]);
 
   useEffect(() => {

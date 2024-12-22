@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import styled from "styled-components";
 import DocView from "./DocView";
 import { ApplicantType } from "../global/types";
+import { PUT, POST, GET } from "../../common/api/axios";
 
 interface Position {
   recruitingId: number;
@@ -26,9 +27,26 @@ const InterviewerList = ({ data1, data2, isEmail }: ApplicantListProps) => {
   const [filteredApplicants, setFilteredApplicants] = useState<ApplicantType[]>(
     []
   );
+  const [applicantList, setApplicantList] = useState<ApplicantType[]>([]);
 
   const currApplyID = searchParams.get("apply");
   const navigate = useNavigate();
+
+  const getApplicantList = async () => {
+    try {
+      //const res = await GET(`posts/${postId}/application`);
+      const res = await GET(`posts/1/application`);
+      //const res = applicantData;
+
+      if (res.isSuccess) {
+        setApplicantList(res.result.applicationList);
+      } else {
+        console.log(res.message);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const handlePositionChange = (positionName: string) => {
     if (positionName === "전체") {
@@ -48,50 +66,124 @@ const InterviewerList = ({ data1, data2, isEmail }: ApplicantListProps) => {
     navigate(`?apply=${applicant.applicationId}`);
   };
 
-  function parseISODateTime(isoString: string) {
-    const date = new Date(isoString);
-    const year = date.getFullYear();
-    const month = date.getMonth() + 1;
-    const day = date.getDate();
-    const hours = date.getHours();
-    const minutes = date.getMinutes();
-
-    return { year, month, day, hours, minutes };
-  }
-
-  const handleMeetingDateChange = (applicationId: number, value: string) => {
+  const handleMeetingDateChange = async (
+    applicationId: number,
+    value: string
+  ) => {
     setFilteredApplicants((prev) =>
       prev.map((applicant) =>
         applicant.applicationId === applicationId
           ? {
               ...applicant,
-              meetingStartTime: `${value} ${
-                applicant.meetingStartTime.split(" ")[1]
-              }`,
+              meetingStartTime: applicant.meetingStartTime
+                ? `${value}T${applicant.meetingStartTime.split("T")[1]}`
+                : `${value}T00:00:00`,
+              meetingEndTime: applicant.meetingEndTime
+                ? `${value}T${applicant.meetingEndTime.split("T")[1]}`
+                : `${value}T00:30:00`,
             }
           : applicant
       )
     );
+
+    const updatedApplicant = filteredApplicants.find(
+      (applicant) => applicant.applicationId === applicationId
+    );
+
+    if (updatedApplicant) {
+      try {
+        const res = await PUT(`application/${applicationId}`, {
+          formResult: updatedApplicant.formResult,
+          meetingResult: updatedApplicant.meetingResult,
+          meetingStartTime: updatedApplicant.meetingStartTime
+            ? `${value}T${
+                updatedApplicant.meetingStartTime.split("T")[1]
+              }`.replace(".000Z", "")
+            : `${value}T00:00:00`,
+          meetingEndTime: updatedApplicant.meetingEndTime
+            ? `${value}T${
+                updatedApplicant.meetingEndTime.split("T")[1]
+              }`.replace(".000Z", "")
+            : `${value}T00:30:00`,
+        });
+        if (res.isSuccess) {
+          alert("면접 날짜 수정 성공");
+        } else {
+          console.log(res.message);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    }
   };
 
-  const handleMeetingTimeChange = (applicationId: number, value: string) => {
+  const handleMeetingTimeChange = async (
+    applicationId: number,
+    value: string
+  ) => {
+    console.log(filteredApplicants);
     setFilteredApplicants((prev) =>
       prev.map((applicant) =>
         applicant.applicationId === applicationId
           ? {
               ...applicant,
-              meetingStartTime: `${
-                applicant.meetingStartTime.split(" ")[0]
-              } ${value}`,
+              meetingStartTime: applicant.meetingStartTime
+                ? `${applicant.meetingStartTime.split("T")[0]}T${value}:00.000Z`
+                : `2025-01-01T${value}:00`,
+              meetingEndTime: applicant.meetingEndTime
+                ? `${applicant.meetingEndTime.split("T")[0]}T${value}:00.000Z`
+                : `2025-01-01T${value}:00`,
             }
           : applicant
       )
     );
+
+    const updatedApplicant = filteredApplicants.find(
+      (applicant) => applicant.applicationId === applicationId
+    );
+
+    if (updatedApplicant) {
+      try {
+        const res = await PUT(`application/${applicationId}`, {
+          formResult: updatedApplicant.formResult,
+          meetingResult: updatedApplicant.meetingResult,
+          meetingStartTime: updatedApplicant.meetingStartTime
+            ? `${updatedApplicant.meetingStartTime.split("T")[0]}T${value}:00`
+            : `2025-01-01T${value}:00`,
+          meetingEndTime: updatedApplicant.meetingEndTime
+            ? `${updatedApplicant.meetingEndTime.split("T")[0]}T${value}:00`
+            : `2025-01-01T${value}:00`,
+        });
+
+        if (res.isSuccess) {
+          //getApplicantList();
+          alert("면접 시간 수정 성공");
+          console.log(res);
+        } else {
+          console.log(res.message);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    }
   };
 
   useEffect(() => {
+    getApplicantList();
+  }, [isDocumentOpen]);
+
+  useEffect(() => {
+    getApplicantList();
+  }, []);
+
+  useEffect(() => {
+    console.log(filteredApplicants);
+  }, [filteredApplicants]);
+
+  useEffect(() => {
+    getApplicantList();
     if (currApplyID) {
-      const selectedApplicant = data1.find(
+      const selectedApplicant = applicantList.find(
         (applicant) => String(applicant.applicationId) === currApplyID
       );
       setSelectedApplicant(selectedApplicant);
@@ -100,7 +192,7 @@ const InterviewerList = ({ data1, data2, isEmail }: ApplicantListProps) => {
   }, [currApplyID]);
 
   useEffect(() => {
-    const meetFilteredApplicants = data1
+    const meetFilteredApplicants = applicantList
       .filter((applicant) => {
         const matchState =
           selectedState === "전체" ||
@@ -127,7 +219,7 @@ const InterviewerList = ({ data1, data2, isEmail }: ApplicantListProps) => {
       });
 
     setFilteredApplicants(meetFilteredApplicants);
-  }, [data1, selectedState, selectedPositions]);
+  }, [applicantList, selectedState, selectedPositions]);
 
   const getIconByState = (state: string) => {
     switch (state) {
@@ -225,44 +317,62 @@ const InterviewerList = ({ data1, data2, isEmail }: ApplicantListProps) => {
               </div>
               <div>
                 <MeetingSchedule>
-                  <MeetingDate
-                    type="date"
-                    // value={applicant.meetingStartTime.split(" ")[0]}
-                    value={`${
-                      parseISODateTime(applicant.meetingStartTime).year
-                    }-${String(
-                      parseISODateTime(applicant.meetingStartTime).month
-                    ).padStart(2, "0")}-${String(
-                      parseISODateTime(applicant.meetingStartTime).day
-                    ).padStart(2, "0")}`}
-                    onChange={(e) =>
-                      handleMeetingDateChange(
-                        applicant.applicationId,
-                        e.target.value
-                      )
-                    }
-                  />
-                  <MeetingTime
-                    type="time"
-                    value={`${String(
-                      parseISODateTime(applicant.meetingStartTime).hours
-                    ).padStart(2, "0")}:${String(
-                      parseISODateTime(applicant.meetingStartTime).minutes
-                    ).padStart(2, "0")}`}
-                    onChange={(e) =>
-                      handleMeetingTimeChange(
-                        applicant.applicationId,
-                        e.target.value
-                      )
-                    }
-                  />
+                  {applicant.formResult === "PASS" && (
+                    <MeetingDate
+                      type="date"
+                      value={
+                        applicant.meetingStartTime
+                          ? `${new Date(
+                              applicant.meetingStartTime
+                            ).getFullYear()}-${String(
+                              new Date(applicant.meetingStartTime).getMonth() +
+                                1
+                            ).padStart(2, "0")}-${String(
+                              new Date(applicant.meetingStartTime).getDate()
+                            ).padStart(2, "0")}`
+                          : "-"
+                      }
+                      onChange={(e) =>
+                        handleMeetingDateChange(
+                          applicant.applicationId,
+                          e.target.value
+                        )
+                      }
+                    />
+                  )}
+                  {applicant.formResult === "PASS" && (
+                    <MeetingTime
+                      type="time"
+                      value={
+                        applicant.meetingStartTime
+                          ? `${String(
+                              new Date(applicant.meetingStartTime).getHours()
+                            ).padStart(2, "0")}:${String(
+                              new Date(applicant.meetingStartTime).getMinutes()
+                            ).padStart(2, "0")}`
+                          : `${String(new Date().getHours()).padStart(
+                              2,
+                              "0"
+                            )}:${String(new Date().getMinutes()).padStart(
+                              2,
+                              "0"
+                            )}`
+                      }
+                      onChange={(e) =>
+                        handleMeetingTimeChange(
+                          applicant.applicationId,
+                          e.target.value
+                        )
+                      }
+                    />
+                  )}
                 </MeetingSchedule>
               </div>
             </ApplicantItem>
           ))}
         </Applicant>
       </Container>
-      {isDocumentOpen && <DocView applicant={selectedApplicant} />}
+      {isDocumentOpen && <DocView applicant={selectedApplicant} type="MEET" />}
     </Wrapper>
   );
 };
@@ -463,7 +573,7 @@ const ApplicantItem = styled.div<{ formResult: string }>`
   color: #000000;
   font-family: Pretendard;
   opacity: ${({ formResult }) => {
-    if (formResult === "fail") return "0.3";
+    if (formResult === "FAIL") return "0.3";
     return "1";
   }};
 

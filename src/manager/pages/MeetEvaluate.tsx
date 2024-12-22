@@ -96,7 +96,7 @@ const MeetEvaluate = () => {
           <MyButton
             content="다음 단계"
             buttonType="RED"
-            onClick={() => navigate("/meet-table")}
+            onClick={() => navigate("/final-result")}
           />
         </Buttons>
         <InfoCaption>
@@ -117,12 +117,15 @@ const MeetEvaluate = () => {
           <div>
             <h3>경쟁률</h3>
             <p>
-              {Math.round(
-                ((passList.length + failList.length + restList.length) /
-                  passList.length) *
-                  Math.pow(10, 2)
-              ) / Math.pow(10, 2)}{" "}
-              : 1
+              {passList.length > 0
+                ? (
+                    Math.round(
+                      ((passList.length + failList.length + restList.length) /
+                        passList.length) *
+                        Math.pow(10, 2)
+                    ) / Math.pow(10, 2)
+                  ).toFixed(2) + ": 1"
+                : "0 : 0"}{" "}
             </p>
           </div>
         </InfoRatio>
