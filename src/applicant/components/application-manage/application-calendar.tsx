@@ -1,6 +1,7 @@
 import { useState } from "react";
 import styled from "styled-components";
 import { CalendarHeader } from "./application-calendar-header";
+import { TApplicationData } from "../../pages";
 
 const generateCalendar = (year: number, month: number) => {
   const startDay = new Date(year, month, 1);
@@ -29,7 +30,11 @@ const generateCalendar = (year: number, month: number) => {
   return daysInMonth;
 };
 
-export const ApplicationCalendar = () => {
+export const ApplicationCalendar = ({
+  applications,
+}: {
+  applications: TApplicationData[];
+}) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [activeFilter, setActiveFilter] = useState("전체");
 
@@ -38,17 +43,24 @@ export const ApplicationCalendar = () => {
 
   const calendarDays = generateCalendar(year, month);
 
-  const events = [
-    { date: "2024-12-01", title: "트라이파시", type: "마감" },
-    { date: "2024-12-15", title: "멋쟁이사자처럼", type: "면접" },
-    { date: "2024-12-18", title: "서강영화반", type: "1차" },
-    { date: "2024-12-18", title: "서강영화반", type: "시작" },
-  ];
-
-  const getEventsForDate = (date: Date) => {
-    return events.filter(
-      (event) => event.date === date.toISOString().split("T")[0]
+  const getEventsForDate = (date: Date, activeFilter: string) => {
+    const startEvents = applications.filter(
+      (application) =>
+        new Date(application.startTime).toDateString() === date.toDateString()
     );
+
+    const endEvents = applications.filter(
+      (application) =>
+        new Date(application.endTime).toDateString() === date.toDateString()
+    );
+
+    if (activeFilter === "시작") {
+      return { startEvents, endEvents: [] };
+    }
+    if (activeFilter === "마감") {
+      return { startEvents: [], endEvents };
+    }
+    return { startEvents, endEvents };
   };
 
   const handlePrevMonth = () => {
@@ -76,30 +88,44 @@ export const ApplicationCalendar = () => {
         {["일", "월", "화", "수", "목", "금", "토"].map((day, idx) => (
           <HeaderCell key={idx}>{day}</HeaderCell>
         ))}
-        {calendarDays.map((date, idx) => (
-          <DayCell key={idx}>
-            {date.getMonth() === month && (
-              <>
-                <DateLabel
-                  isToday={
-                    date.toLocaleDateString() ===
-                    new Date().toLocaleDateString()
-                  }
-                >
-                  {date.getDate()}
-                </DateLabel>
-                <EventsWrapper>
-                  {getEventsForDate(date).map((event, idx) => (
-                    <EventBadge key={idx}>
-                      <Badge type={event.type}>{event.type}</Badge>
-                      <span>{event.title}</span>
-                    </EventBadge>
-                  ))}
-                </EventsWrapper>
-              </>
-            )}
-          </DayCell>
-        ))}
+        {calendarDays.map((date, idx) => {
+          const { startEvents, endEvents } = getEventsForDate(
+            date,
+            activeFilter
+          );
+
+          return (
+            <DayCell key={idx}>
+              {date.getMonth() === month && (
+                <>
+                  <DateLabel
+                    isToday={
+                      date.toLocaleDateString() ===
+                      new Date().toLocaleDateString()
+                    }
+                  >
+                    {date.getDate()}
+                  </DateLabel>
+                  <EventsWrapper>
+                    {startEvents.map((event, idx) => (
+                      <EventBadge key={`start-${idx}`}>
+                        <Badge type="시작">시작</Badge>
+                        <span>{event.clubName}</span>
+                      </EventBadge>
+                    ))}
+
+                    {endEvents.map((event, idx) => (
+                      <EventBadge key={`end-${idx}`}>
+                        <Badge type="마감">마감</Badge>
+                        <span>{event.clubName}</span>
+                      </EventBadge>
+                    ))}
+                  </EventsWrapper>
+                </>
+              )}
+            </DayCell>
+          );
+        })}
       </Grid>
     </CalendarWrapper>
   );
@@ -170,24 +196,8 @@ const Badge = styled.div<{ type: string }>`
   text-align: center;
 
   background-color: ${({ type }) =>
-    type === "마감"
-      ? "#FFFAF3"
-      : type === "1차"
-      ? "#fff3f3"
-      : type === "시작"
-      ? "#F3FFF5"
-      : type === "면접"
-      ? "#F3F8FF"
-      : "transparent"};
+    type === "마감" ? "#FFFAF3" : type === "시작" ? "#F3FFF5" : "transparent"};
 
   color: ${({ type }) =>
-    type === "마감"
-      ? "#C04D01"
-      : type === "1차"
-      ? "#b10d15"
-      : type === "시작"
-      ? "#259919"
-      : type === "면접"
-      ? "#182188"
-      : "black"};
+    type === "마감" ? "#C04D01" : type === "시작" ? "#259919" : "black"};
 `;

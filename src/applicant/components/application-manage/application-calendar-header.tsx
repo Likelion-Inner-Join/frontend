@@ -18,7 +18,7 @@ export const CalendarHeader = ({
   const month = currentDate.toLocaleString("ko-KR", { month: "long" });
   const year = currentDate.getFullYear();
 
-  const filters = ["전체", "시작", "마감", "1차", "최종", "면접"];
+  const filters = ["전체", "시작", "마감"];
 
   return (
     <CalendarHeaderWrapper>
