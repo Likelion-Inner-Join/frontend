@@ -1,71 +1,100 @@
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "../../common/ui";
 import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { ApplicantPage } from "../page";
 import { QNAField } from "../components/application-form";
+import { GET, POST } from "../../common/api/axios";
+
+export type TQuestion = {
+  questionId: string;
+  number: string;
+  question: string;
+  type: string;
+  list: string[];
+};
+
+type TApplicationFormData = {
+  id: string;
+  title: string;
+  description: string;
+  questionList: TQuestion[];
+};
+
+type TAnswer = {
+  questionId: string;
+  answer: string;
+};
 
 export const ApplicationFormPage = () => {
-  const { clubId } = useParams<Record<string, string>>();
-  const location = useLocation();
-  const position = location.state?.position;
   const navigate = useNavigate();
+  const location = useLocation();
+  const formId = location.state?.formId;
+  const jobTitle = location.state?.jobTitle;
+  const recruitingId = location.state?.recruitingId;
 
-  const [questions, setQuestions] = useState<any[]>([]);
-  const [answers, setAnswers] = useState<string[]>([]);
+  const [data, setData] = useState<TApplicationFormData>();
+  const [loading, setLoading] = useState(true);
+
+  const [answers, setAnswers] = useState<TAnswer[]>([]);
 
   useEffect(() => {
-    if (clubId && position) {
-      const fetchedQuestions = [
-        {
-          type: "checkbox",
-          required: true,
-          title: "다음 중 관련 기술을 선택하세요.",
-          options: ["JavaScript", "React", "Node.js", "CSS"],
-        },
-        {
-          type: "radio",
-          required: true,
-          title: "다음 중 관련 기술을 선택하세요.",
-          options: ["JavaScript", "React", "Node.js", "CSS"],
-        },
-        {
-          type: "shortAnswer",
-          required: true,
-          title: `${position} 포지션에 지원하는 이유를 작성해주세요.`,
-          description: "자유롭게 작성해주세요.",
-        },
-        {
-          type: "longAnswer",
-          required: false,
-          title: "최근 프로젝트 경험에 대해 설명해주세요.",
-          description: "프로젝트와 관련된 경험을 작성해주세요.",
-        },
-        {
-          type: "date",
-          required: true,
-          title: "언제부터 근무가 가능하신가요?",
-        },
-        {
-          type: "time",
-          required: true,
-          title: "언제부터 근무가 가능하신가요?",
-        },
-      ];
-      setQuestions(fetchedQuestions);
-      setAnswers(new Array(fetchedQuestions.length).fill(""));
-    }
-  }, [clubId, position]);
+    const fetchForm = async () => {
+      try {
+        setLoading(true);
+        const response = await GET(`form/${formId}`);
+        if (response.isSuccess) {
+          setData(response.result);
+        } else {
+          throw new Error(response.message || "Failed to fetch posts");
+        }
+      } catch (err) {
+        console.log(err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const handleAnswerChange = (index: number, value: string) => {
-    const updatedAnswers = [...answers];
-    updatedAnswers[index] = value;
-    setAnswers(updatedAnswers);
+    fetchForm();
+  }, [formId]);
+
+  if (!data) {
+    return <div>로딩 중..</div>;
+  }
+
+  const handleAnswerChange = (questionId: string, value: string) => {
+    setAnswers((prevAnswers) => {
+      const existingAnswerIndex = prevAnswers.findIndex(
+        (answer) => answer.questionId === questionId
+      );
+
+      if (existingAnswerIndex !== -1) {
+        const updatedAnswers = [...prevAnswers];
+        updatedAnswers[existingAnswerIndex] = { questionId, answer: value };
+        return updatedAnswers;
+      }
+
+      return [...prevAnswers, { questionId, answer: value }];
+    });
   };
+  console.log(answers);
 
-  const handleSubmit = () => {
-    console.log("제출된 답변:", answers);
-    navigate("/my/application-manage");
+  const handleSubmit = async () => {
+    try {
+      const response = await POST("application", {
+        recruitingId: recruitingId,
+        applicantId: "1" /*FIXME: */,
+        answers: answers,
+      });
+      if (response.isSuccess) {
+        alert("성공적으로 제출했어요.");
+        navigate("/my/application-manage");
+      } else {
+        console.log(response.errorMessage);
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
@@ -73,10 +102,8 @@ export const ApplicationFormPage = () => {
       <FormContainer>
         <Header>
           <Title>
-            <div className="main-title">
-              🦁 멋쟁이사자처럼 서강대학교에서 12기 아기사자를 모집합니다! 🦁
-            </div>
-            <div className="sub-title">{position} 전형</div>
+            <div className="main-title">{data.title}</div>
+            <div className="sub-title">{jobTitle} 전형</div>
           </Title>
 
           <Button
@@ -86,23 +113,25 @@ export const ApplicationFormPage = () => {
             size="large"
           />
         </Header>
-        {clubId && position ? (
+        {loading ? (
+          <div>로딩 중..</div>
+        ) : (
           <form
             onSubmit={(e) => {
               e.preventDefault();
               handleSubmit();
             }}
           >
-            {questions.map((question, index) => (
+            {data.questionList.map((questionItem, index) => (
               <QNAField
                 key={index}
-                {...question}
-                onChange={(value: string) => handleAnswerChange(index, value)}
+                questionItem={questionItem}
+                onChange={(value: string) =>
+                  handleAnswerChange(questionItem.questionId, value)
+                }
               />
             ))}
           </form>
-        ) : (
-          <p>해당 정보가 없습니다.</p>
         )}
       </FormContainer>
     </ApplicantPage>
@@ -113,6 +142,10 @@ const FormContainer = styled.div`
   width: 1380px;
   margin: 0 auto;
   padding-bottom: 60px;
+
+  @media (max-width: 768px) {
+    width: unset;
+  }
 `;
 
 const Header = styled.div`

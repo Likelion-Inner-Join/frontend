@@ -1,57 +1,89 @@
 import styled from "styled-components";
-
-export type TQNAFieldProps = {
-  type: "checkbox" | "radio" | "shortAnswer" | "longAnswer" | "date" | "time";
-  required: boolean;
-  title: string;
-  description?: string;
-  options?: string[];
-};
+import { TQuestion } from "../../pages";
+import { useState } from "react";
 
 export const QNAField = ({
-  type,
-  required,
-  title,
-  description,
-  options,
-}: TQNAFieldProps) => {
+  questionItem,
+  onChange,
+}: {
+  questionItem: TQuestion;
+  onChange: (value: string) => void;
+}) => {
+  const [selectedValues, setSelectedValues] = useState<string[]>([]);
+
+  const handleCheckboxChange = (value: string, isChecked: boolean) => {
+    let updatedValues = [];
+    if (isChecked) {
+      updatedValues = [...selectedValues, value];
+    } else {
+      updatedValues = selectedValues.filter((item) => item !== value);
+    }
+    setSelectedValues(updatedValues);
+    onChange(updatedValues.join(","));
+  };
+
   const renderAnswerField = () => {
-    switch (type) {
-      case "checkbox":
+    switch (questionItem.type) {
+      case "CHECKBOX":
         return (
           <CheckboxWrapper>
-            {options?.map((option, index) => (
+            {questionItem.list?.map((option, index) => (
               <label key={index}>
-                <input type="checkbox" name={title} value={option} />
+                <input
+                  type="checkbox"
+                  name={`question-${questionItem.questionId}`}
+                  value={option}
+                  onChange={(e) =>
+                    handleCheckboxChange(option, e.target.checked)
+                  }
+                />
                 <span>{option}</span>
               </label>
             ))}
           </CheckboxWrapper>
         );
 
-      case "radio":
+      case "RADIO":
         return (
           <RadioWrapper>
-            {options?.map((option, index) => (
+            {questionItem.list?.map((option, index) => (
               <label key={index}>
-                <input type="radio" name={title} value={option} />
+                <input
+                  type="radio"
+                  name={`question-${questionItem.questionId}`}
+                  value={option}
+                  onChange={() => onChange(option)}
+                />
                 <span>{option}</span>
               </label>
             ))}
           </RadioWrapper>
         );
 
-      case "shortAnswer":
-        return <ShortAnswerInput type="text" required={required} />;
+      case "SHORTANSWER":
+        return (
+          <ShortAnswerInput
+            type="text"
+            onChange={(e) => onChange(e.target.value)}
+          />
+        );
 
-      case "longAnswer":
-        return <LongAnswerTextarea required={required}></LongAnswerTextarea>;
+      case "LONGANSWER":
+        return (
+          <LongAnswerTextarea
+            onChange={(e) => onChange(e.target.value)}
+          ></LongAnswerTextarea>
+        );
 
-      case "date":
-        return <DateInput type="date" required={required} />;
+      case "DATE":
+        return (
+          <DateInput type="date" onChange={(e) => onChange(e.target.value)} />
+        );
 
-      case "time":
-        return <TimeInput type="time" required={required} />;
+      case "TIME":
+        return (
+          <TimeInput type="time" onChange={(e) => onChange(e.target.value)} />
+        );
 
       default:
         return null;
@@ -61,10 +93,7 @@ export const QNAField = ({
   return (
     <QNAFieldWrapper>
       <Title>
-        <span>
-          {title} {required && <span className="required">*</span>}
-        </span>
-        {description && <div className="description">{description}</div>}
+        <span>{questionItem.question}</span>
       </Title>
       <div
         style={{
