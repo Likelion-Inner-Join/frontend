@@ -9,7 +9,7 @@ import { applicantData } from "../mock/applicantData";
 import { positionData } from "../mock/positionData";
 import { useNavigate } from "react-router-dom";
 import { ApplicantType, PostInfoType } from "../global/types";
-import { GET } from "../../common/api/axios";
+import { GET, PATCH } from "../../common/api/axios";
 
 const FinalResultShare = () => {
   const [applicantList, setApplicantList] = useState<ApplicantType[]>([]);
@@ -19,10 +19,6 @@ const FinalResultShare = () => {
   const [failList, setFailList] = useState<ApplicantType[]>([]);
   const [isShared, setIsShared] = useState(false);
   const navigate = useNavigate();
-
-  const shareButtonClick = () => {
-    if (!isShared) setIsShared(!isShared);
-  };
 
   const getApplicantList = async () => {
     try {
@@ -42,12 +38,47 @@ const FinalResultShare = () => {
 
   const getPostDetails = async () => {
     try {
-      //const res = await GET(`posts/${postId}`);
       const res = await GET(`posts/1`);
-      //const res = PromotionData;
 
       if (res.isSuccess) {
         setPostInfo(res.result);
+        if (
+          res.result.recruitmentStatus === "INTERVIEWED" ||
+          res.result.recruitmentStatus === "CLOSED"
+        )
+          setIsShared(true);
+        else {
+          setIsShared(false);
+        }
+      } else {
+        console.log(res.message);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const updateRecruitStatus = async (status: string) => {
+    if (status === "INTERVIEWED" && isShared) return;
+    if (status === "INTERVIEWED" && restList.length !== 0) {
+      alert("평가가 완료되지 않은 지원자가 있습니다.");
+      return;
+    }
+
+    if (status === "CLOSED" && !isShared) {
+      alert("먼저 최종 결과를 공유해주세요.");
+      return;
+    }
+
+    try {
+      const res = await PATCH(`posts/1`, { recruitmentStatus: status });
+      console.log({ recruitmentStatus: status });
+
+      if (res.isSuccess) {
+        if (status === "INTERVIEWED") setIsShared(!isShared);
+        if (status === "CLOSED") navigate("/post-manage");
+        getApplicantList();
+        getPostDetails();
       } else {
         console.log(res.message);
       }
@@ -94,16 +125,27 @@ const FinalResultShare = () => {
         data2={postInfo?.recruitingList || []}
         isEmail={false}
       />
-      )
       <Container>
         <EvaluationHeader />
+        {isShared && (
+          <Buttons>
+            <MyButton
+              content="평가 종료"
+              buttonType="RED"
+              onClick={() => updateRecruitStatus("CLOSED")}
+            />
+          </Buttons>
+        )}
         {isShared ? (
           <Caption>최종 결과가 지원자에게 공유되었습니다!</Caption>
         ) : (
           <Caption>최종 결과를 지원자에게 공유하시겠습니까?</Caption>
         )}
         <ButtonBox>
-          <ShareButton onClick={shareButtonClick} isShared={isShared}>
+          <ShareButton
+            onClick={() => updateRecruitStatus("INTERVIEWED")}
+            isShared={isShared}
+          >
             공유하기
           </ShareButton>
           {isShared ? (
@@ -116,7 +158,7 @@ const FinalResultShare = () => {
             <MyButton
               content="수정하기"
               buttonType="WHITE"
-              onClick={() => navigate("/doc-eval")}
+              onClick={() => navigate("/meet-eval")}
             />
           )}
         </ButtonBox>
@@ -132,9 +174,6 @@ const FinalResultShare = () => {
           failList={failList}
           isColor={false}
         />
-        {/* <NextButton onClick={() => navigate("/post-manage")}>
-          평가 종료
-        </NextButton> */}
       </Container>
     </Wrapper>
   );
@@ -169,6 +208,16 @@ const Caption = styled.div`
   font-weight: 600;
   line-height: 170%; /* 71.4px */
   letter-spacing: -0.84px;
+`;
+
+const Buttons = styled.div`
+  position: fixed;
+  right: 5%;
+  top: 15%;
+  display: flex;
+  width: 100%;
+  justify-content: flex-end;
+  gap: 24px;
 `;
 
 const ButtonBox = styled.div`

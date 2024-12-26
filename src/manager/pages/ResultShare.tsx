@@ -10,7 +10,7 @@ import { positionData } from "../mock/positionData";
 import { PromotionData } from "../mock/PromotionDetail";
 import { useNavigate } from "react-router-dom";
 import { ApplicantType, PostInfoType } from "../global/types";
-import { GET } from "../../common/api/axios";
+import { GET, PATCH } from "../../common/api/axios";
 
 const ResultShare = () => {
   const [applicantList, setApplicantList] = useState<ApplicantType[]>([]);
@@ -24,9 +24,7 @@ const ResultShare = () => {
 
   const getApplicantList = async () => {
     try {
-      //const res = await GET(`posts/${postId}/application`);
       const res = await GET(`posts/1/application`);
-      //const res = applicantData;
 
       if (res.isSuccess) {
         setApplicantList(res.result.applicationList);
@@ -40,13 +38,34 @@ const ResultShare = () => {
 
   const getPostDetails = async () => {
     try {
-      //const res = await GET(`posts/${postId}`);
       const res = await GET(`posts/1`);
-      //const res = PromotionData;
 
       if (res.isSuccess) {
         setPostInfo(res.result);
-        console.log(res);
+        if (res.result.recruitmentStatus === "OPEN") setIsShared(false);
+      } else {
+        console.log(res.message);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const updateRecruitStatus = async (status: string) => {
+    if (isShared) return;
+    if (restList.length !== 0) {
+      alert("평가가 완료되지 않은 지원자가 있습니다.");
+      return;
+    }
+
+    try {
+      const res = await PATCH(`posts/1`, { recruitmentStatus: status });
+      console.log({ recruitmentStatus: status });
+
+      if (res.isSuccess) {
+        setIsShared(!isShared);
+        getApplicantList();
+        getPostDetails();
       } else {
         console.log(res.message);
       }
@@ -79,10 +98,6 @@ const ResultShare = () => {
     );
   }, [applicantList]);
 
-  const shareButtonClick = () => {
-    if (!isShared) setIsShared(!isShared);
-  };
-
   return (
     <Wrapper>
       <ApplicantList
@@ -92,13 +107,33 @@ const ResultShare = () => {
       />
       <Container>
         <EvaluationHeader />
+        {isShared && (
+          <Buttons>
+            {postInfo?.recruitmentType === "FORM_ONLY" ? (
+              <MyButton
+                content="평가 종료"
+                buttonType="RED"
+                onClick={() => navigate("/post-manage")}
+              />
+            ) : (
+              <MyButton
+                content="다음 단계"
+                buttonType="RED"
+                onClick={() => navigate("/meet-table")}
+              />
+            )}
+          </Buttons>
+        )}
         {isShared ? (
           <Caption>{resultType} 결과가 지원자에게 공유되었습니다!</Caption>
         ) : (
           <Caption>{resultType} 결과를 지원자에게 공유하시겠습니까?</Caption>
         )}
         <ButtonBox>
-          <ShareButton onClick={shareButtonClick} isShared={isShared}>
+          <ShareButton
+            onClick={() => updateRecruitStatus("FORM_REVIEWED")}
+            isShared={isShared}
+          >
             공유하기
           </ShareButton>
           {isShared ? (
@@ -161,6 +196,16 @@ const Caption = styled.div`
   font-weight: 600;
   line-height: 170%; /* 71.4px */
   letter-spacing: -0.84px;
+`;
+
+const Buttons = styled.div`
+  position: fixed;
+  right: 5%;
+  top: 15%;
+  display: flex;
+  width: 100%;
+  justify-content: flex-end;
+  gap: 24px;
 `;
 
 const ButtonBox = styled.div`

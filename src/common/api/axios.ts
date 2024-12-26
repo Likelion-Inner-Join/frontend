@@ -14,7 +14,7 @@ const api = async ({
   url,
   data = {},
 }: {
-  method: "get" | "post" | "put" | "delete";
+  method: "get" | "post" | "put" | "delete" | "patch";
   url: string;
   data?: object;
 }) => {
@@ -54,4 +54,8 @@ export const PUT = async (url: string, data: object) => {
 
 export const DELETE = async (url: string) => {
   return await api({ method: "delete", url });
+};
+
+export const PATCH = async (url: string, data: object) => {
+  return await api({ method: "patch", url, data });
 };
