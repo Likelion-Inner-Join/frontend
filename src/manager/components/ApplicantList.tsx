@@ -63,7 +63,7 @@ const ApplicantList = ({ data1, data2, isEmail }: ApplicantListProps) => {
 
   useEffect(() => {
     getApplicantList();
-    
+
     if (currApplyID) {
       const selectedApplicant = applicantList.find(
         (applicant) => String(applicant.applicationId) === currApplyID
@@ -196,12 +196,6 @@ const ApplicantList = ({ data1, data2, isEmail }: ApplicantListProps) => {
                     />
                   </DocButton>
                 ) : (
-                  // <AddButton>
-                  //   <img
-                  //     src="/images/manager/mail.svg"
-                  //     alt="수신자 추가 버튼"
-                  //   />
-                  // </AddButton>
                   <DocButton>
                     <img
                       src="/images/manager/directionBt.svg"

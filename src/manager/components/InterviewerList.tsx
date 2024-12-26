@@ -144,6 +144,7 @@ const InterviewerList = ({ data1, data2, isEmail }: ApplicantListProps) => {
 
     if (updatedApplicant) {
       try {
+        console.log(value);
         const res = await PUT(`application/${applicationId}`, {
           formResult: updatedApplicant.formResult,
           meetingResult: updatedApplicant.meetingResult,
@@ -322,15 +323,8 @@ const InterviewerList = ({ data1, data2, isEmail }: ApplicantListProps) => {
                       type="date"
                       value={
                         applicant.meetingStartTime
-                          ? `${new Date(
-                              applicant.meetingStartTime
-                            ).getFullYear()}-${String(
-                              new Date(applicant.meetingStartTime).getMonth() +
-                                1
-                            ).padStart(2, "0")}-${String(
-                              new Date(applicant.meetingStartTime).getDate()
-                            ).padStart(2, "0")}`
-                          : "-"
+                          ? applicant.meetingStartTime.split("T")[0]
+                          : ""
                       }
                       onChange={(e) =>
                         handleMeetingDateChange(
@@ -345,18 +339,12 @@ const InterviewerList = ({ data1, data2, isEmail }: ApplicantListProps) => {
                       type="time"
                       value={
                         applicant.meetingStartTime
-                          ? `${String(
-                              new Date(applicant.meetingStartTime).getHours()
-                            ).padStart(2, "0")}:${String(
-                              new Date(applicant.meetingStartTime).getMinutes()
-                            ).padStart(2, "0")}`
-                          : `${String(new Date().getHours()).padStart(
-                              2,
-                              "0"
-                            )}:${String(new Date().getMinutes()).padStart(
-                              2,
-                              "0"
-                            )}`
+                          ? applicant.meetingStartTime
+                              .split("T")[1]
+                              .split(":")
+                              .slice(0, 2)
+                              .join(":")
+                          : ""
                       }
                       onChange={(e) =>
                         handleMeetingTimeChange(

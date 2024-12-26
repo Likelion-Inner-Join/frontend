@@ -1,8 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { applicantData } from "../mock/applicantData";
-import { positionData } from "../mock/positionData";
-import { PromotionData } from "../mock/PromotionDetail";
-import { meetingTimeData1, meetingTimeData2 } from "../mock/DocumentData";
 import InterviewerList from "../components/InterviewerList";
 import ApplicantList from "../components/ApplicantList";
 import MyButton from "../components/MyButton";
@@ -14,7 +10,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import { ko } from "date-fns/locale";
 import { Navigate, useNavigate } from "react-router-dom";
 import { ApplicantType, PostInfoType, MeetingTimesType } from "../global/types";
-import { GET, POST } from "../../common/api/axios";
+import { GET, POST, PATCH } from "../../common/api/axios";
 
 type GroupedMeetings = {
   [date: string]: {
@@ -54,22 +50,24 @@ const MeetArrange = () => {
   const [newMeetingIsOpen, setNewMeetingIsOpen] = useState(false);
   const [postInfo, setPostInfo] = useState<PostInfoType>();
   const [groupedMeetings, setGroupedMeetings] = useState<GroupedMeetings>({});
-  const [selectedDate, setSelectedDate] = useState(new Date()); // 날짜
-  const [maxParticipants, setMaxParticipants] = useState(0); // 최대 인원
-  const [selectedPosition, setSelectedPosition] = useState(""); // 전형
-  const [selectedStartTime, setSelectedStartTime] = useState(""); // 총 시간 - 시작
-  const [selectedEndTime, setSelectedEndTime] = useState(""); // 총 시간 - 끝
-  const [interviewDuration, setInterviewDuration] = useState(0); // 면접 시간
-  const [breakTime, setBreakTime] = useState(0); // 쉬는 시간
+  const [Meetings, setMeetings] = useState<MeetingTimesType[]>();
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [maxParticipants, setMaxParticipants] = useState(2);
+  const [selectedPosition, setSelectedPosition] = useState("");
+  const [selectedStartTime, setSelectedStartTime] = useState("");
+  const [selectedEndTime, setSelectedEndTime] = useState("");
+  const [interviewDuration, setInterviewDuration] = useState(20);
+  const [breakTime, setBreakTime] = useState(10);
+  const [reservationStartTime, setReservationStartTime] = useState("");
+  const [reservationEndTime, setReservationEndTime] = useState("");
 
   const getApplicantList = async () => {
     try {
-      //const res = await GET(`posts/${postId}/application`);
       const res = await GET(`posts/1/application`);
-      //const res = applicantData;
 
       if (res.isSuccess) {
         setApplicantList(res.result.applicationList);
+        console.log(res.result.applicationList);
       } else {
         console.log(res.message);
       }
@@ -80,12 +78,11 @@ const MeetArrange = () => {
 
   const getPostDetails = async () => {
     try {
-      //const res = await GET(`posts/${postId}`);
       const res = await GET(`posts/1`);
-      //const res = PromotionData;
 
       if (res.isSuccess) {
         setPostInfo(res.result);
+        setSelectedPosition(res.result.recruitingList[0].jobTitle);
       } else {
         console.log(res.message);
       }
@@ -97,13 +94,13 @@ const MeetArrange = () => {
   const getMeetingTimes = async (recruitingId: number) => {
     try {
       const res = await GET(`posts/interview-times/${recruitingId}`);
-      // let res;
-      // if (recruitingId === 1) res = meetingTimeData1;
-      // if (recruitingId === 2) res = meetingTimeData2;
-
-      console.log(res);
 
       if (res?.isSuccess) {
+        console.log(res);
+        if (res.result.reservationStartTime)
+          setReservationStartTime(res.result.reservationStartTime);
+        if (res.result.reservationEndTime)
+          setReservationEndTime(res.result.reservationEndTime);
         return res.result;
       } else {
         console.log(res?.message);
@@ -112,15 +109,16 @@ const MeetArrange = () => {
       console.log(error);
     }
   };
+
   const fetchAllMeetings = async () => {
     if (!postInfo?.recruitingList) return;
 
     const recruitingIds = postInfo?.recruitingList.map(
       (item) => item.recruitingId
     );
-
     const meetingDataPromises = recruitingIds?.map((id) => getMeetingTimes(id));
     const meetingData = await Promise.all(meetingDataPromises);
+    setMeetings(meetingData);
 
     const result: GroupedMeetings = {};
 
@@ -128,11 +126,10 @@ const MeetArrange = () => {
       const jobTitle = postInfo?.recruitingList[index].jobTitle;
 
       data?.meetingTimes.forEach((meeting: Meeting) => {
-        const date = meeting.meetingStartTime.split("T")[0]; // Extract date (YYYY-MM-DD)
+        const date = meeting.meetingStartTime.split("T")[0];
 
         if (!result[date]) result[date] = [];
 
-        // Push the meeting data into the result array
         result[date].push({
           meetingStartTime: meeting.meetingStartTime,
           meetingEndTime: meeting.meetingEndTime,
@@ -148,24 +145,23 @@ const MeetArrange = () => {
       });
     });
 
-    // Sort the dates and meetings based on meetingStartTime (date and time)
     const sortedDates = Object.keys(result).sort((a, b) => {
       const aDate = new Date(a);
       const bDate = new Date(b);
-      return aDate.getTime() - bDate.getTime(); // Sort in ascending order by date
+      return aDate.getTime() - bDate.getTime();
     });
 
-    // Create a new result object with sorted dates
     const sortedResult: GroupedMeetings = {};
     sortedDates.forEach((date) => {
       sortedResult[date] = result[date].sort((a, b) => {
         const aStart = new Date(a.meetingStartTime).getTime();
         const bStart = new Date(b.meetingStartTime).getTime();
-        return aStart - bStart; // Sort in ascending order by time
+        return aStart - bStart;
       });
     });
 
     setGroupedMeetings(sortedResult);
+    console.log(sortedResult);
   };
 
   useEffect(() => {
@@ -213,7 +209,8 @@ const MeetArrange = () => {
     const endTime = new Date(
       `${selectedDate.toISOString().split("T")[0]}T${selectedEndTime}`
     );
-
+    console.log(startTime);
+    console.log(endTime);
     const meetingTimes = [];
     let currentTime = startTime;
 
@@ -221,13 +218,11 @@ const MeetArrange = () => {
       const nextMeetingEnd = new Date(
         currentTime.getTime() + interviewDuration * 60000
       );
-
       if (nextMeetingEnd > endTime) break;
       meetingTimes.push({
-        meetingStartTime: formatDate(currentTime), // 2024-12-12T22:00:00
-        meetingEndTime: formatDate(nextMeetingEnd), // 2024-12-12T22:15:00
+        meetingStartTime: formatDate(currentTime),
+        meetingEndTime: formatDate(nextMeetingEnd),
       });
-
       currentTime = new Date(nextMeetingEnd.getTime() + breakTime * 60000);
     }
 
@@ -237,7 +232,10 @@ const MeetArrange = () => {
 
   const createMeetingData = () => {
     const meetingTimes = generateMeetingTimes();
-    const meetingData = {
+
+    console.log(selectedPosition);
+
+    const newMeetingData = {
       recruitingId:
         postInfo?.recruitingList.find(
           (item) => item.jobTitle === selectedPosition
@@ -248,13 +246,53 @@ const MeetArrange = () => {
         meetingEndTime: time.meetingEndTime.replace(".000Z", ""),
       })),
     };
-    return meetingData;
+
+    const existingData = Meetings?.find(
+      (item) => item.recruitingId === newMeetingData.recruitingId
+    );
+
+    const combinedMeetingTimes = existingData
+      ? [
+          ...existingData.meetingTimes,
+          ...newMeetingData.meetingTimes.filter(
+            (newTime) =>
+              !existingData.meetingTimes.some(
+                (existingTime) =>
+                  existingTime.meetingStartTime === newTime.meetingStartTime
+              )
+          ),
+        ]
+      : newMeetingData.meetingTimes;
+
+    return {
+      ...newMeetingData,
+      meetingTimes: combinedMeetingTimes,
+    };
   };
 
   const handleCreateMeetingTimes = async () => {
+    if (maxParticipants < 1) {
+      alert("타임 당 최대 인원은 1명 이상으로 설정되어야 합니다.");
+      return;
+    }
+    if (!selectedStartTime || !selectedEndTime) {
+      alert("면접 총시간이 설정되어야 합니다.");
+      return;
+    }
+    if (selectedStartTime >= selectedEndTime) {
+      alert("면접 총시간을 다시 확인해주세요.");
+      return;
+    }
+    if (interviewDuration < 0 || breakTime < 0) {
+      alert("면접 시간은 0분 이상으로 설정되어야 합니다.");
+      return;
+    }
+
     try {
       const newMeetingData = createMeetingData();
       const res = await POST("posts/interview-times", newMeetingData);
+
+      console.log(newMeetingData);
 
       if (res.isSuccess) {
         alert("면접 시간 생성 성공");
@@ -267,6 +305,208 @@ const MeetArrange = () => {
     } catch (error) {
       console.error("Request failed:", error);
       alert("면접 시간 생성 중 오류가 발생했습니다.");
+    }
+  };
+
+  const handleDeleteMeetingTimes = async (date: string) => {
+    try {
+      if (!Meetings) {
+        console.error("Meetings 데이터가 없습니다.");
+        return;
+      }
+
+      const updatedMeetings = Meetings?.map((meeting) => {
+        const filteredMeetingTimes = meeting.meetingTimes.filter(
+          (meetingTime) =>
+            !meetingTime.meetingStartTime.startsWith(date) &&
+            !meetingTime.meetingEndTime.startsWith(date)
+        );
+
+        return {
+          ...meeting,
+          meetingTimes: filteredMeetingTimes,
+        };
+      });
+
+      setMeetings(updatedMeetings);
+
+      const postData = updatedMeetings?.map((meeting) => ({
+        recruitingId: meeting.recruitingId,
+        meetingTimes: meeting.meetingTimes,
+        reservationStartTime: meeting.reservationStartTime,
+        reservationEndTime: meeting.reservationEndTime,
+      }));
+
+      if (!postData) {
+        console.error("postData가 유효하지 않습니다.");
+        return;
+      }
+
+      const res = await Promise.all(
+        postData.map((item) => POST("posts/interview-times", item))
+      );
+
+      const hasError = res.some((response) => !response.isSuccess);
+      if (!hasError) {
+        alert("면접 일정을 삭제하였습니다.");
+        fetchAllMeetings();
+      } else {
+        const errorMessages = res
+          .filter((response) => !response.isSuccess)
+          .map((response) => response.message || "Unknown error");
+        console.error("Error:", errorMessages.join(", "));
+        alert("면접 일정 삭제를 실패하였습니다.");
+      }
+    } catch (error) {
+      console.error("Request failed:", error);
+      alert("면접 일정 삭제 중 오류가 발생했습니다.");
+    }
+  };
+
+  const updateRecruitStatus = async (status: string) => {
+    try {
+      const res = await PATCH(`posts/1`, { recruitmentStatus: status });
+      console.log({ recruitmentStatus: status });
+      if (res.isSuccess) {
+        console.log(res);
+        alert("면접 시간이 공개되었습니다.");
+        getPostDetails();
+      } else {
+        console.log(res.message);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleMeetOpenButton = () => {
+    if (
+      postInfo?.recruitmentStatus === "TIME_SET" ||
+      postInfo?.recruitmentStatus === "INTERVIEWED" ||
+      postInfo?.recruitmentStatus === "CLOSED"
+    ) {
+      alert("이미 면접 시간이 지원자에게 공개되었습니다.");
+      return;
+    }
+
+    updateRecruitStatus("TIME_SET");
+  };
+
+  const handleReservationStartTime = (value: string, type: string) => {
+    let newTime;
+
+    if (type === "DATE") {
+      if (reservationStartTime) {
+        newTime = `${value}T${reservationStartTime.split("T")[1]}`;
+        setReservationStartTime(newTime);
+      } else {
+        newTime = `${value}T00:00:00.000Z`;
+        setReservationStartTime(newTime);
+      }
+    } else if (type === "TIME") {
+      if (reservationStartTime) {
+        newTime = `${reservationStartTime.split("T")[0]}T${value}:00.000Z`;
+        setReservationStartTime(newTime);
+      } else {
+        const today = new Date();
+        newTime = `${today.getFullYear()}-${String(
+          today.getMonth() + 1
+        ).padStart(2, "0")}-${String(today.getDate()).padStart(
+          2,
+          "0"
+        )}T${value}:00.000Z`;
+        setReservationStartTime(newTime);
+      }
+    }
+
+    if (newTime) postReservationTimes(newTime, reservationEndTime);
+  };
+
+  const handleReservationEndTime = (value: string, type: string) => {
+    let newTime;
+
+    if (type === "DATE") {
+      if (reservationEndTime) {
+        newTime = `${value}T${reservationEndTime.split("T")[1]}`;
+        setReservationEndTime(newTime);
+      } else {
+        newTime = `${value}T00:00:00.000Z`;
+        setReservationEndTime(newTime);
+      }
+    } else if (type === "TIME") {
+      if (reservationEndTime) {
+        newTime = `${reservationEndTime.split("T")[0]}T${value}:00.000Z`;
+        setReservationEndTime(newTime);
+      } else {
+        const today = new Date();
+        newTime = `${today.getFullYear()}-${String(
+          today.getMonth() + 1
+        ).padStart(2, "0")}-${String(today.getDate()).padStart(
+          2,
+          "0"
+        )}T${value}:00.000Z`;
+        setReservationEndTime(newTime);
+      }
+    }
+
+    if (newTime) postReservationTimes(reservationStartTime, newTime);
+  };
+
+  const createPostReservationTimeData = (
+    reservationStartTime: string,
+    reservationEndTime: string
+  ) => {
+    if (!Meetings) {
+      console.error("Meetings state is undefined.");
+      return [];
+    }
+
+    const postData = Meetings.map((meeting) => ({
+      recruitingId: meeting.recruitingId,
+      meetingTimes: meeting.meetingTimes.map((time) => ({
+        allowedNum: time.allowedNum,
+        meetingStartTime: time.meetingStartTime,
+        meetingEndTime: time.meetingEndTime,
+      })),
+      reservationStartTime,
+      reservationEndTime,
+    }));
+
+    return postData;
+  };
+
+  const postReservationTimes = async (
+    reservationStartTime: string,
+    reservationEndTime: string
+  ) => {
+    try {
+      if (reservationStartTime >= reservationEndTime) {
+        alert("시작 기간과 종료 기간을 다시 확인해주세요!");
+        fetchAllMeetings();
+        return;
+      }
+      const data = createPostReservationTimeData(
+        reservationStartTime,
+        reservationEndTime
+      );
+
+      const responses = await Promise.all(
+        data.map((item) => POST("posts/interview-times", item))
+      );
+
+      const hasError = responses.some((res) => !res.isSuccess);
+      if (!hasError) {
+        alert("예약 기간 변경 성공");
+      } else {
+        const errorMessages = responses
+          .filter((res) => !res.isSuccess)
+          .map((res) => res.message || "Unknown error");
+        console.error("Error:", errorMessages.join(", "));
+        alert(`예약 시간 변경 실패: ${errorMessages.join(", ")}`);
+      }
+    } catch (error) {
+      console.error("Request failed:", error);
+      alert("예약 시간 변경 중 오류가 발생했습니다.");
     }
   };
 
@@ -309,29 +549,96 @@ const MeetArrange = () => {
             }
           >
             <MeetCaption>면접시간 설정</MeetCaption>
-            <p>해당 범위는 발송 이후 수정이 불가합니다.</p>
+            <p>면접 시간대는 공개 이후 수정이 불가합니다.</p>
           </MeetCaptionContainer>
-          {postInfo?.recruitmentStatus === "OPEN" ||
-          postInfo?.recruitmentStatus === "FORM_REVIEWED" ? (
-            <MyButton
-              content="면접시간 전송"
-              buttonType="RED"
-              onClick={() => navigate("/result")}
-            />
-          ) : (
+          <Buttons>
+            <MeetingSendButton
+              isOpen={
+                postInfo?.recruitmentStatus !== "OPEN" &&
+                postInfo?.recruitmentStatus !== "FORM_REVIEWED"
+              }
+              onClick={handleMeetOpenButton}
+            >
+              {postInfo?.recruitmentStatus === "OPEN" ||
+              postInfo?.recruitmentStatus === "FORM_REVIEWED" ? (
+                <img src="/images/manager/check.svg" />
+              ) : (
+                <img src="/images/manager/check_gray.svg" />
+              )}
+              면접시간 공개
+            </MeetingSendButton>
             <MyButton
               content="다음 단계"
               buttonType="RED"
-              onClick={() => navigate("/meet-eval")}
+              onClick={() =>
+                postInfo?.recruitmentStatus === "OPEN" ||
+                postInfo?.recruitmentStatus === "FORM_REVIEWED"
+                  ? alert("면접 시간을 먼저 공개해주세요.")
+                  : navigate("/meet-eval")
+              }
             />
-          )}
+          </Buttons>
         </MeetTitle>
         <MeetPeriodContainer>
           <MeetPeriod>
+            <Info src="/images/manager/info.svg" alt="입니다~" />
             <p>시작</p>
+            <Period>
+              <input
+                type="date"
+                value={
+                  reservationStartTime ? reservationStartTime.split("T")[0] : ""
+                }
+                onChange={(e) =>
+                  handleReservationStartTime(e.target.value, "DATE")
+                }
+              />
+              <input
+                type="time"
+                value={
+                  reservationStartTime
+                    ? reservationStartTime
+                        .split("T")[1]
+                        .split(":")
+                        .slice(0, 2)
+                        .join(":")
+                    : ""
+                }
+                onChange={(e) =>
+                  handleReservationStartTime(e.target.value, "TIME")
+                }
+              />
+            </Period>
           </MeetPeriod>
           <MeetPeriod>
             <p>종료</p>
+            <Period>
+              {" "}
+              <input
+                type="date"
+                value={
+                  reservationEndTime ? reservationEndTime.split("T")[0] : ""
+                }
+                onChange={(e) =>
+                  handleReservationEndTime(e.target.value, "DATE")
+                }
+              />
+              <input
+                type="time"
+                value={
+                  reservationEndTime
+                    ? reservationEndTime
+                        .split("T")[1]
+                        .split(":")
+                        .slice(0, 2)
+                        .join(":")
+                    : ""
+                }
+                onChange={(e) =>
+                  handleReservationEndTime(e.target.value, "TIME")
+                }
+              />
+            </Period>
           </MeetPeriod>
         </MeetPeriodContainer>
         <TableConatiner>
@@ -339,7 +646,16 @@ const MeetArrange = () => {
             <img
               src="/images/manager/add.svg"
               alt="면접시간 추가하기"
-              onClick={() => setNewMeetingIsOpen(!newMeetingIsOpen)}
+              onClick={() => {
+                if (
+                  postInfo?.recruitmentStatus === "OPEN" ||
+                  postInfo?.recruitmentStatus === "FORM_REVIEWED"
+                ) {
+                  setNewMeetingIsOpen(!newMeetingIsOpen);
+                } else {
+                  alert("면접 시간을 공개한 이후에는 수정할 수 없습니다.");
+                }
+              }}
             />
           </TableButtonBox>
           <MeetTablesContainer>
@@ -363,6 +679,7 @@ const MeetArrange = () => {
                       <MeetingSettingInfo>
                         <input
                           type="number"
+                          value={maxParticipants}
                           onChange={(e) =>
                             handleMaxParticipantsChange(Number(e.target.value))
                           }
@@ -454,6 +771,19 @@ const MeetArrange = () => {
                     <img
                       src="/images/manager/plus.svg"
                       alt="면접시간 수정하기"
+                      onClick={() => {
+                        if (
+                          postInfo?.recruitmentStatus === "OPEN" ||
+                          postInfo?.recruitmentStatus === "FORM_INTERVIEW"
+                        ) {
+                          handleDeleteMeetingTimes(date);
+                        } else {
+                          handleDeleteMeetingTimes(date);
+                          alert(
+                            "면접 시간을 공개한 이후에는 수정할 수 없습니다."
+                          );
+                        }
+                      }}
                     />
                   </TableTitle>
                   <TableTimeContainer>
@@ -491,7 +821,11 @@ const MeetArrange = () => {
           ) : (
             <RestApplicantsBox>
               {applicantList
-                .filter((applicant) => applicant.meetingStartTime === "")
+                .filter(
+                  (applicant) =>
+                    !applicant.meetingStartTime &&
+                    applicant.formResult === "PASS"
+                )
                 .map((applicant, index) => (
                   <RestApplicant key={index}>
                     {applicant.name}
@@ -535,11 +869,11 @@ const MeetTitle = styled.div`
   justify-content: space-between;
   align-items: center;
   padding-right: 7.7%;
-  margin-bottom: 10px;
 `;
 
 const MeetCaptionContainer = styled.div<{ color: boolean }>`
   display: flex;
+  width: 500px;
   align-items: center;
   gap: 11px;
 
@@ -562,6 +896,53 @@ const MeetCaption = styled.div`
   line-height: 130%; /* 26px */
 `;
 
+const Buttons = styled.div`
+  display: flex;
+  width: 100%;
+  justify-content: flex-end;
+  gap: 24px;
+  margin-bottom: 15px;
+`;
+
+const MeetingSendButton = styled.div<{ isOpen: boolean }>`
+  display: inline-flex;
+  gap: 10px;
+  text-align: center;
+  padding: 12px 16px;
+  border-radius: 30px;
+  background-color: #fff;
+
+  color: ${({ isOpen }) => (isOpen ? "#606060" : "#cc141d")};
+  border: ${({ isOpen }) =>
+    isOpen ? "1px solid #606060;" : "1px solid #cc141d;"};
+  font-family: Pretendard;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 150%; /* 24px */
+  letter-spacing: -0.32px;
+  transition: background-color 0.3s ease-in-out;
+
+  &:hover {
+    cursor: pointer;
+    background-color: #f9f9f9;
+  }
+
+  &:active {
+    cursor: pointer;
+    background-color: #f0f0f0;
+    color: #000;
+    border-color: #000;
+  }
+`;
+
+const Info = styled.img`
+  background-color: black;
+  display: flex;
+  width: 15px;
+  margin-right: 5px;
+`;
+
 const MeetPeriodContainer = styled.div`
   display: inline-flex;
   align-items: center;
@@ -571,16 +952,34 @@ const MeetPeriodContainer = styled.div`
 const MeetPeriod = styled.div`
   display: flex;
   align-items: center;
-  padding-right: 10%;
-  gap: 24px;
 
   p {
+    margin-right: 24px;
     color: #000;
     font-family: Pretendard;
     font-size: 16px;
     font-style: normal;
     font-weight: 600;
     line-height: 130%; /* 23.4px */
+  }
+`;
+
+const Period = styled.div`
+  display: flex;
+  gap: 10px;
+
+  input {
+    border: 1px solid #fcfafa;
+    border-radius: 4px;
+    font-family: Pretendard;
+    font-size: 14px;
+    font-weight: 500;
+    color: #424242;
+    background-color: #fcfafa;
+
+    &:hover {
+      cursor: pointer;
+    }
   }
 `;
 

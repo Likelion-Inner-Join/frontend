@@ -105,6 +105,9 @@ export interface PostInfoType {
 
 export interface MeetingTimesType {
   recruitingId: number;
+  jobTitle: string;
+  reservationStartTime: string;
+  reservationEndTime: string;
   meetingTimes: {
     meetingTimeId: number;
     allowedNum: number;

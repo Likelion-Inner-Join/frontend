@@ -100,6 +100,14 @@ const WriteEmail = () => {
   }, []);
 
   const handleSendEmail = async () => {
+    if (receiverList.length === 0) {
+      alert("받는 사람을 선택해주세요.");
+      return;
+    }
+    if (receiverList.length === 0 || !emailTitle || !emailBody) {
+      alert("메일 제목과 내용은 필수 항목입니다.");
+      return;
+    }
     try {
       const res = await POST("application/email", {
         postId: 1,
@@ -107,14 +115,6 @@ const WriteEmail = () => {
         title: emailTitle,
         content: emailBody,
       });
-
-      console.log(res);
-      // const res = {
-      //   isSuccess: true,
-      //   code: 0,
-      //   message: "string",
-      //   result: {},
-      // };
 
       if (res.isSuccess) {
         alert("이메일 전송 성공");
@@ -148,8 +148,6 @@ const WriteEmail = () => {
 
     return { year, month, day, hours, minutes };
   }
-
-  const addReceiver = (id: number) => {};
 
   const removeReceiver = (id: number) => {
     setReceiverList((prevList) =>
@@ -192,9 +190,9 @@ const WriteEmail = () => {
           </Buttons>
         </Caption>
         <Sender>
-          <EmailCaption>관리자 메일 주소</EmailCaption>
+          <EmailCaption>보내는 사람</EmailCaption>
           <Input>
-            <input></input>
+            <input disabled={true} value={"innerjoint@gmail.com"}></input>
           </Input>
         </Sender>
         <Receiver>
