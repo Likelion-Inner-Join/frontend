@@ -1,10 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import styled from "styled-components";
-import { PromotionData } from "../mock/PromotionDetail";
 import { PostInfoType } from "../global/types";
 import { GET } from "../../common/api/axios";
 
-const EvaluationHeader = () => {
+interface EvaluationHeaderProps {
+  status: string;
+}
+
+const EvaluationHeader = ({ status }: EvaluationHeaderProps) => {
   const [postInfo, setPostInfo] = useState<PostInfoType>();
   const [isHovered, setIsHovered] = useState(false);
   const [stageList, setStageList] = useState<string[]>([]);
@@ -12,15 +15,18 @@ const EvaluationHeader = () => {
   const handleMouseEnter = () => setIsHovered(true);
   const handleMouseLeave = () => setIsHovered(false);
 
-  const STAGES_FORM_ONLY = ["", "서류 평가", "결과 공지"];
-  const STAGES_FORM_AND_MEETING = [
-    "",
-    "서류 평가",
-    "결과 공지",
-    "면접시간 설정",
-    "면접 평가",
-    "최종결과 공지",
-  ];
+  const STAGES_FORM_ONLY = useMemo(() => ["", "서류 평가", "결과 공지"], []);
+  const STAGES_FORM_AND_MEETING = useMemo(
+    () => [
+      "",
+      "서류 평가",
+      "결과 공지",
+      "면접시간 설정",
+      "면접 평가",
+      "최종결과 공지",
+    ],
+    []
+  );
 
   useEffect(() => {
     getPostDetails();
@@ -32,13 +38,12 @@ const EvaluationHeader = () => {
     } else {
       setStageList(STAGES_FORM_AND_MEETING);
     }
-  }, [postInfo]);
+  }, [postInfo, STAGES_FORM_ONLY, STAGES_FORM_AND_MEETING]); // 상수 추가
 
   const getPostDetails = async () => {
     try {
       //const res = await GET(`posts/${postId}`);
       const res = await GET(`posts/1`);
-      //const res = PromotionData;
 
       if (res.isSuccess) {
         setPostInfo(res.result);
@@ -49,17 +54,6 @@ const EvaluationHeader = () => {
       console.log(error);
     }
   };
-
-  function parseISODateTime(isoString: string) {
-    const date = new Date(isoString);
-    const year = date.getFullYear();
-    const month = date.getMonth() + 1;
-    const day = date.getDate() - 1;
-    const hours = date.getHours();
-    const minutes = date.getMinutes();
-
-    return { year, month, day, hours, minutes };
-  }
 
   function findCurrentStatus(status: string) {
     if (postInfo?.recruitmentType === "FORM_ONLY") {
@@ -85,8 +79,7 @@ const EvaluationHeader = () => {
           <Stage hovered={isHovered}>
             {stageList.map((stageName, index) => {
               if (index === 0) return null;
-              const isCurrent =
-                findCurrentStatus(postInfo?.recruitmentStatus || "") === index;
+              const isCurrent = findCurrentStatus(status) === index;
               return (
                 <React.Fragment key={index}>
                   <StageNumber current={isCurrent}>{index}</StageNumber>
@@ -95,7 +88,7 @@ const EvaluationHeader = () => {
                   </StageName>
                   <div>
                     {isCurrent ? (
-                      <img src="/images/manager/loading.svg" />
+                      <img src="/images/manager/loading.svg" alt="로딩바" />
                     ) : (
                       <p> </p>
                     )}
@@ -107,18 +100,12 @@ const EvaluationHeader = () => {
         ) : (
           <Stage hovered={isHovered}>
             <StageNumber current={true}>
-              {findCurrentStatus(postInfo?.recruitmentStatus || "OPEN")}
+              {findCurrentStatus(status)}
             </StageNumber>
             <StageName current={false} hovered={isHovered}>
               {postInfo?.recruitmentType === "FORM_ONLY"
-                ? STAGES_FORM_ONLY[
-                    findCurrentStatus(postInfo?.recruitmentStatus || "OPEN") ||
-                      0
-                  ]
-                : STAGES_FORM_AND_MEETING[
-                    findCurrentStatus(postInfo?.recruitmentStatus || "OPEN") ||
-                      0
-                  ]}
+                ? STAGES_FORM_ONLY[findCurrentStatus(status) || 0]
+                : STAGES_FORM_AND_MEETING[findCurrentStatus(status) || 0]}
             </StageName>
           </Stage>
         )}

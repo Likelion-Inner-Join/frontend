@@ -5,9 +5,8 @@ import InformationBox from "../components/InformationBox";
 import ResultTable from "../components/ResultTable";
 import EvaluationHeader from "../components/EvaluationHeader";
 import MyButton from "../components/MyButton";
-import { applicantData } from "../mock/applicantData";
-import { positionData } from "../mock/positionData";
 import { useNavigate } from "react-router-dom";
+import { Navbar } from "../../common/ui";
 import { GET } from "../../common/api/axios";
 import { ApplicantType, PostInfoType } from "../global/types";
 
@@ -17,6 +16,7 @@ const MeetEvaluate = () => {
   const [restList, setRestList] = useState<ApplicantType[]>([]);
   const [passList, setPassList] = useState<ApplicantType[]>([]);
   const [failList, setFailList] = useState<ApplicantType[]>([]);
+  const [showNavbar, setShowNavbar] = useState(false);
   const navigate = useNavigate();
 
   const getApplicantList = async () => {
@@ -51,10 +51,26 @@ const MeetEvaluate = () => {
     }
   };
 
+  const handleMouseMove = (event: MouseEvent) => {
+    if (event.clientX < 400 && event.clientY < 30) {
+      setShowNavbar(true);
+    } else if (event.clientX > 400 && event.clientY < 100) {
+      setShowNavbar(true);
+    } else {
+      setShowNavbar(false);
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+    };
+  }, []);
+
   useEffect(() => {
     getApplicantList();
     getPostDetails();
-    //setApplicantList(applicantData.result.applicationList);
   }, []);
 
   useEffect(() => {
@@ -81,67 +97,73 @@ const MeetEvaluate = () => {
 
   return (
     <Wrapper>
-      <InterviewerList
-        data1={applicantList}
-        data2={postInfo?.recruitingList || []}
-        isEmail={false}
-      />
-      <Container>
-        <EvaluationHeader />
-        <Buttons>
-          <EvalButton>
-            <img src="/images/manager/check.svg" />
-            합불 부여하기
-          </EvalButton>
-          <MyButton
-            content="다음 단계"
-            buttonType="RED"
-            onClick={() => navigate("/final-result")}
+      <NavbarWrapper show={showNavbar}>
+        {" "}
+        <Navbar />
+      </NavbarWrapper>
+      <EvaluateWrapper show={showNavbar}>
+        <InterviewerList
+          data1={applicantList}
+          data2={postInfo?.recruitingList || []}
+          isEmail={false}
+        />
+        <Container>
+          <EvaluationHeader status="INTERVIEWED" />
+          <Buttons>
+            {/* <EvalButton>
+              <img src="/images/manager/check.svg" alt="합불 부여하기" />
+              합불 부여하기
+            </EvalButton> */}
+            <MyButton
+              content="다음 단계"
+              buttonType="RED"
+              onClick={() => navigate("/final-result")}
+            />
+          </Buttons>
+          <InfoCaption>
+            {passList.length + failList.length + restList.length}명 중{" "}
+            {passList.length}명이 합격했어요 !
+          </InfoCaption>
+          <InfoRatio>
+            <div>
+              <h3>합격률</h3>
+              <p>
+                {Math.round(
+                  (passList.length * 100) /
+                    (passList.length + failList.length + restList.length)
+                )}
+              </p>
+              <h3>%</h3>
+            </div>
+            <div>
+              <h3>경쟁률</h3>
+              <p>
+                {passList.length > 0
+                  ? (
+                      Math.round(
+                        ((passList.length + failList.length + restList.length) /
+                          passList.length) *
+                          Math.pow(10, 2)
+                      ) / Math.pow(10, 2)
+                    ).toFixed(2) + ": 1"
+                  : "0 : 0"}{" "}
+              </p>
+            </div>
+          </InfoRatio>
+          <InformationBox
+            restList={restList}
+            passList={passList}
+            failList={failList}
           />
-        </Buttons>
-        <InfoCaption>
-          {passList.length + failList.length + restList.length}명 중{" "}
-          {passList.length}명이 합격했어요 !
-        </InfoCaption>
-        <InfoRatio>
-          <div>
-            <h3>합격률</h3>
-            <p>
-              {Math.round(
-                (passList.length * 100) /
-                  (passList.length + failList.length + restList.length)
-              )}
-            </p>
-            <h3>%</h3>
-          </div>
-          <div>
-            <h3>경쟁률</h3>
-            <p>
-              {passList.length > 0
-                ? (
-                    Math.round(
-                      ((passList.length + failList.length + restList.length) /
-                        passList.length) *
-                        Math.pow(10, 2)
-                    ) / Math.pow(10, 2)
-                  ).toFixed(2) + ": 1"
-                : "0 : 0"}{" "}
-            </p>
-          </div>
-        </InfoRatio>
-        <InformationBox
-          restList={restList}
-          passList={passList}
-          failList={failList}
-        />
-        <Style></Style>
-        <ResultTable
-          restList={restList}
-          passList={passList}
-          failList={failList}
-          isColor={true}
-        />
-      </Container>
+          <Style></Style>
+          <ResultTable
+            restList={restList}
+            passList={passList}
+            failList={failList}
+            isColor={true}
+          />
+        </Container>
+      </EvaluateWrapper>
     </Wrapper>
   );
 };
@@ -152,6 +174,26 @@ const Wrapper = styled.div`
   display: flex;
   width: 100vw;
   height: 100vh;
+  overflow: hidden;
+  flex-direction: column;
+  background-color: #fff;
+`;
+
+const NavbarWrapper = styled.div<{ show: boolean }>`
+  background-color: #fff;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: ${({ show }) => (show ? "60px" : "0px")};
+  overflow: hidden;
+  transition: height 0.3s ease-in-out;
+`;
+
+const EvaluateWrapper = styled.div<{ show: boolean }>`
+  display: flex;
+  width: 100vw;
+  height: ${({ show }) => (show ? "calc(100vh - 60px)" : "100vh")};
+  transition: height 0.3s ease-in-out;
   background-color: #fff;
 `;
 
@@ -252,26 +294,4 @@ const InfoRatio = styled.div`
 
 const Style = styled.div`
   margin-top: 70px;
-`;
-
-const NextButton = styled.div`
-  text-align: center;
-  width: 120px;
-  padding: 12px 30px;
-  border-radius: 30px;
-  background-color: #b10d15;
-  color: #fff;
-  font-family: Pretendard;
-  font-size: 16px;
-  font-style: normal;
-  font-weight: 600;
-  line-height: 150%; /* 24px */
-  letter-spacing: -0.32px;
-  position: fixed;
-  bottom: 30px;
-  right: 5%;
-
-  &:hover {
-    cursor: pointer;
-  }
 `;

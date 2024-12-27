@@ -5,7 +5,7 @@ import DocView from "./DocView";
 import { GET } from "../../common/api/axios";
 import { ApplicantType } from "../global/types";
 
-interface Position {
+interface PositionType {
   recruitingId: number;
   formId: number;
   jobTitle: string;
@@ -13,7 +13,7 @@ interface Position {
 
 interface ApplicantListProps {
   data1: ApplicantType[];
-  data2: Position[];
+  data2: PositionType[];
   isEmail: boolean;
 }
 
@@ -88,17 +88,31 @@ const ApplicantList = ({ data1, data2, isEmail }: ApplicantListProps) => {
     try {
       //const res = await GET(`posts/${postId}/application`);
       const res = await GET(`posts/1/application`);
-      //const res = applicantData;
 
       if (res.isSuccess) {
-        setApplicantList(res.result.applicationList);
-        data1 = res.result.applicationList;
+        const sortedApplicants = sortApplicantsByName(
+          res.result.applicationList
+        );
+        setApplicantList(sortedApplicants);
       } else {
         console.log(res.message);
       }
     } catch (error) {
       console.log(error);
     }
+  };
+
+  const sortApplicantsByName = (
+    applicantList: ApplicantType[],
+    ascending: boolean = true
+  ): ApplicantType[] => {
+    return applicantList.sort((a, b) => {
+      const nameA = a.name.toLowerCase();
+      const nameB = b.name.toLowerCase();
+      if (nameA < nameB) return ascending ? -1 : 1;
+      if (nameA > nameB) return ascending ? 1 : -1;
+      return 0;
+    });
   };
 
   useEffect(() => {
@@ -452,8 +466,4 @@ const DocButton = styled.div`
   ${ApplicantItem}:hover & {
     transform: translateX(5px);
   }
-`;
-
-const AddButton = styled.div`
-  margin-left: 5px;
 `;
