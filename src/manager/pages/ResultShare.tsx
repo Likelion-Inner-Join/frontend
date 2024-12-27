@@ -5,10 +5,8 @@ import InformationBox from "../components/InformationBox";
 import ResultTable from "../components/ResultTable";
 import EvaluationHeader from "../components/EvaluationHeader";
 import MyButton from "../components/MyButton";
-import { applicantData } from "../mock/applicantData";
-import { positionData } from "../mock/positionData";
-import { PromotionData } from "../mock/PromotionDetail";
 import { useNavigate } from "react-router-dom";
+import { Navbar } from "../../common/ui";
 import { ApplicantType, PostInfoType } from "../global/types";
 import { GET, PATCH } from "../../common/api/axios";
 
@@ -20,6 +18,7 @@ const ResultShare = () => {
   const [isShared, setIsShared] = useState(false);
   const [postInfo, setPostInfo] = useState<PostInfoType>();
   const [resultType, setResultType] = useState<String>("");
+  const [showNavbar, setShowNavbar] = useState(false);
   const navigate = useNavigate();
 
   const getApplicantList = async () => {
@@ -60,7 +59,6 @@ const ResultShare = () => {
 
     try {
       const res = await PATCH(`posts/1`, { recruitmentStatus: status });
-      console.log({ recruitmentStatus: status });
 
       if (res.isSuccess) {
         setIsShared(!isShared);
@@ -73,6 +71,23 @@ const ResultShare = () => {
       console.log(error);
     }
   };
+
+  const handleMouseMove = (event: MouseEvent) => {
+    if (event.clientX < 400 && event.clientY < 30) {
+      setShowNavbar(true);
+    } else if (event.clientX > 400 && event.clientY < 100) {
+      setShowNavbar(true);
+    } else {
+      setShowNavbar(false);
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+    };
+  }, []);
 
   useEffect(() => {
     getApplicantList();
@@ -100,69 +115,75 @@ const ResultShare = () => {
 
   return (
     <Wrapper>
-      <ApplicantList
-        data1={applicantList}
-        data2={postInfo?.recruitingList || []}
-        isEmail={false}
-      />
-      <Container>
-        <EvaluationHeader />
-        {isShared && (
-          <Buttons>
-            {postInfo?.recruitmentType === "FORM_ONLY" ? (
+      <NavbarWrapper show={showNavbar}>
+        {" "}
+        <Navbar />
+      </NavbarWrapper>
+      <EvaluateWrapper show={showNavbar}>
+        <ApplicantList
+          data1={applicantList}
+          data2={postInfo?.recruitingList || []}
+          isEmail={false}
+        />
+        <Container>
+          <EvaluationHeader status="FORM_REVIEWED" />
+          {isShared && (
+            <Buttons>
+              {postInfo?.recruitmentType === "FORM_ONLY" ? (
+                <MyButton
+                  content="평가 종료"
+                  buttonType="RED"
+                  onClick={() => navigate("/post-manage")}
+                />
+              ) : (
+                <MyButton
+                  content="다음 단계"
+                  buttonType="RED"
+                  onClick={() => navigate("/meet-table")}
+                />
+              )}
+            </Buttons>
+          )}
+          {isShared ? (
+            <Caption>{resultType} 결과가 지원자에게 공유되었습니다!</Caption>
+          ) : (
+            <Caption>{resultType} 결과를 지원자에게 공유하시겠습니까?</Caption>
+          )}
+          <ButtonBox>
+            <ShareButton
+              onClick={() => updateRecruitStatus("FORM_REVIEWED")}
+              isShared={isShared}
+            >
+              공유하기
+            </ShareButton>
+            {isShared ? (
               <MyButton
-                content="평가 종료"
-                buttonType="RED"
-                onClick={() => navigate("/post-manage")}
+                content="이메일로 알리기"
+                buttonType="WHITE"
+                onClick={() => navigate("/email-write")}
               />
             ) : (
               <MyButton
-                content="다음 단계"
-                buttonType="RED"
-                onClick={() => navigate("/meet-table")}
+                content="수정하기"
+                buttonType="WHITE"
+                onClick={() => navigate("/doc-eval")}
               />
             )}
-          </Buttons>
-        )}
-        {isShared ? (
-          <Caption>{resultType} 결과가 지원자에게 공유되었습니다!</Caption>
-        ) : (
-          <Caption>{resultType} 결과를 지원자에게 공유하시겠습니까?</Caption>
-        )}
-        <ButtonBox>
-          <ShareButton
-            onClick={() => updateRecruitStatus("FORM_REVIEWED")}
-            isShared={isShared}
-          >
-            공유하기
-          </ShareButton>
-          {isShared ? (
-            <MyButton
-              content="이메일로 알리기"
-              buttonType="WHITE"
-              onClick={() => navigate("/email-write")}
-            />
-          ) : (
-            <MyButton
-              content="수정하기"
-              buttonType="WHITE"
-              onClick={() => navigate("/doc-eval")}
-            />
-          )}
-        </ButtonBox>
-        <InformationBox
-          restList={restList}
-          passList={passList}
-          failList={failList}
-        />
-        <Style></Style>
-        <ResultTable
-          restList={restList}
-          passList={passList}
-          failList={failList}
-          isColor={false}
-        />
-      </Container>
+          </ButtonBox>
+          <InformationBox
+            restList={restList}
+            passList={passList}
+            failList={failList}
+          />
+          <Style></Style>
+          <ResultTable
+            restList={restList}
+            passList={passList}
+            failList={failList}
+            isColor={false}
+          />
+        </Container>
+      </EvaluateWrapper>
     </Wrapper>
   );
 };
@@ -173,6 +194,26 @@ const Wrapper = styled.div`
   display: flex;
   width: 100vw;
   height: 100vh;
+  overflow: hidden;
+  flex-direction: column;
+  background-color: #fff;
+`;
+
+const NavbarWrapper = styled.div<{ show: boolean }>`
+  background-color: #fff;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: ${({ show }) => (show ? "60px" : "0px")};
+  overflow: hidden;
+  transition: height 0.3s ease-in-out;
+`;
+
+const EvaluateWrapper = styled.div<{ show: boolean }>`
+  display: flex;
+  width: 100vw;
+  height: ${({ show }) => (show ? "calc(100vh - 60px)" : "100vh")};
+  transition: height 0.3s ease-in-out;
   background-color: #fff;
 `;
 
@@ -187,7 +228,7 @@ const Container = styled.div`
 `;
 
 const Caption = styled.div`
-  margin-top: 80px;
+  margin-top: 50px;
   color: #000;
   text-align: center;
   font-family: Pretendard;
@@ -199,9 +240,7 @@ const Caption = styled.div`
 `;
 
 const Buttons = styled.div`
-  position: fixed;
-  right: 5%;
-  top: 15%;
+  display: flex;
   display: flex;
   width: 100%;
   justify-content: flex-end;
@@ -258,26 +297,4 @@ const ShareButton = styled.div<{ isShared: boolean }>`
 
 const Style = styled.div`
   margin-top: 30px;
-`;
-
-const NextButton = styled.div`
-  text-align: center;
-  width: 120px;
-  padding: 12px 30px;
-  border-radius: 30px;
-  background-color: #b10d15;
-  color: #fff;
-  font-family: Pretendard;
-  font-size: 16px;
-  font-style: normal;
-  font-weight: 600;
-  line-height: 150%; /* 24px */
-  letter-spacing: -0.32px;
-  position: fixed;
-  bottom: 30px;
-  right: 5%;
-
-  &:hover {
-    cursor: pointer;
-  }
 `;

@@ -19,7 +19,9 @@ interface DocViewProps {
 }
 
 const DocView = ({ applicant, type }: DocViewProps) => {
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams(); // 인자 없이 호출
+  const applyId = searchParams.get("apply");
+  const [applicantInfo, setApplicantInfo] = useState<ApplicantType>();
   const [postInfo, setPostInfo] = useState<PostInfoType>();
   const [questionList, setQuestionList] = useState<QuestionType[]>();
   const [answerList, setAnswerList] = useState<AnswerType[]>();
@@ -34,16 +36,22 @@ const DocView = ({ applicant, type }: DocViewProps) => {
   const [meetingScore, setMeetingScore] = useState(0);
 
   useEffect(() => {
-    getPostDetails();
-    getFormDetails();
-    getApplicantDetails();
-    setFormResult(applicant?.formResult || "PENDING");
-    setMeetResult(applicant?.meetingResult || "PENDING");
-  }, [applicant]);
+    if (applyId) {
+      getPostDetails();
+      getApplicantDetails(applyId);
+    }
+  }, [applyId]);
 
-  const getFormDetails = async () => {
+  useEffect(() => {
+    if (applyId) {
+      getPostDetails();
+      getApplicantDetails(applyId);
+    }
+  }, []);
+
+  const getFormDetails = async (formId: string) => {
     try {
-      const res = await GET(`form/${applicant?.formId}`);
+      const res = await GET(`form/${formId}`);
       console.log(res);
 
       if (res.isSuccess) {
@@ -71,15 +79,19 @@ const DocView = ({ applicant, type }: DocViewProps) => {
     }
   };
 
-  const getApplicantDetails = async () => {
+  const getApplicantDetails = async (applyId: string) => {
     try {
-      const res = await GET(`application/${applicant?.applicationId}`);
+      const res = await GET(`application/${applyId}`);
 
       if (res.isSuccess) {
+        setApplicantInfo(res.result);
         setMeetingScore(res.result.meetingScore);
         setAnswerList(res.result.answers);
         setUpdatedAnswerList(res.result.answers);
         setTotalScore(res.result.formScore);
+        setFormResult(res.result.formResult || "PENDING");
+        setMeetResult(res.result.meetingResult || "PENDING");
+        getFormDetails(res.result.formId);
       } else {
         console.log(res.message);
       }
@@ -257,7 +269,7 @@ const DocView = ({ applicant, type }: DocViewProps) => {
       <DocumentPopUp>
         <TitleContainer>
           <Title>
-            <p>{applicant?.name}님의 지원서 </p>
+            <p>{applicantInfo?.name}님의 지원서 </p>
             <Buttons>
               <MyButton
                 content="닫기"
@@ -272,11 +284,11 @@ const DocView = ({ applicant, type }: DocViewProps) => {
             </Buttons>
           </Title>
           <ApplicantInfo>
-            {applicant?.school} &nbsp;&nbsp; | &nbsp;&nbsp;{applicant?.major}{" "}
-            &nbsp;&nbsp;| &nbsp;&nbsp;
-            {applicant?.studentNumber} &nbsp;&nbsp;| &nbsp;&nbsp;{" "}
-            {applicant?.phoneNum} &nbsp;&nbsp; | &nbsp;&nbsp;
-            {applicant?.email}
+            {applicantInfo?.school} &nbsp;&nbsp; | &nbsp;&nbsp;
+            {applicantInfo?.major} &nbsp;&nbsp;| &nbsp;&nbsp;
+            {applicantInfo?.studentNumber} &nbsp;&nbsp;| &nbsp;&nbsp;{" "}
+            {applicantInfo?.phoneNum} &nbsp;&nbsp; | &nbsp;&nbsp;
+            {applicantInfo?.email}
           </ApplicantInfo>
         </TitleContainer>
         <BodyContainer>

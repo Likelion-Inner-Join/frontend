@@ -5,10 +5,10 @@ import MyButton from "../components/MyButton";
 import EvaluationHeader from "../components/EvaluationHeader";
 import styled from "styled-components";
 import DatePicker from "react-datepicker";
-import { TimePicker } from "antd";
 import "react-datepicker/dist/react-datepicker.css";
 import { ko } from "date-fns/locale";
-import { Navigate, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { Navbar } from "../../common/ui";
 import { ApplicantType, PostInfoType, MeetingTimesType } from "../global/types";
 import { GET, POST, PATCH } from "../../common/api/axios";
 
@@ -60,6 +60,7 @@ const MeetArrange = () => {
   const [breakTime, setBreakTime] = useState(10);
   const [reservationStartTime, setReservationStartTime] = useState("");
   const [reservationEndTime, setReservationEndTime] = useState("");
+  const [showNavbar, setShowNavbar] = useState(false);
 
   const getApplicantList = async () => {
     try {
@@ -67,7 +68,6 @@ const MeetArrange = () => {
 
       if (res.isSuccess) {
         setApplicantList(res.result.applicationList);
-        console.log(res.result.applicationList);
       } else {
         console.log(res.message);
       }
@@ -96,7 +96,6 @@ const MeetArrange = () => {
       const res = await GET(`posts/interview-times/${recruitingId}`);
 
       if (res?.isSuccess) {
-        console.log(res);
         if (res.result.reservationStartTime)
           setReservationStartTime(res.result.reservationStartTime);
         if (res.result.reservationEndTime)
@@ -161,7 +160,6 @@ const MeetArrange = () => {
     });
 
     setGroupedMeetings(sortedResult);
-    console.log(sortedResult);
   };
 
   useEffect(() => {
@@ -209,8 +207,6 @@ const MeetArrange = () => {
     const endTime = new Date(
       `${selectedDate.toISOString().split("T")[0]}T${selectedEndTime}`
     );
-    console.log(startTime);
-    console.log(endTime);
     const meetingTimes = [];
     let currentTime = startTime;
 
@@ -226,14 +222,11 @@ const MeetArrange = () => {
       currentTime = new Date(nextMeetingEnd.getTime() + breakTime * 60000);
     }
 
-    console.log(meetingTimes);
     return meetingTimes;
   };
 
   const createMeetingData = () => {
     const meetingTimes = generateMeetingTimes();
-
-    console.log(selectedPosition);
 
     const newMeetingData = {
       recruitingId:
@@ -291,8 +284,6 @@ const MeetArrange = () => {
     try {
       const newMeetingData = createMeetingData();
       const res = await POST("posts/interview-times", newMeetingData);
-
-      console.log(newMeetingData);
 
       if (res.isSuccess) {
         alert("면접 시간 생성 성공");
@@ -480,11 +471,16 @@ const MeetArrange = () => {
     reservationEndTime: string
   ) => {
     try {
-      if (reservationStartTime >= reservationEndTime) {
+      if (
+        reservationStartTime &&
+        reservationEndTime &&
+        reservationStartTime >= reservationEndTime
+      ) {
         alert("시작 기간과 종료 기간을 다시 확인해주세요!");
         fetchAllMeetings();
         return;
       }
+
       const data = createPostReservationTimeData(
         reservationStartTime,
         reservationEndTime
@@ -521,322 +517,353 @@ const MeetArrange = () => {
     return { year, month, day, hours, minutes };
   }
 
+  const handleMouseMove = (event: MouseEvent) => {
+    if (event.clientX < 400 && event.clientY < 30) {
+      setShowNavbar(true);
+    } else if (event.clientX > 400 && event.clientY < 100) {
+      setShowNavbar(true);
+    } else {
+      setShowNavbar(false);
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+    };
+  }, []);
+
   return (
     <Wrapper>
-      {postInfo?.recruitmentStatus === "OPEN" ? (
-        <ApplicantList
-          data1={applicantList}
-          data2={postInfo?.recruitingList || []}
-          isEmail={false}
-        />
-      ) : (
-        <InterviewerList
-          data1={applicantList}
-          data2={postInfo?.recruitingList || []}
-          isEmail={false}
-        />
-      )}
-      <Container>
-        <HeaderWrapper>
-          {" "}
-          <EvaluationHeader />
-        </HeaderWrapper>
-        <MeetTitle>
-          <MeetCaptionContainer
-            color={
-              postInfo?.recruitmentStatus === "OPEN" ||
-              postInfo?.recruitmentStatus === "FORM_REVIEWED"
-            }
-          >
-            <MeetCaption>면접시간 설정</MeetCaption>
-            <p>면접 시간대는 공개 이후 수정이 불가합니다.</p>
-          </MeetCaptionContainer>
-          <Buttons>
-            <MeetingSendButton
-              isOpen={
-                postInfo?.recruitmentStatus !== "OPEN" &&
-                postInfo?.recruitmentStatus !== "FORM_REVIEWED"
-              }
-              onClick={handleMeetOpenButton}
-            >
-              {postInfo?.recruitmentStatus === "OPEN" ||
-              postInfo?.recruitmentStatus === "FORM_REVIEWED" ? (
-                <img src="/images/manager/check.svg" />
-              ) : (
-                <img src="/images/manager/check_gray.svg" />
-              )}
-              면접시간 공개
-            </MeetingSendButton>
-            <MyButton
-              content="다음 단계"
-              buttonType="RED"
-              onClick={() =>
+      <NavbarWrapper show={showNavbar}>
+        {" "}
+        <Navbar />
+      </NavbarWrapper>
+      <EvaluateWrapper show={showNavbar}>
+        {postInfo?.recruitmentStatus === "OPEN" ? (
+          <ApplicantList
+            data1={applicantList}
+            data2={postInfo?.recruitingList || []}
+            isEmail={false}
+          />
+        ) : (
+          <InterviewerList
+            data1={applicantList}
+            data2={postInfo?.recruitingList || []}
+            isEmail={false}
+          />
+        )}
+        <Container>
+          <HeaderWrapper>
+            {" "}
+            <EvaluationHeader status="TIME_SET" />
+          </HeaderWrapper>
+          <MeetTitle>
+            <MeetCaptionContainer
+              color={
                 postInfo?.recruitmentStatus === "OPEN" ||
                 postInfo?.recruitmentStatus === "FORM_REVIEWED"
-                  ? alert("면접 시간을 먼저 공개해주세요.")
-                  : navigate("/meet-eval")
               }
-            />
-          </Buttons>
-        </MeetTitle>
-        <MeetPeriodContainer>
-          <MeetPeriod>
-            <Info src="/images/manager/info.svg" alt="입니다~" />
-            <p>시작</p>
-            <Period>
-              <input
-                type="date"
-                value={
-                  reservationStartTime ? reservationStartTime.split("T")[0] : ""
+            >
+              <MeetCaption>면접시간 설정</MeetCaption>
+              <p>면접 시간대는 공개 이후 수정이 불가합니다.</p>
+            </MeetCaptionContainer>
+            <Buttons>
+              <MeetingSendButton
+                isOpen={
+                  postInfo?.recruitmentStatus !== "OPEN" &&
+                  postInfo?.recruitmentStatus !== "FORM_REVIEWED"
                 }
-                onChange={(e) =>
-                  handleReservationStartTime(e.target.value, "DATE")
-                }
-              />
-              <input
-                type="time"
-                value={
-                  reservationStartTime
-                    ? reservationStartTime
-                        .split("T")[1]
-                        .split(":")
-                        .slice(0, 2)
-                        .join(":")
-                    : ""
-                }
-                onChange={(e) =>
-                  handleReservationStartTime(e.target.value, "TIME")
-                }
-              />
-            </Period>
-          </MeetPeriod>
-          <MeetPeriod>
-            <p>종료</p>
-            <Period>
-              {" "}
-              <input
-                type="date"
-                value={
-                  reservationEndTime ? reservationEndTime.split("T")[0] : ""
-                }
-                onChange={(e) =>
-                  handleReservationEndTime(e.target.value, "DATE")
-                }
-              />
-              <input
-                type="time"
-                value={
-                  reservationEndTime
-                    ? reservationEndTime
-                        .split("T")[1]
-                        .split(":")
-                        .slice(0, 2)
-                        .join(":")
-                    : ""
-                }
-                onChange={(e) =>
-                  handleReservationEndTime(e.target.value, "TIME")
-                }
-              />
-            </Period>
-          </MeetPeriod>
-        </MeetPeriodContainer>
-        <TableConatiner>
-          <TableButtonBox isOpen={newMeetingIsOpen}>
-            <img
-              src="/images/manager/add.svg"
-              alt="면접시간 추가하기"
-              onClick={() => {
-                if (
+                onClick={handleMeetOpenButton}
+              >
+                {postInfo?.recruitmentStatus === "OPEN" ||
+                postInfo?.recruitmentStatus === "FORM_REVIEWED" ? (
+                  <img src="/images/manager/check.svg" alt="면접 시간 공개" />
+                ) : (
+                  <img
+                    src="/images/manager/check_gray.svg"
+                    alt="면접 시간 공개 완료"
+                  />
+                )}
+                면접시간 공개
+              </MeetingSendButton>
+              <MyButton
+                content="다음 단계"
+                buttonType="RED"
+                onClick={() =>
                   postInfo?.recruitmentStatus === "OPEN" ||
                   postInfo?.recruitmentStatus === "FORM_REVIEWED"
-                ) {
-                  setNewMeetingIsOpen(!newMeetingIsOpen);
-                } else {
-                  alert("면접 시간을 공개한 이후에는 수정할 수 없습니다.");
+                    ? alert("면접 시간을 먼저 공개해주세요.")
+                    : navigate("/meet-eval")
                 }
-              }}
-            />
-          </TableButtonBox>
-          <MeetTablesContainer>
-            {newMeetingIsOpen ? (
-              <MeetSettingBox>
-                <MeetSettingDetailBox>
-                  <MeetSettingDetail>
-                    <MeetingSettingInfoBox>
-                      <p>면접 일자</p>
-                      <DatePicker
-                        locale={ko}
-                        selected={selectedDate}
-                        onChange={handleDateChange}
-                        dateFormat="yyyy년 MM월 dd일"
-                        placeholderText="생성할 면접 날짜"
-                        customInput={<CustomDateInput />}
-                      />
-                    </MeetingSettingInfoBox>
-                    <MeetingSettingInfoBox>
-                      <p>타임 당 최대 인원</p>
-                      <MeetingSettingInfo>
-                        <input
-                          type="number"
-                          value={maxParticipants}
-                          onChange={(e) =>
-                            handleMaxParticipantsChange(Number(e.target.value))
-                          }
+              />
+            </Buttons>
+          </MeetTitle>
+          <MeetPeriodContainer>
+            <MeetPeriod>
+              <Info src="/images/manager/quest.svg" alt="입니다~" />
+              <p>시작</p>
+              <Period>
+                <input
+                  type="date"
+                  value={
+                    reservationStartTime
+                      ? reservationStartTime.split("T")[0]
+                      : ""
+                  }
+                  onChange={(e) =>
+                    handleReservationStartTime(e.target.value, "DATE")
+                  }
+                />
+                <input
+                  type="time"
+                  value={
+                    reservationStartTime
+                      ? reservationStartTime
+                          .split("T")[1]
+                          .split(":")
+                          .slice(0, 2)
+                          .join(":")
+                      : ""
+                  }
+                  onChange={(e) =>
+                    handleReservationStartTime(e.target.value, "TIME")
+                  }
+                />
+              </Period>
+            </MeetPeriod>
+            <MeetPeriod>
+              <p>종료</p>
+              <Period>
+                {" "}
+                <input
+                  type="date"
+                  value={
+                    reservationEndTime ? reservationEndTime.split("T")[0] : ""
+                  }
+                  onChange={(e) =>
+                    handleReservationEndTime(e.target.value, "DATE")
+                  }
+                />
+                <input
+                  type="time"
+                  value={
+                    reservationEndTime
+                      ? reservationEndTime
+                          .split("T")[1]
+                          .split(":")
+                          .slice(0, 2)
+                          .join(":")
+                      : ""
+                  }
+                  onChange={(e) =>
+                    handleReservationEndTime(e.target.value, "TIME")
+                  }
+                />
+              </Period>
+            </MeetPeriod>
+          </MeetPeriodContainer>
+          <TableConatiner>
+            <TableButtonBox isOpen={newMeetingIsOpen}>
+              <img
+                src="/images/manager/add.svg"
+                alt="면접시간 추가하기"
+                onClick={() => {
+                  if (
+                    postInfo?.recruitmentStatus === "OPEN" ||
+                    postInfo?.recruitmentStatus === "FORM_REVIEWED"
+                  ) {
+                    setNewMeetingIsOpen(!newMeetingIsOpen);
+                  } else {
+                    alert("면접 시간을 공개한 이후에는 수정할 수 없습니다.");
+                  }
+                }}
+              />
+            </TableButtonBox>
+            <MeetTablesContainer>
+              {newMeetingIsOpen ? (
+                <MeetSettingBox>
+                  <MeetSettingDetailBox>
+                    <MeetSettingDetail>
+                      <MeetingSettingInfoBox>
+                        <p>면접 일자</p>
+                        <DatePicker
+                          locale={ko}
+                          selected={selectedDate}
+                          onChange={handleDateChange}
+                          dateFormat="yyyy년 MM월 dd일"
+                          placeholderText="생성할 면접 날짜"
+                          customInput={<CustomDateInput />}
                         />
-                        <p>명</p>
-                      </MeetingSettingInfo>
-                    </MeetingSettingInfoBox>
-                    <MeetingSettingInfoBox>
-                      <p>면접 전형</p>
-                      <select
-                        value={selectedPosition}
-                        onChange={handleDropdownChange}
-                      >
-                        {postInfo?.recruitingList.map((option, index) => (
-                          <option key={index} value={option.jobTitle}>
-                            {option.jobTitle}
-                          </option>
-                        ))}
-                      </select>
-                    </MeetingSettingInfoBox>
-                  </MeetSettingDetail>
-                  <GrayLine />
-                  <MeetSettingDetail>
-                    {" "}
-                    <MeetingSettingInfoBox>
-                      <p>총 시간</p>
-                      <MeetingTime
-                        type="time"
-                        value={selectedStartTime}
-                        onChange={(e) => handleStartTimeChange(e.target.value)}
-                      />
-                      <MeetingTime
-                        type="time"
-                        value={selectedEndTime}
-                        onChange={(e) => handleEndTimeChange(e.target.value)}
-                      />
-                    </MeetingSettingInfoBox>
-                    <MeetingSettingInfoBox>
-                      <p>면접 시간</p>
-                      <MeetingSettingInfo>
-                        <input
-                          type="number"
-                          defaultValue={20}
-                          onChange={(e) =>
-                            handleInterviewDurationChange(
-                              Number(e.target.value)
-                            )
-                          }
-                        />
-                        <p>분</p>
-                      </MeetingSettingInfo>
-                    </MeetingSettingInfoBox>
-                    <MeetingSettingInfoBox>
-                      <p>쉬는 시간</p>
-                      <MeetingSettingInfo>
-                        <input
-                          type="number"
-                          defaultValue={10}
-                          onChange={(e) =>
-                            handleBreakTimeChange(Number(e.target.value))
-                          }
-                        />
-                        <p>분</p>
-                      </MeetingSettingInfo>
-                    </MeetingSettingInfoBox>
-                  </MeetSettingDetail>
-                </MeetSettingDetailBox>
-                <MeetSettingButtons>
-                  <CancelButton
-                    onClick={() => setNewMeetingIsOpen(!newMeetingIsOpen)}
-                  >
-                    취소
-                  </CancelButton>
-                  <MakeButton onClick={handleCreateMeetingTimes}>
-                    면접시간 생성
-                  </MakeButton>
-                </MeetSettingButtons>
-              </MeetSettingBox>
-            ) : (
-              <div></div>
-            )}
-            <MeetTables>
-              {Object.entries(groupedMeetings).map(([date, meetings]) => (
-                <Table key={date}>
-                  <TableTitle>
-                    <TableDate>{`${date.split("-")[0]}년 ${
-                      date.split("-")[1]
-                    }월 ${date.split("-")[2]}일`}</TableDate>
-                    <img
-                      src="/images/manager/plus.svg"
-                      alt="면접시간 수정하기"
-                      onClick={() => {
-                        if (
-                          postInfo?.recruitmentStatus === "OPEN" ||
-                          postInfo?.recruitmentStatus === "FORM_INTERVIEW"
-                        ) {
-                          handleDeleteMeetingTimes(date);
-                        } else {
-                          handleDeleteMeetingTimes(date);
-                          alert(
-                            "면접 시간을 공개한 이후에는 수정할 수 없습니다."
-                          );
-                        }
-                      }}
-                    />
-                  </TableTitle>
-                  <TableTimeContainer>
-                    {meetings.map((meeting, index) => (
-                      <TableTimeBox key={index}>
-                        <TableTime>
-                          <p>{`${String(
-                            parseISODateTime(meeting.meetingStartTime).hours
-                          ).padStart(2, "0")}:${String(
-                            parseISODateTime(meeting.meetingStartTime).minutes
-                          ).padStart(2, "0")}`}</p>
-                          {meeting.jobTitle}
-                        </TableTime>
-                        <InterviewerBox>
-                          {meeting.applicants.map((applicant) => (
-                            <Interviewer key={applicant.id}>
-                              {applicant.name}
-                              <p>{applicant.studentNumber}</p>
-                            </Interviewer>
+                      </MeetingSettingInfoBox>
+                      <MeetingSettingInfoBox>
+                        <p>타임 당 최대 인원</p>
+                        <MeetingSettingInfo>
+                          <input
+                            type="number"
+                            value={maxParticipants}
+                            onChange={(e) =>
+                              handleMaxParticipantsChange(
+                                Number(e.target.value)
+                              )
+                            }
+                          />
+                          <p>명</p>
+                        </MeetingSettingInfo>
+                      </MeetingSettingInfoBox>
+                      <MeetingSettingInfoBox>
+                        <p>면접 전형</p>
+                        <select
+                          value={selectedPosition}
+                          onChange={handleDropdownChange}
+                        >
+                          {postInfo?.recruitingList.map((option, index) => (
+                            <option key={index} value={option.jobTitle}>
+                              {option.jobTitle}
+                            </option>
                           ))}
-                        </InterviewerBox>
-                      </TableTimeBox>
-                    ))}
-                  </TableTimeContainer>
-                </Table>
-              ))}
-            </MeetTables>
-          </MeetTablesContainer>
-        </TableConatiner>
-        <RestContainer>
-          <p>미배치 인원</p>
-          {postInfo?.recruitmentStatus === "OPEN" ||
-          postInfo?.recruitmentStatus === "FORM_REVIEWED" ? (
-            <h1>면접 시간 전송 이후 적용됩니다</h1>
-          ) : (
-            <RestApplicantsBox>
-              {applicantList
-                .filter(
-                  (applicant) =>
-                    !applicant.meetingStartTime &&
-                    applicant.formResult === "PASS"
-                )
-                .map((applicant, index) => (
-                  <RestApplicant key={index}>
-                    {applicant.name}
-                    <p>{applicant.studentNumber}</p>
-                    <p>{applicant.positionName}</p>
-                  </RestApplicant>
+                        </select>
+                      </MeetingSettingInfoBox>
+                    </MeetSettingDetail>
+                    <GrayLine />
+                    <MeetSettingDetail>
+                      {" "}
+                      <MeetingSettingInfoBox>
+                        <p>총 시간</p>
+                        <MeetingTime
+                          type="time"
+                          value={selectedStartTime}
+                          onChange={(e) =>
+                            handleStartTimeChange(e.target.value)
+                          }
+                        />
+                        <MeetingTime
+                          type="time"
+                          value={selectedEndTime}
+                          onChange={(e) => handleEndTimeChange(e.target.value)}
+                        />
+                      </MeetingSettingInfoBox>
+                      <MeetingSettingInfoBox>
+                        <p>면접 시간</p>
+                        <MeetingSettingInfo>
+                          <input
+                            type="number"
+                            defaultValue={20}
+                            onChange={(e) =>
+                              handleInterviewDurationChange(
+                                Number(e.target.value)
+                              )
+                            }
+                          />
+                          <p>분</p>
+                        </MeetingSettingInfo>
+                      </MeetingSettingInfoBox>
+                      <MeetingSettingInfoBox>
+                        <p>쉬는 시간</p>
+                        <MeetingSettingInfo>
+                          <input
+                            type="number"
+                            defaultValue={10}
+                            onChange={(e) =>
+                              handleBreakTimeChange(Number(e.target.value))
+                            }
+                          />
+                          <p>분</p>
+                        </MeetingSettingInfo>
+                      </MeetingSettingInfoBox>
+                    </MeetSettingDetail>
+                  </MeetSettingDetailBox>
+                  <MeetSettingButtons>
+                    <CancelButton
+                      onClick={() => setNewMeetingIsOpen(!newMeetingIsOpen)}
+                    >
+                      취소
+                    </CancelButton>
+                    <MakeButton onClick={handleCreateMeetingTimes}>
+                      면접시간 생성
+                    </MakeButton>
+                  </MeetSettingButtons>
+                </MeetSettingBox>
+              ) : (
+                <div></div>
+              )}
+              <MeetTables>
+                {Object.entries(groupedMeetings).map(([date, meetings]) => (
+                  <Table key={date}>
+                    <TableTitle>
+                      <TableDate>{`${date.split("-")[0]}년 ${
+                        date.split("-")[1]
+                      }월 ${date.split("-")[2]}일`}</TableDate>
+                      <img
+                        src="/images/manager/trash.svg"
+                        alt="면접시간 수정하기"
+                        onClick={() => {
+                          if (
+                            postInfo?.recruitmentStatus === "OPEN" ||
+                            postInfo?.recruitmentStatus === "FORM_INTERVIEW"
+                          ) {
+                            handleDeleteMeetingTimes(date);
+                          } else {
+                            alert(
+                              "면접 시간을 공개한 이후에는 수정할 수 없습니다."
+                            );
+                          }
+                        }}
+                      />
+                    </TableTitle>
+                    <TableTimeContainer>
+                      {meetings.map((meeting, index) => (
+                        <TableTimeBox key={index}>
+                          <TableTime>
+                            <p>{`${String(
+                              parseISODateTime(meeting.meetingStartTime).hours
+                            ).padStart(2, "0")}:${String(
+                              parseISODateTime(meeting.meetingStartTime).minutes
+                            ).padStart(2, "0")}`}</p>
+                            {meeting.jobTitle}
+                          </TableTime>
+                          <InterviewerBox>
+                            {meeting.applicants.map((applicant) => (
+                              <Interviewer key={applicant.id}>
+                                {applicant.name}
+                                <p>{applicant.studentNumber}</p>
+                              </Interviewer>
+                            ))}
+                          </InterviewerBox>
+                        </TableTimeBox>
+                      ))}
+                    </TableTimeContainer>
+                  </Table>
                 ))}
-            </RestApplicantsBox>
-          )}
-        </RestContainer>
-      </Container>
+              </MeetTables>
+            </MeetTablesContainer>
+          </TableConatiner>
+          <RestContainer>
+            <p>미배치 인원</p>
+            {postInfo?.recruitmentStatus === "OPEN" ||
+            postInfo?.recruitmentStatus === "FORM_REVIEWED" ? (
+              <h1>면접 시간 전송 이후 적용됩니다</h1>
+            ) : (
+              <RestApplicantsBox>
+                {applicantList
+                  .filter(
+                    (applicant) =>
+                      !applicant.meetingStartTime &&
+                      applicant.formResult === "PASS"
+                  )
+                  .map((applicant, index) => (
+                    <RestApplicant key={index}>
+                      {applicant.name}
+                      <p>{applicant.studentNumber}</p>
+                      <p>{applicant.positionName}</p>
+                    </RestApplicant>
+                  ))}
+              </RestApplicantsBox>
+            )}
+          </RestContainer>
+        </Container>
+      </EvaluateWrapper>
     </Wrapper>
   );
 };
@@ -845,6 +872,26 @@ const Wrapper = styled.div`
   display: flex;
   width: 100vw;
   height: 100vh;
+  overflow: hidden;
+  flex-direction: column;
+  background-color: #fff;
+`;
+
+const NavbarWrapper = styled.div<{ show: boolean }>`
+  background-color: #fff;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: ${({ show }) => (show ? "60px" : "0px")};
+  overflow: hidden;
+  transition: height 0.3s ease-in-out;
+`;
+
+const EvaluateWrapper = styled.div<{ show: boolean }>`
+  display: flex;
+  width: 100vw;
+  height: ${({ show }) => (show ? "calc(100vh - 60px)" : "100vh")};
+  transition: height 0.3s ease-in-out;
   background-color: #fff;
 `;
 

@@ -3,9 +3,7 @@ import styled from "styled-components";
 import ApplicantList from "../components/ApplicantList";
 import InterviewerList from "../components/InterviewerList";
 import MyButton from "../components/MyButton";
-import { applicantData } from "../mock/applicantData";
-import { positionData } from "../mock/positionData";
-import { PromotionData } from "../mock/PromotionDetail";
+import { Navbar } from "../../common/ui";
 import { useNavigate } from "react-router-dom";
 import { ApplicantType, PostInfoType } from "../global/types";
 import { GET, POST } from "../../common/api/axios";
@@ -17,9 +15,10 @@ const WriteEmail = () => {
   const [receiverList, setReceiverList] = useState<ApplicantType[]>([]);
   const [selectedTab, setSelectedTab] = useState("");
   const [postInfo, setPostInfo] = useState<PostInfoType>();
-  const [emailTitle, setEmailTitle] = useState(""); // 이메일 제목
-  const [emailBody, setEmailBody] = useState(""); // 이메일 내용
-  const [receiverIds, setReceiverIds] = useState<number[]>([]); // receiverList의 applicationID 리스트
+  const [emailTitle, setEmailTitle] = useState("");
+  const [emailBody, setEmailBody] = useState("");
+  const [receiverIds, setReceiverIds] = useState<number[]>([]);
+  const [showNavbar, setShowNavbar] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -49,14 +48,14 @@ const WriteEmail = () => {
         )
       );
     }
-  }, [applicantList]);
+  }, [applicantList, postInfo]);
 
   useEffect(() => {
     if (receiverList === applicantList) setSelectedTab("전체");
     else if (receiverList === passList) setSelectedTab("합격자");
     else if (receiverList === failList) setSelectedTab("불합격자");
     else setSelectedTab("");
-  }, [receiverList]);
+  }, [receiverList, applicantList, passList, failList]);
 
   useEffect(() => {
     setReceiverIds(receiverList.map((receiver) => receiver.applicationId));
@@ -154,103 +153,125 @@ const WriteEmail = () => {
       prevList.filter((receiver) => receiver.applicationId !== id)
     );
   };
+
+  const handleMouseMove = (event: MouseEvent) => {
+    if (event.clientY < 50) {
+      setShowNavbar(true);
+    } else {
+      setShowNavbar(false);
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+    };
+  }, []);
+
   return (
     <Wrapper>
-      {postInfo?.recruitmentStatus === "OPEN" ||
-      postInfo?.recruitmentStatus === "INTERVIEW" ? (
-        <ApplicantList
-          data1={applicantList}
-          data2={postInfo?.recruitingList || []}
-          isEmail={true}
-        />
-      ) : (
-        <InterviewerList
-          data1={applicantList}
-          data2={postInfo?.recruitingList || []}
-          isEmail={true}
-        />
-      )}
-      <Container>
-        <Title>
-          <h1>{postInfo?.title}</h1>
-          <p>
-            {parseISODateTime(String(postInfo?.endTime)).year}년{" "}
-            {parseISODateTime(String(postInfo?.endTime)).month}월{" "}
-            {parseISODateTime(String(postInfo?.endTime)).day}일 마감
-          </p>
-        </Title>
-        <Caption>
-          <h1>이메일 보내기</h1>
-          <Buttons>
-            <MyButton
-              content="전송하기"
-              buttonType="RED"
-              onClick={() => handleSendEmail()}
-            />
-          </Buttons>
-        </Caption>
-        <Sender>
-          <EmailCaption>보내는 사람</EmailCaption>
-          <Input>
-            <input disabled={true} value={"innerjoint@gmail.com"}></input>
-          </Input>
-        </Sender>
-        <Receiver>
-          <EmailCaption>받는 사람</EmailCaption>
-          <ReceiverContainer>
-            <SelectTab>
-              <SelectButton
-                selected={selectedTab === "전체"}
-                onClick={() => selectBtnClick("전체")}
-              >
-                전체 선택
-              </SelectButton>
-              <SelectButton
-                selected={selectedTab === "합격자"}
-                onClick={() => selectBtnClick("합격자")}
-              >
-                합격자 선택
-              </SelectButton>
-              <SelectButton
-                selected={selectedTab === "불합격자"}
-                onClick={() => selectBtnClick("불합격자")}
-              >
-                불합격자 선택
-              </SelectButton>
-            </SelectTab>
-            <ReceiverBox>
-              {receiverList.map((receiver, index) => (
-                <ReceiverItem key={receiver.applicationId}>
-                  {receiver.name}
-                  <p>{receiver.studentNumber}</p>
-                  <img
-                    src="/images/manager/cancel.svg"
-                    alt="삭제"
-                    onClick={() => removeReceiver(receiver.applicationId)}
-                  />
-                </ReceiverItem>
-              ))}
-            </ReceiverBox>
-          </ReceiverContainer>
-        </Receiver>
-        <EmailTitle>
-          <EmailCaption>제목</EmailCaption>{" "}
-          <Input>
-            <input
-              value={emailTitle}
-              onChange={(e) => setEmailTitle(e.target.value)}
-              placeholder="메일 제목을 입력하세요"
-            />
-          </Input>
-        </EmailTitle>
-        <Body>
-          <textarea
-            value={emailBody}
-            onChange={(e) => setEmailBody(e.target.value)}
-            placeholder="메일 내용을 입력하세요"
+      <NavbarWrapper show={showNavbar}>
+        {" "}
+        <Navbar />
+      </NavbarWrapper>
+      <EvaluateWrapper show={showNavbar}>
+        {postInfo?.recruitmentStatus === "OPEN" ||
+        postInfo?.recruitmentStatus === "FORM_REVIEWED" ? (
+          <ApplicantList
+            data1={applicantList}
+            data2={postInfo?.recruitingList || []}
+            isEmail={true}
           />
-        </Body>
-      </Container>
+        ) : (
+          <InterviewerList
+            data1={applicantList}
+            data2={postInfo?.recruitingList || []}
+            isEmail={true}
+          />
+        )}
+        <Container>
+          <Title>
+            <h1>{postInfo?.title}</h1>
+            <p>
+              {parseISODateTime(String(postInfo?.endTime)).year}년{" "}
+              {parseISODateTime(String(postInfo?.endTime)).month}월{" "}
+              {parseISODateTime(String(postInfo?.endTime)).day}일 마감
+            </p>
+          </Title>
+          <Caption>
+            <h1>이메일 보내기</h1>
+            <Buttons>
+              <MyButton
+                content="전송하기"
+                buttonType="RED"
+                onClick={() => handleSendEmail()}
+              />
+            </Buttons>
+          </Caption>
+          <Sender>
+            <EmailCaption>보내는 사람</EmailCaption>
+            <Input>
+              <input disabled={true} value={"innerjoint@gmail.com"}></input>
+            </Input>
+          </Sender>
+          <Receiver>
+            <EmailCaption>받는 사람</EmailCaption>
+            <ReceiverContainer>
+              <SelectTab>
+                <SelectButton
+                  selected={selectedTab === "전체"}
+                  onClick={() => selectBtnClick("전체")}
+                >
+                  전체 선택
+                </SelectButton>
+                <SelectButton
+                  selected={selectedTab === "합격자"}
+                  onClick={() => selectBtnClick("합격자")}
+                >
+                  합격자 선택
+                </SelectButton>
+                <SelectButton
+                  selected={selectedTab === "불합격자"}
+                  onClick={() => selectBtnClick("불합격자")}
+                >
+                  불합격자 선택
+                </SelectButton>
+              </SelectTab>
+              <ReceiverBox>
+                {receiverList.map((receiver, index) => (
+                  <ReceiverItem key={receiver.applicationId}>
+                    {receiver.name}
+                    <p>{receiver.studentNumber}</p>
+                    <img
+                      src="/images/manager/cancel.svg"
+                      alt="삭제"
+                      onClick={() => removeReceiver(receiver.applicationId)}
+                    />
+                  </ReceiverItem>
+                ))}
+              </ReceiverBox>
+            </ReceiverContainer>
+          </Receiver>
+          <EmailTitle>
+            <EmailCaption>제목</EmailCaption>{" "}
+            <Input>
+              <input
+                value={emailTitle}
+                onChange={(e) => setEmailTitle(e.target.value)}
+                placeholder="메일 제목을 입력하세요"
+              />
+            </Input>
+          </EmailTitle>
+          <Body>
+            <textarea
+              value={emailBody}
+              onChange={(e) => setEmailBody(e.target.value)}
+              placeholder="메일 내용을 입력하세요"
+            />
+          </Body>
+        </Container>
+      </EvaluateWrapper>
     </Wrapper>
   );
 };
@@ -261,8 +282,29 @@ const Wrapper = styled.div`
   display: flex;
   width: 100vw;
   height: 100vh;
+  overflow: hidden;
+  flex-direction: column;
+  background-color: #fff;
+`;
+
+const NavbarWrapper = styled.div<{ show: boolean }>`
+  background-color: #fff;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: ${({ show }) => (show ? "60px" : "0px")};
+  overflow: hidden;
+  transition: height 0.3s ease-in-out;
+`;
+
+const EvaluateWrapper = styled.div<{ show: boolean }>`
+  display: flex;
+  width: 100vw;
+  height: 100vh;
   justify-content: flex-start;
   gap: 100px;
+  height: ${({ show }) => (show ? "calc(100vh - 60px)" : "100vh")};
+  transition: height 0.3s ease-in-out;
   background-color: #fff;
 `;
 

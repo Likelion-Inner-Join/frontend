@@ -3,16 +3,16 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import styled from "styled-components";
 import DocView from "./DocView";
 import { ApplicantType } from "../global/types";
-import { PUT, POST, GET } from "../../common/api/axios";
+import { PUT, GET } from "../../common/api/axios";
 
-interface Position {
+interface PositionType {
   recruitingId: number;
   formId: number;
   jobTitle: string;
 }
 interface ApplicantListProps {
   data1: ApplicantType[];
-  data2: Position[];
+  data2: PositionType[];
   isEmail: boolean;
 }
 
@@ -36,7 +36,6 @@ const InterviewerList = ({ data1, data2, isEmail }: ApplicantListProps) => {
     try {
       //const res = await GET(`posts/${postId}/application`);
       const res = await GET(`posts/1/application`);
-      //const res = applicantData;
 
       if (res.isSuccess) {
         setApplicantList(res.result.applicationList);
@@ -77,10 +76,10 @@ const InterviewerList = ({ data1, data2, isEmail }: ApplicantListProps) => {
               ...applicant,
               meetingStartTime: applicant.meetingStartTime
                 ? `${value}T${applicant.meetingStartTime.split("T")[1]}`
-                : `${value}T00:00:00`,
+                : `${value}T`,
               meetingEndTime: applicant.meetingEndTime
                 ? `${value}T${applicant.meetingEndTime.split("T")[1]}`
-                : `${value}T00:30:00`,
+                : `${value}T`,
             }
           : applicant
       )
@@ -90,7 +89,7 @@ const InterviewerList = ({ data1, data2, isEmail }: ApplicantListProps) => {
       (applicant) => applicant.applicationId === applicationId
     );
 
-    if (updatedApplicant) {
+    if (updatedApplicant && updatedApplicant.meetingStartTime) {
       try {
         const res = await PUT(`application/${applicationId}`, {
           formResult: updatedApplicant.formResult,
@@ -104,11 +103,13 @@ const InterviewerList = ({ data1, data2, isEmail }: ApplicantListProps) => {
             ? `${value}T${
                 updatedApplicant.meetingEndTime.split("T")[1]
               }`.replace(".000Z", "")
-            : `${value}T00:30:00`,
+            : `${value}T00:00:00`,
         });
         if (res.isSuccess) {
           alert("면접 날짜 수정 성공");
+          window.location.reload();
         } else {
+          alert("존재하지 않는 면접 시간입니다.");
           console.log(res.message);
         }
       } catch (error) {
@@ -121,7 +122,6 @@ const InterviewerList = ({ data1, data2, isEmail }: ApplicantListProps) => {
     applicationId: number,
     value: string
   ) => {
-    console.log(filteredApplicants);
     setFilteredApplicants((prev) =>
       prev.map((applicant) =>
         applicant.applicationId === applicationId
@@ -129,10 +129,10 @@ const InterviewerList = ({ data1, data2, isEmail }: ApplicantListProps) => {
               ...applicant,
               meetingStartTime: applicant.meetingStartTime
                 ? `${applicant.meetingStartTime.split("T")[0]}T${value}:00.000Z`
-                : `2025-01-01T${value}:00`,
+                : `T${value}:00`,
               meetingEndTime: applicant.meetingEndTime
                 ? `${applicant.meetingEndTime.split("T")[0]}T${value}:00.000Z`
-                : `2025-01-01T${value}:00`,
+                : `T${value}:00`,
             }
           : applicant
       )
@@ -142,9 +142,18 @@ const InterviewerList = ({ data1, data2, isEmail }: ApplicantListProps) => {
       (applicant) => applicant.applicationId === applicationId
     );
 
-    if (updatedApplicant) {
+    if (updatedApplicant && updatedApplicant.meetingStartTime) {
       try {
-        console.log(value);
+        console.log({
+          formResult: updatedApplicant.formResult,
+          meetingResult: updatedApplicant.meetingResult,
+          meetingStartTime: updatedApplicant.meetingStartTime
+            ? `${updatedApplicant.meetingStartTime.split("T")[0]}T${value}:00`
+            : `2025-01-01T${value}:00`,
+          meetingEndTime: updatedApplicant.meetingEndTime
+            ? `${updatedApplicant.meetingEndTime.split("T")[0]}T${value}:00`
+            : `2025-01-01T${value}:00`,
+        });
         const res = await PUT(`application/${applicationId}`, {
           formResult: updatedApplicant.formResult,
           meetingResult: updatedApplicant.meetingResult,
@@ -157,11 +166,13 @@ const InterviewerList = ({ data1, data2, isEmail }: ApplicantListProps) => {
         });
 
         if (res.isSuccess) {
-          //getApplicantList();
           alert("면접 시간 수정 성공");
-          console.log(res);
+          window.location.reload();
         } else {
-          console.log(res.message);
+          if (updatedApplicant.meetingStartTime.split("T")[0]) {
+            alert("존재하지 않는 면접 시간입니다.");
+            console.log(res.message);
+          }
         }
       } catch (error) {
         console.log(error);
@@ -176,10 +187,6 @@ const InterviewerList = ({ data1, data2, isEmail }: ApplicantListProps) => {
   useEffect(() => {
     getApplicantList();
   }, []);
-
-  useEffect(() => {
-    console.log(filteredApplicants);
-  }, [filteredApplicants]);
 
   useEffect(() => {
     getApplicantList();
@@ -589,27 +596,6 @@ const ApplicantInfo = styled.div`
   letter-spacing: -0.28px;
 `;
 
-const ApplicantPosition = styled.div`
-  color: #555;
-  font-size: 14px;
-  font-style: normal;
-  font-weight: 400;
-  letter-spacing: -0.28px;
-  transition: transform 0.3s ease; 
-  
-  ${ApplicantItem}:hover & {
-    transform: translateX(5px); 
-`;
-
-const DocButton = styled.div`
-  margin-left: 5px;
-  transition: transform 0.3s ease;
-
-  ${ApplicantItem}:hover & {
-    transform: translateX(5px);
-  }
-`;
-
 const MeetingSchedule = styled.div`
   display: flex;
   flex-direction: column;
@@ -648,8 +634,4 @@ const MeetingTime = styled.input`
   &:hover {
     border-color: #88181c;
   }
-`;
-
-const AddButton = styled.div`
-  margin-left: 5px;
 `;

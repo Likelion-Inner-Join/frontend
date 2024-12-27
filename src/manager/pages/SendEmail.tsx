@@ -3,18 +3,16 @@ import styled from "styled-components";
 import ApplicantList from "../components/ApplicantList";
 import InterviewerList from "../components/InterviewerList";
 import MyButton from "../components/MyButton";
-import { applicantData } from "../mock/applicantData";
-import { positionData } from "../mock/positionData";
-import { PromotionData } from "../mock/PromotionDetail";
+import { Navbar } from "../../common/ui";
 import { useNavigate } from "react-router-dom";
 import { ApplicantType, PostInfoType } from "../global/types";
 import { GET } from "../../common/api/axios";
 
 const SendEmail = () => {
   const [applicantList, setApplicantList] = useState<ApplicantType[]>([]);
-  const [isSended, setIsSended] = useState(true);
   const [redirectPage, setRedirectPage] = useState("");
   const [postInfo, setPostInfo] = useState<PostInfoType>();
+  const [showNavbar, setShowNavbar] = useState(false);
   const navigate = useNavigate();
 
   const getApplicantList = async () => {
@@ -41,7 +39,6 @@ const SendEmail = () => {
 
       if (res.isSuccess) {
         setPostInfo(res.result);
-        console.log(res);
       } else {
         console.log(res.message);
       }
@@ -49,6 +46,21 @@ const SendEmail = () => {
       console.log(error);
     }
   };
+
+  const handleMouseMove = (event: MouseEvent) => {
+    if (event.clientY < 50) {
+      setShowNavbar(true);
+    } else {
+      setShowNavbar(false);
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+    };
+  }, []);
 
   useEffect(() => {
     getApplicantList();
@@ -69,41 +81,43 @@ const SendEmail = () => {
 
   return (
     <Wrapper>
-      {postInfo?.recruitmentStatus === "OPEN" ||
-      postInfo?.recruitmentStatus === "FORM_REVIEWED" ? (
-        <ApplicantList
-          data1={applicantList}
-          data2={postInfo?.recruitingList || []}
-          isEmail={true}
-        />
-      ) : (
-        <InterviewerList
-          data1={applicantList}
-          data2={postInfo?.recruitingList || []}
-          isEmail={true}
-        />
-      )}
-      <Container>
-        <img src="/images/manager/success.svg" />
-        {isSended ? (
+      <NavbarWrapper show={showNavbar}>
+        {" "}
+        <Navbar />
+      </NavbarWrapper>
+      <EvaluateWrapper show={showNavbar}>
+        {postInfo?.recruitmentStatus === "OPEN" ||
+        postInfo?.recruitmentStatus === "FORM_REVIEWED" ? (
+          <ApplicantList
+            data1={applicantList}
+            data2={postInfo?.recruitingList || []}
+            isEmail={true}
+          />
+        ) : (
+          <InterviewerList
+            data1={applicantList}
+            data2={postInfo?.recruitingList || []}
+            isEmail={true}
+          />
+        )}
+        <Container>
+          <img src="/images/manager/success.svg" alt="메일 전송 완료" />
           <Caption>메일을 성공적으로 전송하였습니다 🙌 </Caption>
-        ) : (
-          <Caption>메일을 전송하고 있습니다</Caption>
-        )}
-        {postInfo?.recruitmentStatus === "CLOSED" ? (
-          <MyButton
-            content="평가종료"
-            buttonType="RED"
-            onClick={() => navigate("/post-manage")}
-          />
-        ) : (
-          <MyButton
-            content="돌아가기"
-            buttonType="RED"
-            onClick={() => navigate(redirectPage)}
-          />
-        )}
-      </Container>
+          {postInfo?.recruitmentStatus === "CLOSED" ? (
+            <MyButton
+              content="평가종료"
+              buttonType="RED"
+              onClick={() => navigate("/post-manage")}
+            />
+          ) : (
+            <MyButton
+              content="돌아가기"
+              buttonType="RED"
+              onClick={() => navigate(redirectPage)}
+            />
+          )}
+        </Container>
+      </EvaluateWrapper>
     </Wrapper>
   );
 };
@@ -114,6 +128,26 @@ const Wrapper = styled.div`
   display: flex;
   width: 100vw;
   height: 100vh;
+  overflow: hidden;
+  flex-direction: column;
+  background-color: #fff;
+`;
+
+const NavbarWrapper = styled.div<{ show: boolean }>`
+  background-color: #fff;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: ${({ show }) => (show ? "60px" : "0px")};
+  overflow: hidden;
+  transition: height 0.3s ease-in-out;
+`;
+
+const EvaluateWrapper = styled.div<{ show: boolean }>`
+  display: flex;
+  width: 100vw;
+  height: ${({ show }) => (show ? "calc(100vh - 60px)" : "100vh")};
+  transition: height 0.3s ease-in-out;
   background-color: #fff;
 `;
 
@@ -139,23 +173,4 @@ const Caption = styled.div`
   font-weight: 600;
   line-height: 150%; /* 54px */
   letter-spacing: -0.72px;
-`;
-
-const FinishButton = styled.div`
-  display: flex;
-  height: 48px;
-  padding: 12px 32px;
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
-  border-radius: 30px;
-  background: #b10d15;
-  color: var(--Achromatic-white, #fff);
-  font-family: Pretendard;
-  font-size: 16px;
-  font-style: normal;
-  font-weight: 600;
-  line-height: 150%; /* 24px */
-  letter-spacing: -0.32px;
-  cursor: pointer;
 `;
