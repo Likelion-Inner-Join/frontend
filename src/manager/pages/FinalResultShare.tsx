@@ -24,8 +24,8 @@ const FinalResultShare = () => {
   const getApplicantList = async () => {
     try {
       //const res = await GET(`posts/${postId}/application`);
-      //const res = await GET(`posts/1/application`);
-      const res = applicantData;
+      const res = await GET(`posts/1/application`);
+      // const res = applicantData;
 
       if (res.isSuccess) {
         setApplicantList(res.result.applicationList);
@@ -73,7 +73,7 @@ const FinalResultShare = () => {
 
     try {
       const res = await PATCH(`posts/1`, { recruitmentStatus: status });
-      
+
       if (res.isSuccess) {
         if (status === "INTERVIEWED") setIsShared(!isShared);
         if (status === "CLOSED") navigate("/post-manage");

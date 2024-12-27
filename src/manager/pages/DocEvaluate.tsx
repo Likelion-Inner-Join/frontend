@@ -24,8 +24,8 @@ const DocEvaluate = () => {
   const getApplicantList = async () => {
     try {
       //const res = await GET(`posts/${postId}/application`);
-      //const res = await GET(`posts/1/application`);
-      const res = applicantData;
+      const res = await GET(`posts/1/application`);
+      // const res = applicantData;
 
       if (res.isSuccess) {
         setApplicantList(res.result.applicationList);
