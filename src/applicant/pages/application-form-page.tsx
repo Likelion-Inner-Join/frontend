@@ -83,7 +83,6 @@ export const ApplicationFormPage = () => {
     try {
       const response = await POST("application", {
         recruitingId: recruitingId,
-        applicantId: "1" /*FIXME: */,
         answers: answers,
       });
       if (response.isSuccess) {
