@@ -19,7 +19,7 @@ export const SearchBar = ({
     <SearchContainer>
       <SearchInput
         type="text"
-        placeholder="검색어를 입력하시오..."
+        placeholder="동아리 이름으로 검색"
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
       />

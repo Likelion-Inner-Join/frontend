@@ -14,7 +14,13 @@ export const RecruitmentCard = ({ post }: { post: TPostCardProps }) => {
       }}
     >
       <ImageWrapper>
-        <CardImage src={post.image[0].imageUrl} alt="Card Image" />
+        <CardImage
+          src={
+            (post.image && post.image.length > 0 && post.image[0].imageUrl) ||
+            "https://via.placeholder.com/360x168"
+          }
+          alt="Card Image"
+        />
       </ImageWrapper>
       <CardContent>
         <CategoryTags>

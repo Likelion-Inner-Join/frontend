@@ -35,11 +35,11 @@ export const RecruitmentPostingList = ({
                       fontWeight: "700",
                     }}
                   >
-                    {`${calculateDday(content.endDate)}`}
+                    {`${calculateDday(content.endTime)}`}
                   </span>
                   <span>
                     {`${formatDate(
-                      content.endDate,
+                      content.endTime,
                       "yyyy년 MM월 dd일 (요일)"
                     )} 마감`}
                   </span>
@@ -57,13 +57,15 @@ export const RecruitmentPostingList = ({
           ></Content>
         </ContentWrapper>
         <ImageScroller>
-          {content.image?.map((image) => (
-            <Image
-              key={image.imageId}
-              src={image.imageUrl}
-              alt="이미지가 없어요."
-            />
-          ))}
+          {content.image &&
+            content.image.length > 0 &&
+            content.image.map((image) => (
+              <Image
+                key={image.imageId}
+                src={image.imageUrl}
+                alt="이미지가 없어요."
+              />
+            ))}
         </ImageScroller>
         <div style={{ display: "flex", justifyContent: "center" }}>
           <Button
@@ -71,7 +73,7 @@ export const RecruitmentPostingList = ({
             size="large"
             onClick={() => {
               if (!content.recruitingList) {
-                navigate(`/application/${content.postId}`); /*FIXME: formId? */
+                navigate(`/application/${content.postId}`);
               } else {
                 setIsModalOpen(true);
               }

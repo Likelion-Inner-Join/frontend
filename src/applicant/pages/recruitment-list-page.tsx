@@ -7,7 +7,7 @@ import { useEffect, useMemo, useState } from "react";
 
 export type TPostCardProps = {
   postId: string;
-  image: [{ imageUrl: string }];
+  image: [{ imageUrl: string }] | null;
   categoryName: string;
   recruitmentType: "FORM_ONLY" | "FORM_AND_MEETING" | "MEETING_ONLY";
   clubName: string;
@@ -94,8 +94,6 @@ export const RecruitmentListPage = () => {
     });
   }, [posts, filters]);
 
-  console.log(filteredPosts);
-
   return (
     <ApplicantPage>
       <Container>
@@ -103,13 +101,13 @@ export const RecruitmentListPage = () => {
           <CategoryFilter
             categories={[
               { id: "ALL", label: "전체" },
-              { id: "volunteer", label: "봉사·사회" },
-              { id: "art", label: "예술·공연" },
-              { id: "religion", label: "종교" },
-              { id: "sports", label: "체육" },
-              { id: "friendship", label: "친목" },
-              { id: "it", label: "IT" },
-              { id: "others", label: "기타" },
+              { id: "봉사·사회", label: "봉사·사회" },
+              { id: "예술·공연", label: "예술·공연" },
+              { id: "종교", label: "종교" },
+              { id: "체육", label: "체육" },
+              { id: "친목", label: "친목" },
+              { id: "IT", label: "IT" },
+              { id: "기타", label: "기타" },
             ]}
             onChange={handleCategoryChange}
           />

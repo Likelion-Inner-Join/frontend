@@ -7,7 +7,14 @@ export const ClubContent = ({ content }: { content: TRecruitmentData }) => {
     <ClubWrapper>
       <ProfileContainer>
         <ProfileImage>
-          <img src={content.image[0].imageUrl} alt="Profile" />
+          <img
+            src={
+              content.image && content.image.length > 0
+                ? content.image[0].imageUrl
+                : "https://via.placeholder.com/128x128"
+            }
+            alt="Profile"
+          />
         </ProfileImage>
         <RecruitmentStatus>
           {RECRUITMENT_STATUS[content.recruitmentStatus] || "없음"}

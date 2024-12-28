@@ -9,7 +9,7 @@ export type TRecruitmentData = {
   title: string;
   content: string;
   categoryName: string;
-  image: [{ imageId: string; imageUrl: string }];
+  image: [{ imageId: string; imageUrl: string }] | null;
   recruitingList: [
     {
       recruitingId: string;
@@ -23,7 +23,7 @@ export type TRecruitmentData = {
     | "TIME_SET"
     | "INTERVIEWED"
     | "CLOSED";
-  endDate: string;
+  endTime: string;
   createdAt: string;
   postId: string;
 };
