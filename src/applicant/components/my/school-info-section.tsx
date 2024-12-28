@@ -1,98 +1,34 @@
-import { useEffect, useState } from "react";
 import styled from "styled-components";
 
-export const SchoolInfoSection = () => {
-  const [userInfo, setUserInfo] = useState({
-    university: "",
-    major: "",
-    studentId: "",
-  });
-  const [isEditing, setIsEditing] = useState(false);
-
-  useEffect(() => {
-    const fetchUserData = async () => {
-      const fakeData = {
-        university: "서강대학교",
-        major: "컴퓨터공학과",
-        studentId: "20211234",
-      };
-      setUserInfo(fakeData);
-    };
-
-    fetchUserData();
-  }, []);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setUserInfo((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSave = () => {
-    setIsEditing(false);
-  };
-
-  const handleCancel = () => {
-    setIsEditing(false);
-    setUserInfo({
-      university: "서강대학교",
-      major: "컴퓨터공학과",
-      studentId: "20211234",
-    });
-  };
-
+export const SchoolInfoSection = ({
+  school,
+  major,
+  studentNumber,
+}: {
+  school: string;
+  major: string;
+  studentNumber: string;
+}) => {
   return (
     <Section>
       <SectionHeader>
         <SectionTitle>학교 정보</SectionTitle>
-        {!isEditing ? (
-          <EditButton onClick={() => setIsEditing(true)}>수정하기</EditButton>
-        ) : (
-          <ButtonGroup>
-            <SaveButton onClick={handleSave}>저장</SaveButton>
-            <CancelButton onClick={handleCancel}>취소</CancelButton>
-          </ButtonGroup>
-        )}
       </SectionHeader>
       <InfoTable>
         <tbody>
           <Tr>
             <Th>대학명</Th>
-            {isEditing ? (
-              <Input
-                type="text"
-                name="university"
-                value={userInfo.university}
-                onChange={handleInputChange}
-              />
-            ) : (
-              <Td>{userInfo.university}</Td>
-            )}
+
+            <Td>{school}</Td>
           </Tr>
           <Tr>
             <Th>학과</Th>
-            {isEditing ? (
-              <Input
-                type="text"
-                name="major"
-                value={userInfo.major}
-                onChange={handleInputChange}
-              />
-            ) : (
-              <Td>{userInfo.major}</Td>
-            )}
+
+            <Td>{major}</Td>
           </Tr>
           <Tr>
             <Th>학번</Th>
-            {isEditing ? (
-              <Input
-                type="text"
-                name="studentId"
-                value={userInfo.studentId}
-                onChange={handleInputChange}
-              />
-            ) : (
-              <Td>{userInfo.studentId}</Td>
-            )}
+            <Td>{studentNumber}</Td>
           </Tr>
         </tbody>
       </InfoTable>
@@ -149,78 +85,4 @@ const Td = styled.td`
   font-size: 16px;
   font-weight: 500;
   color: #000000;
-`;
-
-const Input = styled.input`
-  min-width: 300px;
-  height: 32px;
-  padding: 20px;
-  font-size: 16px;
-  line-height: 1.5;
-  border: 1px solid #ddd;
-  border-radius: 20px;
-  box-sizing: border-box;
-  outline: none;
-
-  &:hover,
-  &:focus {
-    border-color: #cc141d;
-  }
-`;
-
-const EditButton = styled.button`
-  font-size: 14px;
-  font-weight: 600;
-  color: ${(props) => props.theme.color.primary};
-  cursor: pointer;
-
-  padding: 12px 32px;
-  border-radius: 30px;
-  border: 1px solid ${(props) => props.theme.color.primary};
-  background: none;
-
-  &:hover {
-    background-color: ${(props) => props.theme.color.primary};
-    color: #fff;
-  }
-`;
-
-const ButtonGroup = styled.div`
-  display: flex;
-  gap: 10px;
-  justify-content: flex-end;
-`;
-
-const SaveButton = styled.button`
-  font-size: 14px;
-  font-weight: 600;
-  color: ${(props) => props.theme.color.primary};
-  cursor: pointer;
-
-  padding: 12px 32px;
-  border-radius: 30px;
-  border: 1px solid ${(props) => props.theme.color.primary};
-  background: none;
-
-  &:hover {
-    background-color: ${(props) => props.theme.color.primary};
-    color: #fff;
-  }
-`;
-
-const CancelButton = styled.button`
-  font-size: 14px;
-  font-weight: 600;
-  color: #fff;
-  cursor: pointer;
-
-  padding: 12px 32px;
-  border-radius: 30px;
-  border: 1px solid ${(props) => props.theme.color.secondary};
-  background-color: ${(props) => props.theme.color.secondary};
-
-  &:hover {
-    background-color: ${(props) => props.theme.color.secondaryHover};
-    color: #fff;
-  }
 `;
