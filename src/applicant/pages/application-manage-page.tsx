@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Tab } from "../../common/ui";
+import { Loading, Tab } from "../../common/ui";
 import { ApplicantPage } from "../page";
 import { ApplicationCalendar, ApplicationSection } from "../components";
 import { GET } from "../../common/api/axios";
@@ -75,7 +75,7 @@ export const ApplicationManagePage = () => {
         {activeTab === "지원 관리" ? (
           <>
             {loading ? (
-              <p>로딩 중...</p>
+              <Loading />
             ) : (
               <ApplicationSection
                 title="지원한 단체"
@@ -87,7 +87,7 @@ export const ApplicationManagePage = () => {
         ) : (
           <>
             {loading ? (
-              <p>로딩 중...</p>
+              <Loading />
             ) : (
               <>
                 <ApplicationCalendar applications={applications} />

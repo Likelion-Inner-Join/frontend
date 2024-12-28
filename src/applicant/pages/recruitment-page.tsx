@@ -3,6 +3,7 @@ import { ApplicantPage } from "../page";
 import { ClubContent, RecruitmentPostingList } from "../components";
 import { useEffect, useState } from "react";
 import { GET } from "../../common/api/axios";
+import { Loading } from "../../common/ui";
 
 export type TRecruitmentData = {
   clubName: string;
@@ -55,13 +56,13 @@ export const RecruitmentPage = () => {
   }, [postId]);
 
   if (!content) {
-    return <div>로딩 중..</div>;
+    return <Loading />;
   }
 
   return (
     <ApplicantPage>
       {loading ? (
-        <div>로딩 중..</div>
+        <Loading />
       ) : (
         <div>
           <ClubContent content={content} />

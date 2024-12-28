@@ -4,6 +4,7 @@ import { ApplicantPage } from "../page";
 import { DropdownFilter } from "../components/recruitment-list/dropdown-filter";
 import { GET } from "../../common/api/axios";
 import { useEffect, useMemo, useState } from "react";
+import { Loading } from "../../common/ui/loading";
 
 export type TPostCardProps = {
   postId: string;
@@ -141,7 +142,7 @@ export const RecruitmentListPage = () => {
             </FilterBar>
             <CardList>
               {loading ? (
-                <p>로딩 중...</p>
+                <Loading />
               ) : (
                 filteredPosts.map((post) => <RecruitmentCard post={post} />)
               )}

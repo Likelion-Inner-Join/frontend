@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { Button } from "../../common/ui";
+import { Button, Loading } from "../../common/ui";
 import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { ApplicantPage } from "../page";
@@ -59,7 +59,7 @@ export const ApplicationFormPage = () => {
   }, [formId]);
 
   if (!data) {
-    return <div>로딩 중..</div>;
+    return <Loading />;
   }
 
   const handleAnswerChange = (questionId: string, value: string) => {
@@ -113,7 +113,7 @@ export const ApplicationFormPage = () => {
           />
         </Header>
         {loading ? (
-          <div>로딩 중..</div>
+          <Loading />
         ) : (
           <form
             onSubmit={(e) => {

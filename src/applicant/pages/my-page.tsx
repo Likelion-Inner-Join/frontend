@@ -2,6 +2,7 @@ import { ApplicantPage } from "../page";
 import { BasicInfoSection, SchoolInfoSection } from "../components";
 import { useEffect, useState } from "react";
 import { GET } from "../../common/api/axios";
+import { Loading } from "../../common/ui";
 
 export type TApplicationInfoData = {
   name: string;
@@ -36,12 +37,12 @@ export const MyPage = () => {
   }, []);
 
   if (!data) {
-    return <div>로딩 중...</div>;
+    return <Loading />;
   }
 
   return (
     <ApplicantPage>
-      {loading && <div>로딩 중...</div>}
+      {loading && <Loading />}
       <BasicInfoSection name={data.name} email={data.email} />
       <div
         style={{
