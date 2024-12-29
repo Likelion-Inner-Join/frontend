@@ -70,11 +70,11 @@ const SendEmail = () => {
   useEffect(() => {
     if (postInfo?.recruitmentStatus === "OPEN") setRedirectPage("/doc-eval");
     else if (postInfo?.recruitmentStatus === "FORM_REVIEWED")
-      setRedirectPage("/meet-table");
+      setRedirectPage("/result");
     else if (postInfo?.recruitmentStatus === "TIME_SET")
-      setRedirectPage("/meet-table");
-    else if (postInfo?.recruitmentStatus === "INTERVIEWED")
       setRedirectPage("/meet-eval");
+    else if (postInfo?.recruitmentStatus === "INTERVIEWED")
+      setRedirectPage("/final-result");
     else if (postInfo?.recruitmentStatus === "CLOSED")
       setRedirectPage("/post-manage");
   }, [postInfo]);

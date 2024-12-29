@@ -286,15 +286,14 @@ const MeetArrange = () => {
       const res = await POST("posts/interview-times", newMeetingData);
 
       if (res.isSuccess) {
-        alert("면접 시간 생성 성공");
         setNewMeetingIsOpen(false);
         fetchAllMeetings();
       } else {
-        console.error("Error:", res.message);
+        console.error("Error:", res);
         alert(`면접 시간 생성 실패: ${res.message}`);
       }
     } catch (error) {
-      console.error("Request failed:", error);
+      console.error(error);
       alert("면접 시간 생성 중 오류가 발생했습니다.");
     }
   };
@@ -339,7 +338,6 @@ const MeetArrange = () => {
 
       const hasError = res.some((response) => !response.isSuccess);
       if (!hasError) {
-        alert("면접 일정을 삭제하였습니다.");
         fetchAllMeetings();
       } else {
         const errorMessages = res
@@ -349,23 +347,23 @@ const MeetArrange = () => {
         alert("면접 일정 삭제를 실패하였습니다.");
       }
     } catch (error) {
-      console.error("Request failed:", error);
       alert("면접 일정 삭제 중 오류가 발생했습니다.");
+      console.error(error);
     }
   };
 
   const updateRecruitStatus = async (status: string) => {
     try {
       const res = await PATCH(`posts/1`, { recruitmentStatus: status });
-      console.log({ recruitmentStatus: status });
       if (res.isSuccess) {
-        console.log(res);
         alert("면접 시간이 공개되었습니다.");
         getPostDetails();
       } else {
-        console.log(res.message);
+        alert(res.message);
+        console.log(res);
       }
     } catch (error) {
+      alert("면접 시간 공개 중 오류가 발생하였습니다");
       console.log(error);
     }
   };
@@ -376,7 +374,12 @@ const MeetArrange = () => {
       postInfo?.recruitmentStatus === "INTERVIEWED" ||
       postInfo?.recruitmentStatus === "CLOSED"
     ) {
-      alert("이미 면접 시간이 지원자에게 공개되었습니다.");
+      alert("이미 면접 시간이 지원자에게 공개되었습니다");
+      return;
+    }
+
+    if (!reservationStartTime || !reservationEndTime) {
+      alert("면접 예약 기간을 지정해주세요");
       return;
     }
 
@@ -492,7 +495,6 @@ const MeetArrange = () => {
 
       const hasError = responses.some((res) => !res.isSuccess);
       if (!hasError) {
-        alert("예약 기간 변경 성공");
       } else {
         const errorMessages = responses
           .filter((res) => !res.isSuccess)
@@ -541,7 +543,8 @@ const MeetArrange = () => {
         <Navbar />
       </NavbarWrapper>
       <EvaluateWrapper show={showNavbar}>
-        {postInfo?.recruitmentStatus === "OPEN" ? (
+        {postInfo?.recruitmentStatus === "OPEN" ||
+        postInfo?.recruitmentStatus === "FORM_REVIEWED" ? (
           <ApplicantList
             data1={applicantList}
             data2={postInfo?.recruitingList || []}
@@ -602,10 +605,20 @@ const MeetArrange = () => {
           </MeetTitle>
           <MeetPeriodContainer>
             <MeetPeriod>
-              <Info src="/images/manager/quest.svg" alt="입니다~" />
+              <InfoWrapper>
+                <Info src="/images/manager/quest.svg" alt="소개문구" />
+                <Tooltip>
+                  지원자들이 선착순으로 면접 시간을 <br /> 선택할 수 있는 기간을
+                  지정해주세요
+                </Tooltip>
+              </InfoWrapper>
               <p>시작</p>
               <Period>
                 <input
+                  disabled={
+                    postInfo?.recruitmentStatus !== "OPEN" &&
+                    postInfo?.recruitmentStatus !== "FORM_REVIEWED"
+                  }
                   type="date"
                   value={
                     reservationStartTime
@@ -617,6 +630,10 @@ const MeetArrange = () => {
                   }
                 />
                 <input
+                  disabled={
+                    postInfo?.recruitmentStatus !== "OPEN" &&
+                    postInfo?.recruitmentStatus !== "FORM_REVIEWED"
+                  }
                   type="time"
                   value={
                     reservationStartTime
@@ -638,6 +655,10 @@ const MeetArrange = () => {
               <Period>
                 {" "}
                 <input
+                  disabled={
+                    postInfo?.recruitmentStatus !== "OPEN" &&
+                    postInfo?.recruitmentStatus !== "FORM_REVIEWED"
+                  }
                   type="date"
                   value={
                     reservationEndTime ? reservationEndTime.split("T")[0] : ""
@@ -647,6 +668,10 @@ const MeetArrange = () => {
                   }
                 />
                 <input
+                  disabled={
+                    postInfo?.recruitmentStatus !== "OPEN" &&
+                    postInfo?.recruitmentStatus !== "FORM_REVIEWED"
+                  }
                   type="time"
                   value={
                     reservationEndTime
@@ -801,7 +826,7 @@ const MeetArrange = () => {
                         onClick={() => {
                           if (
                             postInfo?.recruitmentStatus === "OPEN" ||
-                            postInfo?.recruitmentStatus === "FORM_INTERVIEW"
+                            postInfo?.recruitmentStatus === "FORM_REVIEWED"
                           ) {
                             handleDeleteMeetingTimes(date);
                           } else {
@@ -983,11 +1008,49 @@ const MeetingSendButton = styled.div<{ isOpen: boolean }>`
   }
 `;
 
+const InfoContainer = styled.div`
+  position: relative;
+  display: inline-block;
+`;
+
 const Info = styled.img`
   background-color: black;
   display: flex;
   width: 15px;
   margin-right: 5px;
+  cursor: pointer;
+`;
+
+const Tooltip = styled.div`
+  visibility: hidden;
+  background-color: #333;
+  color: #fff;
+  text-align: center;
+  border-radius: 5px;
+  padding: 8px;
+  position: absolute;
+  z-index: 1;
+  bottom: 125%;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #333 transparent transparent transparent;
+  }
+`;
+
+const InfoWrapper = styled(InfoContainer)`
+  &:hover ${Tooltip} {
+    visibility: visible;
+  }
 `;
 
 const MeetPeriodContainer = styled.div`
