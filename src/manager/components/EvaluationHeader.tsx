@@ -2,6 +2,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import styled from "styled-components";
 import { PostInfoType } from "../global/types";
 import { GET } from "../../common/api/axios";
+import { useNavigate } from "react-router-dom";
 
 interface EvaluationHeaderProps {
   status: string;
@@ -14,6 +15,7 @@ const EvaluationHeader = ({ status }: EvaluationHeaderProps) => {
 
   const handleMouseEnter = () => setIsHovered(true);
   const handleMouseLeave = () => setIsHovered(false);
+  const navigate = useNavigate();
 
   const STAGES_FORM_ONLY = useMemo(() => ["", "서류 평가", "결과 공지"], []);
   const STAGES_FORM_AND_MEETING = useMemo(
@@ -69,6 +71,43 @@ const EvaluationHeader = ({ status }: EvaluationHeaderProps) => {
     }
   }
 
+  const handleStageClick = (stage: string) => {
+    if (stage === "서류 평가") {
+      navigate("/doc-eval");
+      return;
+    } else if (stage === "결과 공지") {
+      navigate("/result");
+      return;
+    } else if (stage === "면접시간 설정") {
+      if (postInfo?.recruitmentStatus === "OPEN")
+        alert("이전 단계를 완료해야 이동할 수 있습니다");
+      else {
+        navigate("/meet-table");
+      }
+      return;
+    } else if (stage === "면접 평가") {
+      if (
+        postInfo?.recruitmentStatus === "OPEN" ||
+        postInfo?.recruitmentStatus === "FORM_REVIEWED"
+      )
+        alert("이전 단계를 완료해야 이동할 수 있습니다");
+      else {
+        navigate("/meet-eval");
+      }
+      return;
+    } else if (stage === "최종결과 공지") {
+      if (
+        postInfo?.recruitmentStatus === "OPEN" ||
+        postInfo?.recruitmentStatus === "FORM_REVIEWED"
+      )
+        alert("이전 단계를 완료해야 이동할 수 있습니다");
+      else {
+        navigate("/final-result");
+      }
+      return;
+    }
+  };
+
   return (
     <Wrapper>
       <ProgressBar
@@ -83,7 +122,11 @@ const EvaluationHeader = ({ status }: EvaluationHeaderProps) => {
               return (
                 <React.Fragment key={index}>
                   <StageNumber current={isCurrent}>{index}</StageNumber>
-                  <StageName current={isCurrent} hovered={isHovered}>
+                  <StageName
+                    current={isCurrent}
+                    hovered={isHovered}
+                    onClick={() => handleStageClick(stageName)}
+                  >
                     {stageName}
                   </StageName>
                   <div>
@@ -195,6 +238,8 @@ const StageName = styled.div<{ current: boolean; hovered: boolean }>`
     if (hovered) return "#222";
     return "#222";
   }};
+
+  cursor: pointer;
 
   font-family: Pretendard;
   font-size: 16px;

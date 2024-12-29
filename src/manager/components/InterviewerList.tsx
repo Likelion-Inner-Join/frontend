@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import styled from "styled-components";
 import DocView from "./DocView";
-import { ApplicantType } from "../global/types";
+import { ApplicantType, PostInfoType } from "../global/types";
 import { PUT, GET } from "../../common/api/axios";
 
 interface PositionType {
@@ -28,7 +28,7 @@ const InterviewerList = ({ data1, data2, isEmail }: ApplicantListProps) => {
     []
   );
   const [applicantList, setApplicantList] = useState<ApplicantType[]>([]);
-
+  const [postInfo, setPostInfo] = useState<PostInfoType>();
   const currApplyID = searchParams.get("apply");
   const navigate = useNavigate();
 
@@ -39,6 +39,20 @@ const InterviewerList = ({ data1, data2, isEmail }: ApplicantListProps) => {
 
       if (res.isSuccess) {
         setApplicantList(res.result.applicationList);
+      } else {
+        console.log(res.message);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const getPostDetails = async () => {
+    try {
+      const res = await GET(`posts/1`);
+
+      if (res.isSuccess) {
+        setPostInfo(res.result);
       } else {
         console.log(res.message);
       }
@@ -106,11 +120,12 @@ const InterviewerList = ({ data1, data2, isEmail }: ApplicantListProps) => {
             : `${value}T00:00:00`,
         });
         if (res.isSuccess) {
-          alert("면접 날짜 수정 성공");
           window.location.reload();
         } else {
-          alert("존재하지 않는 면접 시간입니다.");
-          console.log(res.message);
+          if (res.result === "Unexpected error: 허용 인원을 초과하였습니다.")
+            alert("해당 시간대에 배정 가능한 최대 인원을 초과하였습니다");
+          else alert("존재하지 않는 면접 시간대입니다");
+          console.log(res);
         }
       } catch (error) {
         console.log(error);
@@ -144,16 +159,6 @@ const InterviewerList = ({ data1, data2, isEmail }: ApplicantListProps) => {
 
     if (updatedApplicant && updatedApplicant.meetingStartTime) {
       try {
-        console.log({
-          formResult: updatedApplicant.formResult,
-          meetingResult: updatedApplicant.meetingResult,
-          meetingStartTime: updatedApplicant.meetingStartTime
-            ? `${updatedApplicant.meetingStartTime.split("T")[0]}T${value}:00`
-            : `2025-01-01T${value}:00`,
-          meetingEndTime: updatedApplicant.meetingEndTime
-            ? `${updatedApplicant.meetingEndTime.split("T")[0]}T${value}:00`
-            : `2025-01-01T${value}:00`,
-        });
         const res = await PUT(`application/${applicationId}`, {
           formResult: updatedApplicant.formResult,
           meetingResult: updatedApplicant.meetingResult,
@@ -166,12 +171,13 @@ const InterviewerList = ({ data1, data2, isEmail }: ApplicantListProps) => {
         });
 
         if (res.isSuccess) {
-          alert("면접 시간 수정 성공");
           window.location.reload();
         } else {
           if (updatedApplicant.meetingStartTime.split("T")[0]) {
-            alert("존재하지 않는 면접 시간입니다.");
-            console.log(res.message);
+            if (res.result === "Unexpected error: 허용 인원을 초과하였습니다.")
+              alert("해당 시간대에 배정 가능한 최대 인원을 초과하였습니다");
+            else alert("존재하지 않는 면접 시간대입니다");
+            console.log(res);
           }
         }
       } catch (error) {
@@ -186,6 +192,7 @@ const InterviewerList = ({ data1, data2, isEmail }: ApplicantListProps) => {
 
   useEffect(() => {
     getApplicantList();
+    getPostDetails();
   }, []);
 
   useEffect(() => {
@@ -327,6 +334,10 @@ const InterviewerList = ({ data1, data2, isEmail }: ApplicantListProps) => {
                 <MeetingSchedule>
                   {applicant.formResult === "PASS" && (
                     <MeetingDate
+                      disabled={
+                        postInfo?.recruitmentStatus === "INTERVIEWED" ||
+                        postInfo?.recruitmentStatus === "CLOSED"
+                      }
                       type="date"
                       value={
                         applicant.meetingStartTime
@@ -343,6 +354,10 @@ const InterviewerList = ({ data1, data2, isEmail }: ApplicantListProps) => {
                   )}
                   {applicant.formResult === "PASS" && (
                     <MeetingTime
+                      disabled={
+                        postInfo?.recruitmentStatus === "INTERVIEWED" ||
+                        postInfo?.recruitmentStatus === "CLOSED"
+                      }
                       type="time"
                       value={
                         applicant.meetingStartTime

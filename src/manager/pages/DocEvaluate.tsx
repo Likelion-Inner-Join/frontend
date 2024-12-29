@@ -129,10 +129,15 @@ const DocEvaluate = () => {
             <div>
               <h3>합격률</h3>
               <p>
-                {Math.round(
-                  (passList.length * 100) /
-                    (passList.length + failList.length + restList.length)
-                )}
+                {passList.length + failList.length + restList.length > 0 ?
+                  (
+                    Math.round(
+                      (passList.length * 100) /
+                      (passList.length + failList.length + restList.length)
+                    )
+                  ) :
+                  0
+                }
               </p>
               <h3>%</h3>
             </div>

@@ -52,11 +52,9 @@ const DocView = ({ applicant, type }: DocViewProps) => {
   const getFormDetails = async (formId: string) => {
     try {
       const res = await GET(`form/${formId}`);
-      console.log(res);
 
       if (res.isSuccess) {
         setQuestionList(res.result.questionList);
-        console.log(res);
       } else {
         console.log(res.message);
       }
@@ -125,21 +123,15 @@ const DocView = ({ applicant, type }: DocViewProps) => {
         });
       }
 
-      console.log({
-        formResult: `${newResult}`,
-        meetingResult: `${applicant?.meetingResult}`,
-        meetingStartTime: null,
-        meetingEndTime: null,
-      });
-
       if (res.isSuccess) {
-        if (type === "FORM") alert("서류 결과 수정 성공");
-        if (type === "MEET") alert("면접 결과 수정 성공");
+        // if (type === "FORM") alert("서류 결과 수정 성공");
+        // if (type === "MEET") alert("면접 결과 수정 성공");
       } else {
+        alert(res.message);
         console.log(res);
-        alert(res);
       }
     } catch (error) {
+      alert("평가 결과 수정에 실패하였습니다");
       console.log(error);
     }
   };
@@ -158,11 +150,13 @@ const DocView = ({ applicant, type }: DocViewProps) => {
       });
 
       if (res.isSuccess) {
-        alert("서류 점수 수정 성공");
+        // alert("서류 점수 수정 성공");
       } else {
-        console.log(res.message);
+        alert(res.message);
+        console.log(res);
       }
     } catch (error) {
+      alert("서류 점수 수정에 실패하였습니다");
       console.log(error);
     }
   };
@@ -179,11 +173,13 @@ const DocView = ({ applicant, type }: DocViewProps) => {
         score: meetingScore,
       });
       if (res.isSuccess) {
-        alert("면접 점수 수정 성공");
+        // alert("면접 점수 수정 성공");
       } else {
-        console.log(res.message);
+        alert(res.message);
+        console.log(res);
       }
     } catch (error) {
+      alert("면접 점수 수정에 실패하였습니다");
       console.log(error);
     }
   };
@@ -203,6 +199,10 @@ const DocView = ({ applicant, type }: DocViewProps) => {
     }
     searchParams.delete("apply");
     setSearchParams(searchParams);
+
+    window.location.href = `${
+      window.location.pathname
+    }?${searchParams.toString()}`; // 새로고침 수행
   };
 
   const renderQuestionAnswer = (question: QuestionType) => {
@@ -303,7 +303,10 @@ const DocView = ({ applicant, type }: DocViewProps) => {
                       : () => handleFormResultChange("PENDING")
                   }
                 >
-                  <CheckBox selected={formResult === "PENDING"} />
+                  <CheckBox
+                    selected={formResult === "PENDING"}
+                    disabled={postInfo?.recruitmentStatus !== "OPEN"}
+                  />
                   <p>미평가</p>
                 </Result>
                 <Result
@@ -313,7 +316,10 @@ const DocView = ({ applicant, type }: DocViewProps) => {
                       : () => handleFormResultChange("PASS")
                   }
                 >
-                  <CheckBox selected={formResult === "PASS"} />
+                  <CheckBox
+                    selected={formResult === "PASS"}
+                    disabled={postInfo?.recruitmentStatus !== "OPEN"}
+                  />
                   <p>합격</p>
                 </Result>
                 <Result
@@ -323,7 +329,10 @@ const DocView = ({ applicant, type }: DocViewProps) => {
                       : () => handleFormResultChange("FAIL")
                   }
                 >
-                  <CheckBox selected={formResult === "FAIL"} />
+                  <CheckBox
+                    selected={formResult === "FAIL"}
+                    disabled={postInfo?.recruitmentStatus !== "OPEN"}
+                  />
                   <p>불합격</p>
                 </Result>
               </ResultTab>
@@ -340,7 +349,13 @@ const DocView = ({ applicant, type }: DocViewProps) => {
                       : () => handleMeetResultChange("PENDING")
                   }
                 >
-                  <CheckBox selected={meetResult === "PENDING"} />
+                  <CheckBox
+                    selected={meetResult === "PENDING"}
+                    disabled={
+                      postInfo?.recruitmentStatus === "INTERVIEWED" ||
+                      postInfo?.recruitmentStatus === "CLOSED"
+                    }
+                  />
                   <p>미평가</p>
                 </Result>
                 <Result
@@ -351,7 +366,13 @@ const DocView = ({ applicant, type }: DocViewProps) => {
                       : () => handleMeetResultChange("PASS")
                   }
                 >
-                  <CheckBox selected={meetResult === "PASS"} />
+                  <CheckBox
+                    selected={meetResult === "PASS"}
+                    disabled={
+                      postInfo?.recruitmentStatus === "INTERVIEWED" ||
+                      postInfo?.recruitmentStatus === "CLOSED"
+                    }
+                  />
                   <p>합격</p>
                 </Result>
                 <Result
@@ -362,7 +383,13 @@ const DocView = ({ applicant, type }: DocViewProps) => {
                       : () => handleMeetResultChange("FAIL")
                   }
                 >
-                  <CheckBox selected={meetResult === "FAIL"} />
+                  <CheckBox
+                    selected={meetResult === "FAIL"}
+                    disabled={
+                      postInfo?.recruitmentStatus === "INTERVIEWED" ||
+                      postInfo?.recruitmentStatus === "CLOSED"
+                    }
+                  />
                   <p>불합격</p>
                 </Result>
               </ResultTab>
@@ -517,7 +544,7 @@ const ResultTab = styled.div`
   gap: 24px;
 `;
 
-const CheckBox = styled.div<{ selected: boolean }>`
+const CheckBox = styled.div<{ selected: boolean; disabled: boolean }>`
   display: flex;
   justify-content: center;
   align-items: center;
@@ -534,7 +561,10 @@ const CheckBox = styled.div<{ selected: boolean }>`
     return "11px";
   }};
 
-  cursor: pointer;
+  cursor: ${({ disabled }) => {
+    if (disabled) return "";
+    return "pointer";
+  }};
 `;
 
 const Result = styled.div`
