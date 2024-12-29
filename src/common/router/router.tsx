@@ -3,13 +3,14 @@ import DocEvaluate from "../../manager/pages/DocEvaluate";
 import { GlobalStyle } from "../styles/GlobalStyles";
 import ResultShare from "../../manager/pages/ResultShare";
 import FinalResultShare from "../../manager/pages/FinalResultShare";
-import { LoginPage, SignupPage, VerificationPage } from "../../auth/pages";
+import { LoginPage, SignupPage } from "../../auth/pages";
 import {
   ApplicationFormPage,
   MyPage,
   RecruitmentListPage,
   RecruitmentPage,
   ApplicationManagePage,
+  ApplicationTimeSetPage,
 } from "../../applicant/pages";
 import PostManage from "../../owner/post_manage/post_manage";
 import PostWrite from "../../owner/post_write/post_write";
@@ -30,11 +31,11 @@ export const ROUTES = {
   LOGIN: "/login",
   DOC_EVALUATE: "/doc-eval",
   APPLY_FORM_VIEW: "/doc-eval/applyID",
-  VERIFICATION: "/verification",
   MY: "/my/info",
   APPLICATION_MANAGE: "/my/application-manage",
   RECRUITMENT: "/recruitment/:postId",
   APPLICATION: "/application/:clubId",
+  APPLICATION_TIME_SET: "/application/:recruitingId/time-set",
   RESULTSHARE: "/result",
   FINAL_RESULTSHARE: "/final-result",
   POST_MANAGE: "/post-manage",
@@ -62,11 +63,6 @@ export const router = createBrowserRouter([
     path: ROUTES.LOGIN,
     element: <LoginPage />,
   },
-
-  {
-    path: ROUTES.VERIFICATION,
-    element: <VerificationPage />,
-  },
   {
     path: ROUTES.MY,
     element: <MyPage />,
@@ -82,6 +78,10 @@ export const router = createBrowserRouter([
   {
     path: ROUTES.APPLICATION,
     element: <ApplicationFormPage />,
+  },
+  {
+    path: ROUTES.APPLICATION_TIME_SET,
+    element: <ApplicationTimeSetPage />,
   },
   {
     path: ROUTES.POST_MANAGE,

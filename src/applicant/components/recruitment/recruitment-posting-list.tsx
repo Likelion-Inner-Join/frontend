@@ -78,7 +78,7 @@ export const RecruitmentPostingList = ({
                 setIsModalOpen(true);
               }
             }}
-            // disabled={content.recruitmentStatus !== "OPEN"} /*FIXME: 임시 처리 */
+            disabled={content.recruitmentStatus !== "OPEN"}
           />
         </div>
         {isModalOpen && (

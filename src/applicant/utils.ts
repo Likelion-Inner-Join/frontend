@@ -45,3 +45,15 @@ export const formatSlashDate = (dateString: string): string => {
     .replace(/.$/, "")
     .replace(/ /g, "");
 };
+
+export const formatKRDate = (
+  date: string,
+  format: string = "yyyy년 MM월 dd일"
+): string => {
+  const d = new Date(date);
+
+  return format
+    .replace("yyyy", d.getFullYear().toString())
+    .replace("MM", String(d.getMonth() + 1).padStart(2, "0"))
+    .replace("dd", String(d.getDate()).padStart(2, "0"));
+};
