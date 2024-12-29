@@ -5,6 +5,7 @@ import { ApplicationCalendar, ApplicationSection } from "../components";
 import { GET } from "../../common/api/axios";
 
 export type TApplicationData = {
+  recruitingId: string;
   positionName: string;
   recruitmentStatus:
     | "OPEN"

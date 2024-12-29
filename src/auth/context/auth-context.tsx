@@ -1,10 +1,4 @@
-import {
-  createContext,
-  useState,
-  useContext,
-  ReactNode,
-  useEffect,
-} from "react";
+import { createContext, useState, useContext, ReactNode } from "react";
 
 type UserRole = "club" | "user" | null;
 
@@ -36,46 +30,26 @@ const AuthContext = createContext<TAuthContextType | null>(null);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [authState, setAuthState] = useState<TAuthState>(() => {
-    const storedAuthState = localStorage.getItem("authState");
-    return storedAuthState ? JSON.parse(storedAuthState) : initialAuthState;
+    try {
+      const storedAuthState = sessionStorage.getItem("authState");
+      return storedAuthState ? JSON.parse(storedAuthState) : initialAuthState;
+    } catch (error) {
+      console.error("Failed to parse authState from sessionStorage", error);
+      return initialAuthState;
+    }
   });
 
   const login = (role: UserRole, user: User) => {
     const newAuthState = { isAuthenticated: true, role, user };
     setAuthState(newAuthState);
-    localStorage.setItem("authState", JSON.stringify(newAuthState));
+    sessionStorage.setItem("authState", JSON.stringify(newAuthState));
   };
 
   const logout = () => {
     setAuthState(initialAuthState);
-    localStorage.removeItem("authState");
+    sessionStorage.removeItem("authState");
+    document.cookie = "sessionExpiration=; Max-Age=0; path=/;";
   };
-
-  const getCookieValue = (name: string): string | null => {
-    const value = document.cookie
-      .split("; ")
-      .find((row) => row.startsWith(`${name}=`))
-      ?.split("=")[1];
-    return value ? decodeURIComponent(value) : null;
-  };
-
-  useEffect(() => {
-    localStorage.setItem("authState", JSON.stringify(authState));
-  }, [authState]);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const sessionExpiration = getCookieValue("sessionExpiration");
-      const currentTime = new Date().getTime();
-
-      if (!sessionExpiration || currentTime > parseInt(sessionExpiration)) {
-        console.log("세션 만료로 로그아웃 처리");
-        logout();
-      }
-    }, 60000);
-
-    return () => clearInterval(interval);
-  }, []);
 
   return (
     <AuthContext.Provider value={{ authState, login, logout }}>

@@ -8,6 +8,8 @@ import {
   RECRUITMENT_STATUS,
 } from "../../constants";
 import { formatDotDate } from "../../utils";
+import { Button } from "../../../common/ui";
+import { useNavigate } from "react-router-dom";
 
 type ApplicationSectionProps = {
   title: string;
@@ -21,6 +23,7 @@ export const ApplicationSection = ({
   showDetails = false,
 }: ApplicationSectionProps) => {
   const [isOpen, setIsOpen] = useState(true);
+  const navigate = useNavigate();
 
   return (
     <SectionWrapper>
@@ -37,7 +40,7 @@ export const ApplicationSection = ({
               <th>단체명</th>
               <th>모집기간</th>
               <th>전형명</th>
-              <th>평가</th>
+              <th>모집상태</th>
             </tr>
           </TableHead>
           <TableBody>
@@ -50,7 +53,18 @@ export const ApplicationSection = ({
                     {formatDotDate(row.endTime)}
                   </td>
                   <td>{row.positionName}</td>
-                  <td>{RECRUITMENT_STATUS[row.recruitmentStatus]}</td>
+                  <td>
+                    {row.recruitmentStatus === "TIME_SET" ? (
+                      <Button
+                        label="면접 시간 선택하러 가기"
+                        onClick={() => {
+                          navigate(`/application/${row.recruitingId}/time-set`);
+                        }}
+                      />
+                    ) : (
+                      RECRUITMENT_STATUS[row.recruitmentStatus]
+                    )}
+                  </td>
                 </tr>
                 {showDetails && (
                   <tr key={`${index}-details`}>
