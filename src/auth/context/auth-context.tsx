@@ -51,9 +51,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     localStorage.removeItem("authState");
   };
 
+  const getCookieValue = (name: string): string | null => {
+    const value = document.cookie
+      .split("; ")
+      .find((row) => row.startsWith(`${name}=`))
+      ?.split("=")[1];
+    return value ? decodeURIComponent(value) : null;
+  };
+
   useEffect(() => {
     localStorage.setItem("authState", JSON.stringify(authState));
   }, [authState]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const sessionExpiration = getCookieValue("sessionExpiration");
+      const currentTime = new Date().getTime();
+
+      if (!sessionExpiration || currentTime > parseInt(sessionExpiration)) {
+        console.log("세션 만료로 로그아웃 처리");
+        logout();
+      }
+    }, 60000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <AuthContext.Provider value={{ authState, login, logout }}>

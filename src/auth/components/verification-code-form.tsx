@@ -1,21 +1,26 @@
 import { styled } from "styled-components";
 import { VerificationCodeField } from "../../common/ui";
-import { MdEmail } from "react-icons/md";
+import { MdEmail, MdMarkEmailRead } from "react-icons/md";
 import { POST } from "../../common/api/axios";
 import { useState } from "react";
 
-export const VerificationCodeForm = ({
-  school,
-  email,
-}: {
-  school: string;
+type VerificationCodeFormProps = {
   email: string;
-}) => {
+  school: string;
+  onVerifySuccess: (isVerified: boolean) => void;
+};
+
+export const VerificationCodeForm = ({
+  email,
+  school,
+  onVerifySuccess,
+}: VerificationCodeFormProps) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [codeError, setCodeError] = useState("");
   const [isCodeSent, setIsCodeSent] = useState(false);
   const [verificationCode, setVerificationCode] = useState("");
+  const [isVerified, setIsVerified] = useState(false);
 
   const handleSend = async () => {
     setLoading(true);
@@ -49,11 +54,17 @@ export const VerificationCodeForm = ({
       });
       if (response.isSuccess) {
         alert("인증에 성공했어요.");
+        setIsVerified(true);
+        onVerifySuccess(true);
       } else {
         setCodeError(response.errorMessage || "인증 코드를 다시 입력해주세요.");
+        setIsVerified(false);
+        onVerifySuccess(false);
       }
     } catch (error) {
       setCodeError("서버에 문제가 발생했습니다. 잠시 후 다시 시도해주세요.");
+      setIsVerified(false);
+      onVerifySuccess(false);
     } finally {
       setLoading(false);
     }
@@ -61,57 +72,68 @@ export const VerificationCodeForm = ({
 
   return (
     <VerificationContainer>
-      <VerificationButton onClick={handleSend} disabled={loading}>
-        {loading ? (
-          <LoadingSpinner />
-        ) : (
-          <>
-            <MdEmail />
-            인증코드 받기
-          </>
-        )}
-      </VerificationButton>
-      {error && <ErrorMessage>{error}</ErrorMessage>}
-
-      {isCodeSent && (
-        <VerificationCodeFieldContainer>
-          <VerificationCodeField
-            label="인증 코드"
-            helpText="이메일로 받은 인증 코드를 입력해주세요."
-            value={verificationCode}
-            onChange={(e) => setVerificationCode(e.target.value)}
-          />
-          <VerifyButton onClick={handleVerify} disabled={loading}>
-            {loading ? "검증 중..." : "인증하기"}
-          </VerifyButton>
+      {!isCodeSent ? (
+        <VerificationRow>
+          <VerificationButton
+            onClick={handleSend}
+            disabled={loading || !email || !school}
+          >
+            <>
+              <MdEmail />
+              {loading ? <LoadingSpinner /> : "인증코드 받기"}
+            </>
+          </VerificationButton>
+          {error ? (
+            <ErrorMessage>{error}</ErrorMessage>
+          ) : (
+            <div style={{ color: "#6c757d", fontSize: "12px" }}>
+              해당 학교 이메일로
+              <br />
+              인증 코드가 발송됩니다.
+            </div>
+          )}
+        </VerificationRow>
+      ) : (
+        <>
+          <VerificationRow>
+            <VerificationCodeField
+              label="인증 코드"
+              value={verificationCode}
+              onChange={(e) => setVerificationCode(e.target.value)}
+            />
+            <VerificationButton onClick={handleVerify} disabled={loading}>
+              <MdMarkEmailRead />
+              {loading ? <LoadingSpinner /> : "인증하기"}
+            </VerificationButton>
+          </VerificationRow>
           {codeError && <ErrorMessage>{codeError}</ErrorMessage>}
-        </VerificationCodeFieldContainer>
+        </>
       )}
     </VerificationContainer>
   );
 };
 
 const VerificationContainer = styled.div`
+  margin: 30px 0px 10px 0px;
+  padding: 5px;
+`;
+
+const VerificationRow = styled.div`
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
   align-items: center;
-  justify-content: left;
-  gap: 20px;
-  padding: 20px;
-  max-width: 400px;
-  margin: 0 auto;
-  background-color: #fff;
-  border-radius: 12px;
+  justify-content: flex-start;
+  gap: 25px;
 `;
 
 const VerificationButton = styled.button`
-  padding: 12px 20px;
-  font-size: 16px;
+  padding: 12px 15px;
+  font-size: 14px;
   font-weight: 600;
   color: white;
   background-color: ${(props) => props.theme.color.primary};
   border: none;
-  border-radius: 8px;
+  border-radius: 20px;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -128,42 +150,15 @@ const VerificationButton = styled.button`
   }
 
   svg {
-    font-size: 20px;
+    font-size: 16px;
   }
-`;
-
-const VerifyButton = styled.button`
-  padding: 12px 20px;
-  font-size: 16px;
-  font-weight: 600;
-  color: white;
-  background-color: ${(props) => props.theme.color.primary};
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-
-  &:hover {
-    background-color: ${(props) => props.theme.color.primaryHover};
-  }
-
-  &:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
-  }
-`;
-
-const VerificationCodeFieldContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  width: 100%;
 `;
 
 const ErrorMessage = styled.div`
   font-size: 14px;
   color: red;
-  margin-top: -10px;
-  text-align: center;
+  margin-top: 5px;
+  text-align: left;
 `;
 
 const LoadingSpinner = styled.div`

@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Form, TFormFieldProps } from "../../common/ui";
+import { useEffect, useState } from "react";
+import { Form, Loading, TFormFieldProps } from "../../common/ui";
 import {
   validateClubCategoty,
   validateClubName,
@@ -9,64 +9,25 @@ import {
   validateSchoolName,
 } from "../utils/utils";
 import { useNavigate } from "react-router-dom";
-import { POST } from "../../common/api/axios";
+import { GET, POST } from "../../common/api/axios";
+import { VerificationForm } from "./verification-form";
 
-const clubCategories = [
-  { label: "봉사분과", value: 1 },
-  { label: "사회교양분과", value: 2 },
-  { label: "연행예술분과", value: 3 },
-  { label: "종교분과", value: 4 },
-  { label: "체육분과", value: 5 },
-  { label: "학술분과", value: 6 },
-];
+type TCategoryData = {
+  categoryId: string;
+  categoryName: string;
+};
 
-const fields: TFormFieldProps[] = [
-  {
-    label: "동아리명",
-    value: "",
-    type: "text",
-    validate: validateClubName,
-    section: "동아리 정보",
-  },
-  {
-    label: "동아리 분류",
-    value: "",
-    type: "select",
-    validate: validateClubCategoty,
-    options: clubCategories,
-    section: "동아리 정보",
-  },
-  {
-    label: "아이디",
-    value: "",
-    type: "text",
-    validate: validateId,
-    section: "관리자 정보",
-  },
-  {
-    label: "비밀번호",
-    value: "",
-    type: "password",
-    validate: validatePassword,
-    section: "관리자 정보",
-  },
-  {
-    label: "학교",
-    value: "",
-    type: "text",
-    validate: validateSchoolName,
-    section: "학교 정보",
-    helpText: "정확한 학교명을 입력해주세요. (서강대X, 서강대학교O)",
-  },
-  {
-    label: "이메일",
-    value: "",
-    type: "email",
-    validate: validateEmail,
-    section: "학교 정보",
-    helpText: "학교 이메일로 입력해주세요",
-  },
-];
+type TOption = {
+  label: string;
+  value: string | number;
+};
+
+const mapCategoriesToOptions = (categories: TCategoryData[]): TOption[] => {
+  return categories.map((category) => ({
+    label: category.categoryName,
+    value: category.categoryId,
+  }));
+};
 
 export const ManagerSignupForm = () => {
   const navigate = useNavigate();
@@ -80,6 +41,88 @@ export const ManagerSignupForm = () => {
     비밀번호: "",
   });
 
+  const [category, setCategory] = useState<TCategoryData[]>();
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetch = async () => {
+      try {
+        setLoading(true);
+        const response = await GET("club/category");
+        if (response.isSuccess) {
+          setCategory(response.result);
+        } else {
+          throw new Error(response.message || "Failed to fetch posts");
+        }
+      } catch (err) {
+        console.log(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetch();
+  }, []);
+
+  if (loading || !category) {
+    return <Loading />;
+  }
+
+  const fields: TFormFieldProps[] = [
+    {
+      label: "동아리명",
+      value: formData["동아리명"],
+      type: "text",
+      validate: validateClubName,
+      section: "동아리 정보",
+    },
+    {
+      label: "동아리 분류",
+      value: formData["동아리 분류"],
+      type: "select",
+      validate: validateClubCategoty,
+      options: mapCategoriesToOptions(category),
+      section: "동아리 정보",
+    },
+    {
+      label: "아이디",
+      value: formData["아이디"],
+      type: "text",
+      validate: validateId,
+      section: "관리자 정보",
+    },
+    {
+      label: "비밀번호",
+      value: formData["비밀번호"],
+      type: "password",
+      validate: validatePassword,
+      section: "관리자 정보",
+    },
+    {
+      label: "학교",
+      value: formData["학교"],
+      type: "text",
+      validate: validateSchoolName,
+      section: "학교 인증 정보",
+      helpText: "정확한 학교명을 입력해주세요. (서강대X, 서강대학교O)",
+    },
+    {
+      label: "이메일",
+      value: formData["이메일"],
+      type: "email",
+      validate: validateEmail,
+      section: "학교 인증 정보",
+      helpText: "학교 이메일로 입력해주세요.",
+    },
+    {
+      label: "인증 코드",
+      value: formData["인증 코드"],
+      type: "verificationCode",
+      section: "학교 인증 정보",
+      helpText: "학교 이메일로 입력해주세요.",
+    },
+  ];
+
   const handleFormSubmit = async (values: Record<string, string | number>) => {
     if (step < 3) {
       setFormData((prevData) => ({ ...prevData, ...values }));
@@ -89,7 +132,7 @@ export const ManagerSignupForm = () => {
 
       try {
         const response = await POST("club/signup", {
-          name: completeData["이름"],
+          name: completeData["동아리명"],
           loginId: completeData["아이디"],
           password: completeData["비밀번호"],
           email: completeData["이메일"],
@@ -105,8 +148,6 @@ export const ManagerSignupForm = () => {
       } catch (error) {
         console.log(error);
       }
-
-      navigate("/login");
     }
   };
 
@@ -131,10 +172,10 @@ export const ManagerSignupForm = () => {
           }}
         />
       ) : step === 2 ? (
-        <Form
+        <VerificationForm
           title="관리자 회원가입"
-          fields={fields}
-          section="학교 정보"
+          fields={fields.filter((field) => field.section === "학교 인증 정보")}
+          section="학교 인증 정보"
           onSubmit={handleFormSubmit}
           submitLabel="다음"
           additionalLink={{

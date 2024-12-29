@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { styled } from "styled-components";
-import { FormFieldComponent } from "./form-field";
-import { Button } from "../button";
+import { Button, EmailField, TextField } from "../../common/ui";
+import { VerificationCodeForm } from "./verification-code-form";
 
 export type TFormFieldProps = {
   label: string;
@@ -12,6 +12,8 @@ export type TFormFieldProps = {
   section?: string;
   helpText?: string;
 };
+
+type TFormValues = Record<string, string | number>;
 
 type TAdditionalLink = {
   label: string;
@@ -28,7 +30,7 @@ type TFormProps = {
   additionalLink?: TAdditionalLink;
 };
 
-export const Form = ({
+export const VerificationForm = ({
   title,
   fields,
   section,
@@ -36,22 +38,18 @@ export const Form = ({
   submitLabel = "제출",
   additionalLink,
 }: TFormProps) => {
-  const [formValues, setFormValues] = useState<Record<string, string | number>>(
-    fields.reduce((acc, field) => {
-      acc[field.label] = field.value ?? "";
-      return acc;
-    }, {} as Record<string, string | number>)
+  const [formValues, setFormValues] = useState<TFormValues>(
+    fields.reduce((acc, field) => ({ ...acc, [field.label]: field.value }), {})
   );
   const [formErrors, setFormErrors] = useState<Record<string, string | null>>(
     {}
   );
   const [touched, setTouched] = useState<Record<string, boolean>>({});
 
+  const [isVerified, setIsVerified] = useState(false);
+
   const handleChange = (label: string, value: string | number) => {
-    setFormValues((prevValues) => ({
-      ...prevValues,
-      [label]: value,
-    }));
+    setFormValues((prev) => ({ ...prev, [label]: value }));
 
     if (!touched[label]) {
       setTouched((prevTouched) => ({
@@ -97,24 +95,39 @@ export const Form = ({
     }
   };
 
-  const sectionFields = fields.filter(
-    (field) => !section || field.section === section
-  );
-
   return (
     <Container>
       <FormWrapper>
         <FormTitle>{title}</FormTitle>
         <FormBody>
-          {sectionFields.map((field) => (
-            <FormFieldComponent
-              key={field.label}
-              field={field}
-              value={formValues[field.label]}
-              handleChange={handleChange}
-              error={touched[field.label] ? formErrors[field.label] : null}
-            />
-          ))}
+          <TextField
+            label={fields[0].label}
+            value={String(formValues[fields[0].label] || "")}
+            helpText={fields[0].helpText}
+            onChange={(e) => {
+              handleChange(fields[0].label, e.target.value);
+            }}
+            type="text"
+            error={
+              touched[fields[0].label] ? formErrors[fields[0].label] : null
+            }
+          />
+          <EmailField
+            label={fields[1].label}
+            value={String(formValues[fields[1].label] || "")}
+            helpText={fields[1].helpText}
+            onChange={(e) => {
+              handleChange(fields[1].label, e.target.value);
+            }}
+            error={
+              touched[fields[1].label] ? formErrors[fields[1].label] : null
+            }
+          />
+          <VerificationCodeForm
+            email={String(formValues["이메일"])}
+            school={String(formValues["학교"])}
+            onVerifySuccess={(success) => setIsVerified(success)}
+          />
         </FormBody>
 
         <FormFooter>
@@ -127,7 +140,15 @@ export const Form = ({
             size="full"
             variant="primary"
             type="submit"
+            disabled={!isVerified}
           />
+          {!isVerified && (
+            <div
+              style={{ color: "#6c757d", fontSize: "14px", marginTop: "10px" }}
+            >
+              인증을 완료해주세요!
+            </div>
+          )}
           {additionalLink && (
             <FooterLink
               href={additionalLink.href}

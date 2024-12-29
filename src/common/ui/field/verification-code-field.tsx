@@ -32,7 +32,7 @@ export const VerificationCodeField = ({
 const StyledTextField = styled.input<{
   $isError: boolean;
 }>`
-  width: calc(100% - 20px);
+  min-width: 200px;
   padding: 20px 10px;
   margin-bottom: 15px;
   border-radius: 8px;
