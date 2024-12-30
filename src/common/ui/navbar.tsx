@@ -12,6 +12,10 @@ export const Navbar = () => {
   const currentPath = window.location.pathname;
   const isActive = (path: string) => currentPath === path;
 
+  const storedAuthState = sessionStorage.getItem("authState");
+  const parsedAuthState = storedAuthState ? JSON.parse(storedAuthState) : null;
+  const isClubManager = parsedAuthState?.role === "club";
+
   return (
     <Container>
       <Left>
@@ -23,31 +27,36 @@ export const Navbar = () => {
           <img src={logoImg} alt="이너조인" />
           이너조인
         </Logo>
-        <NavLinks>
-          <NavLink
-            selected={isActive("/")}
-            onClick={() => {
-              navigate("/");
-            }}
-          >
-            카테고리
-          </NavLink>
-          <NavLink
-            selected={isActive("/my/application-manage")}
-            onClick={() => {
-              navigate("/my/application-manage");
-            }}
-          >
-            지원 관리하기
-          </NavLink>
-        </NavLinks>
+        {isClubManager ? (
+          <div />
+        ) : (
+          <NavLinks>
+            <NavLink
+              selected={isActive("/")}
+              onClick={() => {
+                navigate("/");
+              }}
+            >
+              카테고리
+            </NavLink>
+            <NavLink
+              selected={isActive("/my/application-manage")}
+              onClick={() => {
+                navigate("/my/application-manage");
+              }}
+            >
+              지원 관리하기
+            </NavLink>
+          </NavLinks>
+        )}
       </Left>
 
       <Right>
         {authState.isAuthenticated ? (
           <ProfileWrapper
             onClick={() => {
-              navigate("/my/info");
+              if (isClubManager) navigate("/owner/info");
+              else navigate("/my/info");
             }}
           >
             <ProfileImage src={profileImage} alt="프로필" />

@@ -24,6 +24,7 @@ import MeetEvaluate from "../../manager/pages/MeetEvaluate";
 import MeetArrange from "../../manager/pages/MeetArrange";
 import ApplyEdit from "../../owner/apply_edit/apply_edit";
 import { NotFoundPage } from "../pages/not-found-page";
+import OwnerPage from "../../manager/pages/OwnerPage";
 
 export const ROUTES = {
   LANDING: "/",
@@ -48,6 +49,7 @@ export const ROUTES = {
   SEND_EMAIL: "/email-send",
   MEET_EVALUATE: "meet-eval",
   MEET_ARRANGE: "meet-table",
+  OWNER: "/owner/info",
 };
 
 export const router = createBrowserRouter([
@@ -179,6 +181,15 @@ export const router = createBrowserRouter([
       <div>
         <GlobalStyle />
         <MeetArrange />
+      </div>
+    ),
+  },
+  {
+    path: ROUTES.OWNER,
+    element: (
+      <div>
+        <GlobalStyle />
+        <OwnerPage />
       </div>
     ),
   },

@@ -29,7 +29,9 @@ export const ManagerLoginForm = () => {
       if (response.isSuccess) {
         alert("로그인 성공");
 
-        login("club", { name: "" });
+        const result = response.result;
+
+        login("club", { name: result.name });
 
         navigate("/post-manage");
       } else {
