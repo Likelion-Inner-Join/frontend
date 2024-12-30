@@ -1,31 +1,49 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
+import { GET } from "../../common/api/axios";
+import { DELETE } from "../../common/api/axios";
+import HeaderBarComponent from "../../manager/HeaderBar";
 
 const ApplyManage = () => {
   const navigate = useNavigate();
   const [forms, setForms] = useState([]);
 
   // 로컬 스토리지에서 데이터 로드
+  // API에서 지원폼 데이터 로드
   useEffect(() => {
-    const loadForms = () => {
-      const savedForms = JSON.parse(localStorage.getItem("savedForms")) || [];
-      setForms(savedForms);
+    const fetchForms = async () => {
+      try {
+        const response = await GET("form"); // GET 요청
+        if (response.isSuccess) {
+          setForms(response.result);
+        } else {
+          console.error("지원폼 로드 실패:", response.message);
+        }
+      } catch (error) {
+        console.error("API 호출 에러:", error.message);
+      }
     };
 
-    loadForms();
-
-    // 로컬 스토리지 변경 감지 (다른 탭에서 수정된 경우)
-    window.addEventListener("storage", loadForms);
-    return () => window.removeEventListener("storage", loadForms);
+    fetchForms();
   }, []);
 
   // 폼 삭제
-  const deleteForm = (id) => {
+  const deleteForm = async (id) => {
     if (window.confirm("정말로 이 폼을 삭제하시겠습니까?")) {
-      const updatedForms = forms.filter((form) => form.id !== id);
-      localStorage.setItem("savedForms", JSON.stringify(updatedForms));
-      setForms(updatedForms);
+      try {
+        const response = await DELETE(`form/${id}`); // DELETE 요청
+        if (response.isSuccess) {
+          console.log("폼 삭제 성공:", response.message);
+          // 상태 업데이트
+          const updatedForms = forms.filter((form) => form.id !== id);
+          setForms(updatedForms);
+        } else {
+          console.error("폼 삭제 실패:", response.message);
+        }
+      } catch (error) {
+        console.error("API 호출 에러:", error.message);
+      }
     }
   };
 
@@ -46,8 +64,9 @@ const ApplyManage = () => {
 
   return (
     <Container>
+      <HeaderBarComponent />
       <Header>
-        <ClubLogo />
+        <ClubLogo src="/images/manager/mutsa.svg" alt="동아리 이미지" />
         <ClubSubTitle>중앙동아리</ClubSubTitle>
         <ClubName>멋쟁이사자처럼</ClubName>
         <ClubTags>
@@ -58,7 +77,7 @@ const ApplyManage = () => {
       </Header>
       <TabMenu>
         <Tab onClick={() => navigate("/post-manage")}>홍보글 작성</Tab>
-        <Tab active>지원폼 관리</Tab>
+        <Tab active={true}>지원폼 관리</Tab>
       </TabMenu>
       <ApplyButtonContainer>
         <ApplyButton onClick={() => navigate("/apply-form")}>
@@ -96,7 +115,8 @@ export default ApplyManage;
 const Container = styled.div`
   width: 80%;
   margin: 0 auto;
-  padding-top: 20px;
+  padding-top: 92px; /* HeaderBar 높이 + 여백 */
+
   font-family: Arial, sans-serif;
 `;
 
@@ -107,12 +127,13 @@ const Header = styled.div`
   padding: 20px 0;
 `;
 
-const ClubLogo = styled.div`
-  width: 128px;
-  height: 128px;
-  background-color: #ddd; /* 임시 로고 */
-  border-radius: 50%;
-  margin-bottom: 15px;
+const ClubLogo = styled.img`
+  width: 128px; /* 로고 크기 */
+  height: 128px; /* 로고 크기 */
+  border-radius: 50%; /* 원형 로고 */
+  object-fit: cover; /* 이미지 비율 유지 */
+  margin-bottom: 15px; /* 로고와 제목 사이 간격 */
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* 그림자 추가 */
 `;
 
 const ClubName = styled.h1`
@@ -149,13 +170,23 @@ const TabMenu = styled.div`
   width: 100%;
 `;
 
-const Tab = styled.div`
-  font-size: 16px;
-  font-weight: bold;
+const Tab = styled.div.attrs((props) => ({
+  className: props.active ? "active-tab" : "",
+}))`
   padding: 10px 20px;
   cursor: pointer;
-  color: ${(props) => (props.active ? "#B10D15" : "#888")};
-  border-bottom: ${(props) => (props.active ? "2px solid #B10D15" : "none")};
+  color: #000;
+  border-bottom: 2px solid transparent;
+
+  &.active-tab {
+    color: #b10d15;
+    border-bottom-color: #b10d15;
+    font-weight: bold;
+  }
+
+  &:hover {
+    background-color: #f8f9fa;
+  }
 `;
 const ApplyButtonContainer = styled.div`
   display: flex;

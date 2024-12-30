@@ -10,7 +10,7 @@ const Checkbox = ({ questionData, updateQuestion }) => {
   ); // 질문 설명 상태
 
   useEffect(() => {
-    setOptions(questionData.options || [""]);
+    setOptions(questionData.list || [""]); // 'list' 키로 옵션 데이터 처리
     setQuestion(questionData.question || "");
     setDescription(questionData.description || "");
   }, [questionData]);
@@ -37,7 +37,7 @@ const Checkbox = ({ questionData, updateQuestion }) => {
     const updatedOptions = [...options];
     updatedOptions[index] = value;
     setOptions(updatedOptions);
-    updateQuestion(questionData.id, { list: updatedOptions }); // 옵션을 list로 전달
+    updateQuestion(questionData.id, { list: updatedOptions }); // 'list'로 데이터 전달
   };
 
   const addOption = () => {
@@ -47,13 +47,13 @@ const Checkbox = ({ questionData, updateQuestion }) => {
     }
     const updatedOptions = [...options, ""];
     setOptions(updatedOptions);
-    updateQuestion(questionData.id, { options: updatedOptions });
+    updateQuestion(questionData.id, { list: updatedOptions }); // 'list'로 전달
   };
 
   const removeOption = (index) => {
     const updatedOptions = options.filter((_, i) => i !== index);
     setOptions(updatedOptions);
-    updateQuestion(questionData.id, { options: updatedOptions });
+    updateQuestion(questionData.id, { list: updatedOptions }); // 'list'로 전달
   };
 
   return (

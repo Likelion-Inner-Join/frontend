@@ -2,6 +2,7 @@ import React, { useState, useContext, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { PostContext } from "../post_context/post_context";
+import { POST } from "../../common/api/axios";
 
 const PostWrite = () => {
   const navigate = useNavigate();
@@ -67,59 +68,80 @@ const PostWrite = () => {
   //   navigate("/post-manage");
   // };
 
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+
+  //   // 마감일과 마감 시간이 제대로 입력되었는지 확인
+  //   if (!isOpenRecruitment && (!deadline || !hour || !minute)) {
+  //     setPopupMessage(
+  //       "마감일과 마감 시간을 입력하거나 상시모집을 선택해주세요."
+  //     );
+  //     setShowPopup(true);
+  //     return;
+  //   }
+
+  //   // 폼 데이터 준비
+  //   const newPost = {
+  //     title,
+  //     date: new Date().toLocaleDateString(),
+  //     deadline: isOpenRecruitment
+  //       ? "상시모집"
+  //       : `${deadline} ${period} ${hour}:${minute}`,
+  //     description,
+  //     isOpenRecruitment,
+  //   };
+
+  //   // API에 데이터 전송
+  //   try {
+  //     const response = await POST("/posts", formData, true); // multipart/form-data 지원
+  //     if (response.isSuccess) {
+  //       // 요청 성공 시, 포스트 관리 페이지로 이동
+  //       navigate("/post-manage");
+  //     } else {
+  //       // 실패한 경우 팝업 메시지 표시
+  //       setPopupMessage(response.message || "홍보글 작성에 실패했습니다.");
+  //       setShowPopup(true);
+  //     }
+  //   } catch (error) {
+  //     // 네트워크 오류 등 발생 시 처리
+  //     console.error("API 호출 에러:", error);
+  //     setPopupMessage("서버와의 연결에 실패했습니다.");
+  //     setShowPopup(true);
+  //   }
+  // };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // 마감일과 마감 시간이 제대로 입력되었는지 확인
-    if (!isOpenRecruitment && (!deadline || !hour || !minute)) {
-      setPopupMessage(
-        "마감일과 마감 시간을 입력하거나 상시모집을 선택해주세요."
-      );
-      setShowPopup(true);
-      return;
-    }
-
-    // 폼 데이터 준비
     const newPost = {
       title,
-      date: new Date().toLocaleDateString(),
-      deadline: isOpenRecruitment
-        ? "상시모집"
+      content: description,
+      startTime: isOpenRecruitment
+        ? null
         : `${deadline} ${period} ${hour}:${minute}`,
-      description,
-      isOpenRecruitment,
+      endTime: isOpenRecruitment
+        ? null
+        : `${deadline} ${period} ${hour}:${minute}`,
+      recruitmentStatus: isOpenRecruitment ? "OPEN" : "CLOSED",
+      recruitmentType: "FORM_AND_MEETING",
+      images: [], // API에서 처리되는 이미지는 별도 로직 필요
     };
 
-    // FormData 객체를 사용하여 multipart/form-data 형식으로 데이터 구성
-    const formData = new FormData();
-    formData.append("post", JSON.stringify(newPost)); // post 객체는 JSON 문자열로 전송
-    images.forEach((image) => {
-      formData.append("images", image); // 이미지 파일들 추가
-    });
-
-    // API에 데이터 전송
     try {
-      const response = await fetch("/posts", {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-        },
-        body: formData,
+      const formData = new FormData();
+      formData.append("post", JSON.stringify(newPost));
+      images.forEach((image) => {
+        formData.append("images", image);
       });
 
-      const data = await response.json();
-      if (data.isSuccess) {
-        // 요청이 성공하면 포스트 관리 페이지로 이동
-        navigate("/post-manage");
+      const response = await POST("/posts", formData); // POST API 호출
+      if (response.isSuccess) {
+        navigate("/post-manage"); // 성공 시 페이지 이동
       } else {
-        // 실패한 경우 팝업 메시지 표시
-        setPopupMessage(data.message);
-        setShowPopup(true);
+        console.error("포스트 저장 실패:", response.message);
       }
     } catch (error) {
-      // 네트워크 오류 등 발생 시 처리
-      setPopupMessage("서버와의 연결에 실패했습니다.");
-      setShowPopup(true);
+      console.error("API 호출 에러:", error.message);
     }
   };
 
@@ -227,7 +249,7 @@ const PostWrite = () => {
           <OpenRecruitmentButton
             type="button"
             onClick={() => setIsOpenRecruitment((prev) => !prev)}
-            active={isOpenRecruitment}
+            active={isOpenRecruitment} // 여전히 props로 전달됨
           >
             상시모집
           </OpenRecruitmentButton>
@@ -477,7 +499,10 @@ const Overlay = styled.div`
   z-index: 999;
 `;
 
-const OpenRecruitmentButton = styled.button`
+const OpenRecruitmentButton = styled.button.attrs((props) => ({
+  // active 속성을 DOM으로 전달하지 않음
+  "data-active": props.active,
+}))`
   margin-left: 15px;
   background-color: ${(props) => (props.active ? "#B10D15" : "#F0F0F0")};
   color: ${(props) => (props.active ? "white" : "black")};

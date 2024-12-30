@@ -1,8 +1,9 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import { PostContext } from "../post_context/post_context";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
-
+import { GET, DELETE } from "../../common/api/axios";
+import HeaderBarComponent from "../../manager/HeaderBar";
 const PostManage = () => {
   const navigate = useNavigate();
   // const [posts, setPosts] = useState(useContext(PostContext).posts);
@@ -14,6 +15,35 @@ const PostManage = () => {
   const [viewMode, setViewMode] = useState("grid");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [postToDelete, setPostToDelete] = useState(null);
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        const clubName = encodeURIComponent("멋쟁이사자처럼");
+        const response = await GET(`posts?clubName=${clubName}`);
+        if (response.isSuccess) {
+          const postsData = response.result.map((post) => ({
+            postId: post.postId,
+            title: post.title,
+            content: post.content,
+            images: post.image.map((img) => img.imageUrl),
+            createdAt: post.createdAt,
+            startTime: post.startTime,
+            endTime: post.endTime,
+            recruitmentStatus: post.recruitmentStatus,
+            recruitmentType: post.recruitmentType,
+          }));
+          setPosts(postsData);
+        } else {
+          console.error("포스트 로드 실패:", response.message);
+        }
+      } catch (error) {
+        console.error("API 호출 에러:", error.message);
+      }
+    };
+
+    fetchPosts();
+  }, []);
 
   const calculateRemainingDays = (deadline, isOpenRecruitment) => {
     if (isOpenRecruitment) return "상시모집";
@@ -52,10 +82,26 @@ const PostManage = () => {
     setShowDeleteModal(true);
   };
 
-  const confirmDelete = () => {
-    setPosts(posts.filter((post) => post.id !== postToDelete));
-    setShowDeleteModal(false);
-    setPostToDelete(null);
+  // const confirmDelete = () => {
+  //   setPosts(posts.filter((post) => post.id !== postToDelete));
+  //   setShowDeleteModal(false);
+  //   setPostToDelete(null);
+  // };
+  const confirmDelete = async () => {
+    try {
+      const response = await DELETE(`posts/${postToDelete}`); // DELETE API 호출
+      if (response.isSuccess) {
+        setPosts((prevPosts) =>
+          prevPosts.filter((post) => post.postId !== postToDelete)
+        );
+        setShowDeleteModal(false);
+        setPostToDelete(null);
+      } else {
+        console.error("포스트 삭제 실패:", response.message);
+      }
+    } catch (error) {
+      console.error("API 호출 에러:", error.message);
+    }
   };
 
   const cancelDelete = () => {
@@ -94,8 +140,18 @@ const PostManage = () => {
 
   return (
     <Container>
+      {/* <HeaderBar>
+        <LogoWrapper>
+          <Logo src="/images/manager/logo.svg" alt="Logo" />
+        </LogoWrapper>
+        <ClubInfo>
+          <CircleImage src="/images/manager/mutsa.svg" alt="동아리 이미지" />
+          <HeaderClubName>멋쟁이 사자처럼</HeaderClubName>
+        </ClubInfo>
+      </HeaderBar> */}
+      <HeaderBarComponent />
       <Header>
-        <ClubLogo />
+        <ClubLogo src="/images/manager/mutsa.svg" alt="동아리 이미지" />
         <ClubSubTitle>중앙동아리</ClubSubTitle>
         <ClubName>멋쟁이사자처럼</ClubName>
         <ClubTags>
@@ -271,7 +327,7 @@ export default PostManage;
 const Container = styled.div`
   width: 80%;
   margin: 0 auto;
-  padding-top: 20px;
+  padding-top: 92px; /* HeaderBar 높이 + 여백 */
   font-family: Arial, sans-serif;
 `;
 
@@ -282,12 +338,13 @@ const Header = styled.div`
   padding: 20px 0;
 `;
 
-const ClubLogo = styled.div`
-  width: 128px;
-  height: 128px;
-  background-color: #ddd; /* 임시 로고 */
-  border-radius: 50%;
-  margin-bottom: 15px;
+const ClubLogo = styled.img`
+  width: 128px; /* 로고 크기 */
+  height: 128px; /* 로고 크기 */
+  border-radius: 50%; /* 원형 로고 */
+  object-fit: cover; /* 이미지 비율 유지 */
+  margin-bottom: 15px; /* 로고와 제목 사이 간격 */
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* 그림자 추가 */
 `;
 
 const ClubName = styled.h1`

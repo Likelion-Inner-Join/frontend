@@ -1,12 +1,12 @@
 import React, { useState, useRef, useEffect } from "react";
 import styled from "styled-components";
 import RequiredToggle from "../RequiredToggle";
-import MultipleChoice from "./MultipleChoice";
+import Radio from "./MultipleChoice";
 import Checkbox from "./Checkbox";
 import ShortAnswer from "./ShortAnswer";
 import EssayQuestion from "./EssayQuestion";
-import DateQuestion from "./DateQuestion";
-import TimeQuestion from "./TimeQuestion";
+import Date from "./DateQuestion";
+import Time from "./TimeQuestion";
 
 const QuestionBox = ({ questionData, updateQuestion, deleteQuestion }) => {
   const [showTypeDropdown, setShowTypeDropdown] = useState(false);
@@ -28,12 +28,9 @@ const QuestionBox = ({ questionData, updateQuestion, deleteQuestion }) => {
 
   const renderQuestionType = () => {
     switch (questionData.type) {
-      case "multiple_choice":
+      case "radio":
         return (
-          <MultipleChoice
-            questionData={questionData}
-            updateQuestion={updateQuestion}
-          />
+          <Radio questionData={questionData} updateQuestion={updateQuestion} />
         );
       case "checkbox":
         return (
@@ -42,14 +39,14 @@ const QuestionBox = ({ questionData, updateQuestion, deleteQuestion }) => {
             updateQuestion={updateQuestion}
           />
         );
-      case "short_answer":
+      case "shortAnswer":
         return (
           <ShortAnswer
             questionData={questionData}
             updateQuestion={updateQuestion}
           />
         );
-      case "paragraph":
+      case "longAnswer":
         return (
           <EssayQuestion
             questionData={questionData}
@@ -58,17 +55,11 @@ const QuestionBox = ({ questionData, updateQuestion, deleteQuestion }) => {
         );
       case "date":
         return (
-          <DateQuestion
-            questionData={questionData}
-            updateQuestion={updateQuestion}
-          />
+          <Date questionData={questionData} updateQuestion={updateQuestion} />
         );
       case "time":
         return (
-          <TimeQuestion
-            questionData={questionData}
-            updateQuestion={updateQuestion}
-          />
+          <Time questionData={questionData} updateQuestion={updateQuestion} />
         );
       default:
         return null;
@@ -125,20 +116,16 @@ const QuestionBox = ({ questionData, updateQuestion, deleteQuestion }) => {
             </TypeButton>
             {showTypeDropdown && (
               <Dropdown>
-                <DropdownOption
-                  onClick={() => handleTypeChange("multiple_choice")}
-                >
+                <DropdownOption onClick={() => handleTypeChange("radio")}>
                   객관식
                 </DropdownOption>
                 <DropdownOption onClick={() => handleTypeChange("checkbox")}>
                   체크박스
                 </DropdownOption>
-                <DropdownOption
-                  onClick={() => handleTypeChange("short_answer")}
-                >
+                <DropdownOption onClick={() => handleTypeChange("shortAnswer")}>
                   단답형
                 </DropdownOption>
-                <DropdownOption onClick={() => handleTypeChange("paragraph")}>
+                <DropdownOption onClick={() => handleTypeChange("longAnswer")}>
                   서술형
                 </DropdownOption>
                 <DropdownOption onClick={() => handleTypeChange("date")}>
@@ -187,13 +174,13 @@ const QuestionBox = ({ questionData, updateQuestion, deleteQuestion }) => {
 
 const getTypeLabel = (type) => {
   switch (type) {
-    case "multiple_choice":
+    case "radio":
       return "객관식";
     case "checkbox":
       return "체크박스";
-    case "short_answer":
+    case "shortAnswer":
       return "단답형";
-    case "paragraph":
+    case "longAnswer":
       return "서술형";
     case "date":
       return "날짜";

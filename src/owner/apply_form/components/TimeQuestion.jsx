@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 
-const TimeQuestion = ({ questionData, updateQuestion }) => {
+const Time = ({ questionData, updateQuestion }) => {
   const [question, setQuestion] = useState(questionData.question || ""); // 질문 내용 상태
   const [description, setDescription] = useState(
     questionData.description || ""
@@ -58,7 +58,7 @@ const TimeQuestion = ({ questionData, updateQuestion }) => {
   );
 };
 
-export default TimeQuestion;
+export default Time;
 
 // 스타일 컴포넌트
 const QuestionContainer = styled.div`

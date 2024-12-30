@@ -2,50 +2,105 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
 import QuestionBox from "../../owner/apply_form/components/QuestionBox";
+import { GET, PUT } from "../../common/api/axios";
 
 const ApplyEdit = () => {
   const navigate = useNavigate();
-  const { formId } = useParams(); // 수정 시 사용할 폼 ID
+  const { formId } = useParams(); // 수정할 폼의 ID
   const [formTitle, setFormTitle] = useState(""); // 폼 제목
   const [formDescription, setFormDescription] = useState(""); // 폼 설명
-  const [formContent, setFormContent] = useState([]); // 폼의 질문 및 내용
+  const [formContent, setFormContent] = useState([]); // 폼의 질문 데이터
+  const [isLoading, setIsLoading] = useState(true); // 로딩 상태
+  const [popupMessage, setPopupMessage] = useState(""); // 팝업 메시지 상태
+  const [showPopup, setShowPopup] = useState(false); // 팝업 표시 여부
 
-  // 로컬 스토리지에서 폼 데이터 로드
+  // 서버에서 폼 데이터 불러오기
   useEffect(() => {
-    if (formId) {
-      const savedForms = JSON.parse(localStorage.getItem("savedForms")) || [];
-      const formToEdit = savedForms.find(
-        (form) => form.id === formId.toString() // 형변환으로 ID 매칭
-      );
-      if (formToEdit) {
-        setFormTitle(formToEdit.title); // 제목 설정
-        setFormDescription(formToEdit.description); // 설명 설정
-        setFormContent(formToEdit.content || []); // 질문 및 내용 설정
-      } else {
-        console.error("해당 ID의 폼 데이터를 찾을 수 없습니다.");
+    const fetchForm = async () => {
+      try {
+        const response = await GET(`form/${formId}`); // 조회 API 요청
+        if (response.isSuccess) {
+          const formData = response.result;
+          setFormTitle(formData.title); // 제목 설정
+          setFormDescription(formData.description); // 설명 설정
+          setFormContent(
+            formData.questionList.map((item) => ({
+              id: item.questionId.toString(), // 고유 ID로 questionId 사용
+              number: item.number,
+              question: item.question,
+              type: item.type.toLowerCase(), // 타입을 소문자로 변환
+              options: item.list || [], // 옵션 리스트
+            }))
+          );
+        } else {
+          console.error("폼 조회 실패:", response.message);
+          setPopupMessage("폼 데이터를 불러올 수 없습니다.");
+          setShowPopup(true);
+        }
+      } catch (error) {
+        console.error("API 호출 에러:", error.message);
+        setPopupMessage("서버와의 연결에 실패했습니다.");
+        setShowPopup(true);
       }
-    }
-  }, [formId]);
-
-  // 폼 저장
-  const saveForm = () => {
-    const savedForms = JSON.parse(localStorage.getItem("savedForms")) || [];
-    const updatedForm = {
-      id: formId, // 기존 ID 유지
-      title: formTitle,
-      description: formDescription,
-      content: formContent,
     };
 
-    // 폼 업데이트
-    const updatedForms = savedForms.map((form) =>
-      form.id === formId ? updatedForm : form
-    );
+    if (formId) fetchForm(); // formId가 있을 때만 호출
+  }, [formId]); // formId가 변경될 때마다 조회
 
-    localStorage.setItem("savedForms", JSON.stringify(updatedForms)); // 로컬 스토리지에 저장
-    navigate("/apply-manage"); // 관리 페이지로 이동
+  // 폼 저장
+  const saveForm = async () => {
+    if (!formTitle.trim()) {
+      setPopupMessage("폼 제목을 입력해주세요.");
+      setShowPopup(true);
+      return;
+    }
+
+    if (formContent.length === 0) {
+      setPopupMessage("폼에 최소 한 개의 질문을 추가해주세요.");
+      setShowPopup(true);
+      return;
+    }
+
+    for (const question of formContent) {
+      if (!question.question.trim()) {
+        setPopupMessage("모든 질문에 제목을 입력해주세요.");
+        setShowPopup(true);
+        return;
+      }
+    }
+
+    try {
+      const formData = {
+        title: formTitle,
+        description: formDescription,
+        questionList: formContent.map((item, index) => ({
+          number: index + 1,
+          question: item.question,
+          type: item.type.toUpperCase(),
+          list: item.options || [],
+        })),
+      };
+
+      const response = await PUT(`form/${formId}`, formData); // PUT 요청
+      if (response.isSuccess) {
+        navigate("/apply-manage"); // 저장 후 관리 페이지로 이동
+      } else {
+        setPopupMessage(response.message || "폼 저장에 실패했습니다.");
+        setShowPopup(true);
+      }
+    } catch (error) {
+      console.error("API 호출 에러:", error.message);
+      setPopupMessage("폼 저장 중 오류가 발생했습니다.");
+      setShowPopup(true);
+    }
   };
 
+  // 팝업 닫기
+  const closePopup = () => {
+    setShowPopup(false);
+  };
+
+  // 새로운 질문 추가
   const addQuestion = (type) => {
     setFormContent((prev) => [
       ...prev,
@@ -53,27 +108,12 @@ const ApplyEdit = () => {
         id: Date.now().toString(),
         type,
         question: "",
-        description: "",
         options: type === "multiple_choice" || type === "checkbox" ? [""] : [],
       },
     ]);
   };
 
-  // 경계선 추가
-  const addBorder = () => {
-    setFormContent((prev) => [
-      ...prev,
-      { id: Date.now().toString(), type: "border" },
-    ]);
-  };
-
-  // 설명글 추가
-  const addDescription = () => {
-    setFormContent((prev) => [
-      ...prev,
-      { id: Date.now().toString(), type: "description", text: "" },
-    ]);
-  };
+  // 항목 이동
   const moveItemUp = (index) => {
     if (index === 0) return; // 첫 번째 항목은 위로 이동 불가
     const updatedContent = [...formContent];
@@ -110,14 +150,15 @@ const ApplyEdit = () => {
             <TitleInput
               type="text"
               placeholder="지원폼 제목을 입력해주세요"
-              value={formTitle}
-              onChange={(e) => setFormTitle(e.target.value)}
+              value={formTitle} // 조회된 제목
+              onChange={(e) => setFormTitle(e.target.value)} // 수정 가능
             />
+
             <DescriptionInput
               type="text"
               placeholder="운영진이 확인하는 지원폼의 한 줄 메모를 입력해주세요"
-              value={formDescription}
-              onChange={(e) => setFormDescription(e.target.value)}
+              value={formDescription} // 조회된 설명
+              onChange={(e) => setFormDescription(e.target.value)} // 수정 가능
             />
           </HeaderLeft>
           <SaveButton onClick={saveForm}>저장하기</SaveButton>
@@ -127,101 +168,53 @@ const ApplyEdit = () => {
             <QuestionList>
               {formContent.map((item, index) => (
                 <ItemContainer key={item.id}>
-                  {/* 항목 이동 버튼 */}
                   <MoveButtons>
                     <ArrowButton
                       onClick={() => moveItemUp(index)}
-                      disabled={index === 0} // 첫 번째 항목 비활성화
+                      disabled={index === 0}
                     >
                       ▲
                     </ArrowButton>
                     <ArrowButton
                       onClick={() => moveItemDown(index)}
-                      disabled={index === formContent.length - 1} // 마지막 항목 비활성화
+                      disabled={index === formContent.length - 1}
                     >
                       ▼
                     </ArrowButton>
                   </MoveButtons>
-
-                  {/* 항목 컨텐츠 */}
                   <ContentContainer>
-                    {/* 경계선 처리 */}
-                    {item.type === "border" ? (
-                      <BorderContainer>
-                        <BorderLine />
-                        <DeleteBorderButton onClick={() => deleteItem(item.id)}>
-                          X
-                        </DeleteBorderButton>
-                      </BorderContainer>
-                    ) : item.type === "description" ? (
-                      /* 설명글 처리 */
-                      <DescriptionContainer>
-                        <DescriptionHeader>
-                          <DescriptionTitle>설명글</DescriptionTitle>
-                          <DeleteButton onClick={() => deleteItem(item.id)}>
-                            삭제
-                          </DeleteButton>
-                        </DescriptionHeader>
-                        <DescriptionContent>
-                          <Input
-                            type="text"
-                            value={item.text || ""}
-                            placeholder="설명글 입력"
-                            onChange={(e) =>
-                              setFormContent((prev) =>
-                                prev.map((q) =>
-                                  q.id === item.id
-                                    ? { ...q, text: e.target.value }
-                                    : q
-                                )
-                              )
-                            }
-                          />
-                        </DescriptionContent>
-                      </DescriptionContainer>
-                    ) : (
-                      /* 질문 처리 */
-                      <QuestionBox
-                        questionData={item}
-                        updateQuestion={(updatedData) =>
-                          setFormContent((prev) =>
-                            prev.map((q) =>
-                              q.id === item.id ? { ...q, ...updatedData } : q
-                            )
-                          )
-                        }
-                        deleteQuestion={(id) =>
-                          setFormContent((prev) =>
-                            prev.filter((q) => q.id !== id)
-                          )
-                        }
-                      />
-                    )}
+                    <QuestionBox
+                      questionData={item}
+                      updateQuestion={updateQuestion}
+                      deleteQuestion={deleteItem}
+                    />
                   </ContentContainer>
                 </ItemContainer>
               ))}
             </QuestionList>
           </LeftContent>
           <RightPanel>
-            <ActionButton onClick={() => addQuestion("multiple_choice")}>
-              <Icon>?</Icon> 질문 추가
-            </ActionButton>
-            <ActionButton onClick={addBorder}>
-              <Icon>+</Icon> 경계선 추가
-            </ActionButton>
-            <ActionButton onClick={addDescription}>
-              <Icon>≡</Icon> 설명글 추가
+            <ActionButton onClick={() => addQuestion("radio")}>
+              질문 추가
             </ActionButton>
           </RightPanel>
         </MainContent>
       </Container>
+
+      {showPopup && (
+        <PopupOverlay onClick={closePopup}>
+          <Popup>
+            <PopupMessage>{popupMessage}</PopupMessage>
+            <ClosePopupButton onClick={closePopup}>확인</ClosePopupButton>
+          </Popup>
+        </PopupOverlay>
+      )}
     </Page>
   );
 };
 
 export default ApplyEdit;
 
-// Styled components는 apply-form.jsx와 동일
 const Page = styled.div`
   background-color: #fcfafa;
   min-height: 100vh;
@@ -465,4 +458,52 @@ const ArrowButton = styled.button`
 
 const ContentContainer = styled.div`
   flex: 1;
+`;
+
+const PopupOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+`;
+
+// 팝업 컨테이너
+const Popup = styled.div`
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  max-width: 400px;
+  width: 100%;
+`;
+
+// 팝업 메시지
+const PopupMessage = styled.p`
+  font-size: 16px;
+  color: #333;
+  margin-bottom: 20px;
+  text-align: center;
+`;
+
+// 닫기 버튼
+const ClosePopupButton = styled.button`
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  display: block;
+  margin: 0 auto;
+
+  &:hover {
+    background: #0056b3;
+  }
 `;

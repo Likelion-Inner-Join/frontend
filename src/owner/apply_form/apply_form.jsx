@@ -2,6 +2,9 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
 import QuestionBox from "./components/QuestionBox";
+import { POST } from "../../common/api/axios";
+import { DELETE } from "../../common/api/axios";
+import { GET } from "../../common/api/axios";
 
 const ApplyForm = () => {
   const navigate = useNavigate();
@@ -55,7 +58,6 @@ const ApplyForm = () => {
       }
     }
 
-    // 유효성 검증 완료 후 저장
     await handleSaveForm();
   };
 
@@ -72,15 +74,11 @@ const ApplyForm = () => {
     };
 
     try {
-      const response = await fetch("/form", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
+      const result = await POST("form", {
+        title: formData["title"],
+        description: formData["description"],
+        questionList: formData["questionList"],
       });
-
-      const result = await response.json();
 
       if (result.isSuccess) {
         console.log("폼 저장 성공:", result.result);
@@ -125,12 +123,12 @@ const ApplyForm = () => {
   // };
 
   // 설명글 추가
-  const addDescription = () => {
-    setFormContent((prev) => [
-      ...prev,
-      { id: Date.now().toString(), type: "description", text: "" },
-    ]);
-  };
+  // const addDescription = () => {
+  //   setFormContent((prev) => [
+  //     ...prev,
+  //     { id: Date.now().toString(), type: "description", text: "" },
+  //   ]);
+  // };
 
   // 항목을 위로 이동
   const moveItemUp = (index) => {
@@ -255,12 +253,12 @@ const ApplyForm = () => {
             </QuestionList>
           </LeftContent>
           <RightPanel>
-            <ActionButton onClick={() => addQuestion("multiple_choice")}>
+            <ActionButton onClick={() => addQuestion("radio")}>
               질문 추가
             </ActionButton>
 
             {/* <ActionButton onClick={addBorder}>경계선 추가</ActionButton> */}
-            <ActionButton onClick={addDescription}>설명글 추가</ActionButton>
+            {/* <ActionButton onClick={addDescription}>설명글 추가</ActionButton> */}
           </RightPanel>
         </MainContent>
       </Container>

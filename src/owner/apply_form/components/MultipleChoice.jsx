@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 
-const MultipleChoice = ({ questionData, updateQuestion }) => {
+const Radio = ({ questionData, updateQuestion }) => {
   const [options, setOptions] = useState(questionData.options || ["", ""]);
   const [question, setQuestion] = useState(questionData.question || ""); // 질문 내용 상태
   const [description, setDescription] = useState(
@@ -104,7 +104,7 @@ const MultipleChoice = ({ questionData, updateQuestion }) => {
   );
 };
 
-export default MultipleChoice;
+export default Radio;
 
 // 스타일 컴포넌트
 const Container = styled.div`
