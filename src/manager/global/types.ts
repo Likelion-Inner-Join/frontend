@@ -89,3 +89,14 @@ export interface MeetingTimesType {
     meetingEndTime: string;
   }[];
 }
+
+export interface ClubInfoType {
+  categoryId: number;
+  categoryName: string;
+  clubId: number;
+  email: string | null;
+  id: string;
+  imageUrl: string;
+  name: string;
+  school: string | null;
+}
