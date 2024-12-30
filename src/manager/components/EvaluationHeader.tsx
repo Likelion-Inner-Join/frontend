@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import styled from "styled-components";
 import { PostInfoType } from "../global/types";
-import { GET } from "../../common/api/axios";
+import { GET, PATCH } from "../../common/api/axios";
 import { useNavigate } from "react-router-dom";
 
 interface EvaluationHeaderProps {
@@ -108,6 +108,20 @@ const EvaluationHeader = ({ status }: EvaluationHeaderProps) => {
     }
   };
 
+  const resetRecruitStatus = async (status: string) => {
+    try {
+      const res = await PATCH(`posts/1`, { recruitmentStatus: status });
+
+      if (res.isSuccess) {
+        navigate("/doc-eval");
+      } else {
+        console.log(res.message);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <Wrapper>
       <ProgressBar
@@ -139,6 +153,11 @@ const EvaluationHeader = ({ status }: EvaluationHeaderProps) => {
                 </React.Fragment>
               );
             })}
+            <img
+              width="10px"
+              src="/images/manager/check.svg"
+              onClick={() => resetRecruitStatus("OPEN")}
+            />
           </Stage>
         ) : (
           <Stage hovered={isHovered}>
