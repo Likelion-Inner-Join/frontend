@@ -18,7 +18,6 @@ const DocEvaluate = () => {
   const [failList, setFailList] = useState<ApplicantType[]>([]);
   const [postInfo, setPostInfo] = useState<PostInfoType>();
   const [postId, setPostId] = useState<number>();
-  const [showNavbar, setShowNavbar] = useState(false);
   const navigate = useNavigate();
 
   const getApplicantList = async () => {
@@ -54,23 +53,6 @@ const DocEvaluate = () => {
     }
   };
 
-  const handleMouseMove = (event: MouseEvent) => {
-    if (event.clientX < 400 && event.clientY < 30) {
-      setShowNavbar(true);
-    } else if (event.clientX > 400 && event.clientY < 100) {
-      setShowNavbar(true);
-    } else {
-      setShowNavbar(false);
-    }
-  };
-
-  useEffect(() => {
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-    };
-  }, []);
-
   useEffect(() => {
     getApplicantList();
     getPostDetails();
@@ -90,11 +72,8 @@ const DocEvaluate = () => {
 
   return (
     <Wrapper>
-      <NavbarWrapper show={showNavbar}>
-        {" "}
-        <Navbar />
-      </NavbarWrapper>
-      <EvaluateWrapper show={showNavbar}>
+      <Navbar />
+      <EvaluateWrapper>
         <ApplicantList
           data1={applicantList}
           data2={postInfo?.recruitingList || []}
@@ -129,15 +108,12 @@ const DocEvaluate = () => {
             <div>
               <h3>합격률</h3>
               <p>
-                {passList.length + failList.length + restList.length > 0 ?
-                  (
-                    Math.round(
+                {passList.length + failList.length + restList.length > 0
+                  ? Math.round(
                       (passList.length * 100) /
-                      (passList.length + failList.length + restList.length)
+                        (passList.length + failList.length + restList.length)
                     )
-                  ) :
-                  0
-                }
+                  : 0}
               </p>
               <h3>%</h3>
             </div>
@@ -185,21 +161,10 @@ const Wrapper = styled.div`
   background-color: #fff;
 `;
 
-const NavbarWrapper = styled.div<{ show: boolean }>`
-  background-color: #fff;
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  height: ${({ show }) => (show ? "60px" : "0px")};
-  overflow: hidden;
-  transition: height 0.3s ease-in-out;
-`;
-
-const EvaluateWrapper = styled.div<{ show: boolean }>`
+const EvaluateWrapper = styled.div`
   display: flex;
   width: 100vw;
-  height: ${({ show }) => (show ? "calc(100vh - 60px)" : "100vh")};
-  transition: height 0.3s ease-in-out;
+  height: "100vh";
   background-color: #fff;
 `;
 

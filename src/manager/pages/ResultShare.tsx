@@ -18,7 +18,6 @@ const ResultShare = () => {
   const [isShared, setIsShared] = useState(false);
   const [postInfo, setPostInfo] = useState<PostInfoType>();
   const [resultType, setResultType] = useState<String>("");
-  const [showNavbar, setShowNavbar] = useState(false);
   const navigate = useNavigate();
 
   const getApplicantList = async () => {
@@ -72,23 +71,6 @@ const ResultShare = () => {
     }
   };
 
-  const handleMouseMove = (event: MouseEvent) => {
-    if (event.clientX < 400 && event.clientY < 30) {
-      setShowNavbar(true);
-    } else if (event.clientX > 400 && event.clientY < 100) {
-      setShowNavbar(true);
-    } else {
-      setShowNavbar(false);
-    }
-  };
-
-  useEffect(() => {
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-    };
-  }, []);
-
   useEffect(() => {
     getApplicantList();
     getPostDetails();
@@ -115,11 +97,8 @@ const ResultShare = () => {
 
   return (
     <Wrapper>
-      <NavbarWrapper show={showNavbar}>
-        {" "}
-        <Navbar />
-      </NavbarWrapper>
-      <EvaluateWrapper show={showNavbar}>
+      <Navbar />
+      <EvaluateWrapper>
         <ApplicantList
           data1={applicantList}
           data2={postInfo?.recruitingList || []}
@@ -199,21 +178,10 @@ const Wrapper = styled.div`
   background-color: #fff;
 `;
 
-const NavbarWrapper = styled.div<{ show: boolean }>`
-  background-color: #fff;
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  height: ${({ show }) => (show ? "60px" : "0px")};
-  overflow: hidden;
-  transition: height 0.3s ease-in-out;
-`;
-
-const EvaluateWrapper = styled.div<{ show: boolean }>`
+const EvaluateWrapper = styled.div`
   display: flex;
   width: 100vw;
-  height: ${({ show }) => (show ? "calc(100vh - 60px)" : "100vh")};
-  transition: height 0.3s ease-in-out;
+  height: 100vh;
   background-color: #fff;
 `;
 
