@@ -23,8 +23,8 @@ const DocEvaluate = () => {
   const getApplicantList = async () => {
     try {
       //const res = await GET(`posts/${postId}/application`);
-      const res = await GET(`posts/1/application`);
-      // const res = applicantData;
+      //const res = await GET(`posts/1/application`);
+      const res = applicantData;
 
       if (res.isSuccess) {
         setApplicantList(res.result.applicationList);
@@ -156,7 +156,6 @@ const Wrapper = styled.div`
   display: flex;
   width: 100vw;
   height: 100vh;
-  overflow: hidden;
   flex-direction: column;
   background-color: #fff;
 `;
@@ -164,7 +163,8 @@ const Wrapper = styled.div`
 const EvaluateWrapper = styled.div`
   display: flex;
   width: 100vw;
-  height: "100vh";
+  height: 100%;
+  overflow-y: hidden;
   background-color: #fff;
 `;
 
@@ -173,6 +173,7 @@ const Container = styled.div`
   flex-direction: column;
   width: 100%;
   padding: 0px 5%;
+  padding-bottom: 50px;
   overflow-y: auto;
   background-color: #fff;
 `;

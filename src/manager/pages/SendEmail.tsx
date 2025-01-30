@@ -117,7 +117,8 @@ const Wrapper = styled.div`
 const EvaluateWrapper = styled.div`
   display: flex;
   width: 100vw;
-  height: 100vh;
+  height: 100%;
+  overflow-y: hidden;
   background-color: #fff;
 `;
 
@@ -125,7 +126,7 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   width: 100%;
-  height: 100vh;
+  height: 100%;
   justify-content: center;
   align-items: center;
 

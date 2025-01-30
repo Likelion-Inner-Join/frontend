@@ -7,6 +7,7 @@ import { Navbar } from "../../common/ui";
 import { useNavigate } from "react-router-dom";
 import { ApplicantType, PostInfoType } from "../global/types";
 import { GET, POST } from "../../common/api/axios";
+import { applicantData } from "../mock/applicantData";
 
 const WriteEmail = () => {
   const [applicantList, setApplicantList] = useState<ApplicantType[]>([]);
@@ -18,6 +19,10 @@ const WriteEmail = () => {
   const [emailTitle, setEmailTitle] = useState("");
   const [emailBody, setEmailBody] = useState("");
   const [receiverIds, setReceiverIds] = useState<number[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchedApplicants, setSearchedApplicants] = useState<ApplicantType[]>(
+    []
+  );
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -60,11 +65,25 @@ const WriteEmail = () => {
     setReceiverIds(receiverList.map((receiver) => receiver.applicationId));
   }, [receiverList]);
 
+  useEffect(() => {
+    if (searchQuery.trim() === "") {
+      setSearchedApplicants([]);
+    } else {
+      setSearchedApplicants(
+        applicantList.filter(
+          (applicant) =>
+            applicant.name.includes(searchQuery) ||
+            applicant.studentNumber.includes(searchQuery)
+        )
+      );
+    }
+  }, [searchQuery, applicantList]);
+
   const getApplicantList = async () => {
     try {
       //const res = await GET(`posts/${postId}/application`);
-      const res = await GET(`posts/1/application`);
-      //const res = applicantData;
+      //const res = await GET(`posts/1/application`);
+      const res = applicantData;
 
       if (res.isSuccess) {
         setApplicantList(res.result.applicationList);
@@ -154,7 +173,7 @@ const WriteEmail = () => {
   };
 
   return (
-    <Wrapper>
+    <Wrapper onClick={() => setSearchQuery("")}>
       <Navbar />
       <EvaluateWrapper>
         {postInfo?.recruitmentStatus === "OPEN" ||
@@ -172,85 +191,114 @@ const WriteEmail = () => {
           />
         )}
         <Container>
-          <Title>
-            <h1>{postInfo?.title}</h1>
-            <p>
-              {parseISODateTime(String(postInfo?.endTime)).year}년{" "}
-              {parseISODateTime(String(postInfo?.endTime)).month}월{" "}
-              {parseISODateTime(String(postInfo?.endTime)).day}일 마감
-            </p>
-          </Title>
-          <Caption>
-            <h1>이메일 보내기</h1>
-            <Buttons>
-              <MyButton
-                content="전송하기"
-                buttonType="RED"
-                onClick={() => handleSendEmail()}
+          <EmailContainer>
+            <Title>
+              <h1>{postInfo?.title}</h1>
+              <p>
+                {parseISODateTime(String(postInfo?.endTime)).year}년{" "}
+                {parseISODateTime(String(postInfo?.endTime)).month}월{" "}
+                {parseISODateTime(String(postInfo?.endTime)).day}일 마감
+              </p>
+            </Title>
+            <Caption>
+              <h1>이메일 보내기</h1>
+              <Buttons>
+                <MyButton
+                  content="전송하기"
+                  buttonType="RED"
+                  onClick={() => handleSendEmail()}
+                />
+              </Buttons>
+            </Caption>
+            <Sender>
+              <EmailCaption>보내는 사람</EmailCaption>
+              <Input>
+                <input disabled={true} value={"innerjoint@gmail.com"}></input>
+              </Input>
+            </Sender>
+            <Receiver>
+              <EmailCaption>받는 사람</EmailCaption>
+              <ReceiverContainer>
+                <SelectTab>
+                  <SelectButton
+                    selected={selectedTab === "전체"}
+                    onClick={() => selectBtnClick("전체")}
+                  >
+                    전체 선택
+                  </SelectButton>
+                  <SelectButton
+                    selected={selectedTab === "합격자"}
+                    onClick={() => selectBtnClick("합격자")}
+                  >
+                    합격자 선택
+                  </SelectButton>
+                  <SelectButton
+                    selected={selectedTab === "불합격자"}
+                    onClick={() => selectBtnClick("불합격자")}
+                  >
+                    불합격자 선택
+                  </SelectButton>
+                </SelectTab>
+                <ReceiverBox>
+                  {receiverList.map((receiver, index) => (
+                    <ReceiverItem key={receiver.applicationId}>
+                      {receiver.name}
+                      <p>{receiver.studentNumber}</p>
+                      <img
+                        src="/images/manager/cancel.svg"
+                        alt="삭제"
+                        onClick={() => removeReceiver(receiver.applicationId)}
+                      />
+                    </ReceiverItem>
+                  ))}
+                  <input
+                    type="text"
+                    placeholder="이름 또는 학번 검색"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </ReceiverBox>
+                {searchedApplicants.length > 0 && (
+                  <SearchResult>
+                    {searchedApplicants.map((applicant) => (
+                      <SearchResultItem
+                        key={applicant.applicationId}
+                        onClick={() => {
+                          if (
+                            !receiverList.some(
+                              (r) => r.applicationId === applicant.applicationId
+                            )
+                          ) {
+                            setReceiverList([...receiverList, applicant]);
+                          }
+                          setSearchQuery("");
+                        }}
+                      >
+                        {applicant.name} <p>{applicant.studentNumber}</p>
+                      </SearchResultItem>
+                    ))}
+                  </SearchResult>
+                )}
+              </ReceiverContainer>
+            </Receiver>
+            <EmailTitle>
+              <EmailCaption>제목</EmailCaption>{" "}
+              <Input>
+                <input
+                  value={emailTitle}
+                  onChange={(e) => setEmailTitle(e.target.value)}
+                  placeholder="메일 제목을 입력하세요"
+                />
+              </Input>
+            </EmailTitle>
+            <Body>
+              <textarea
+                value={emailBody}
+                onChange={(e) => setEmailBody(e.target.value)}
+                placeholder="메일 내용을 입력하세요"
               />
-            </Buttons>
-          </Caption>
-          <Sender>
-            <EmailCaption>보내는 사람</EmailCaption>
-            <Input>
-              <input disabled={true} value={"innerjoint@gmail.com"}></input>
-            </Input>
-          </Sender>
-          <Receiver>
-            <EmailCaption>받는 사람</EmailCaption>
-            <ReceiverContainer>
-              <SelectTab>
-                <SelectButton
-                  selected={selectedTab === "전체"}
-                  onClick={() => selectBtnClick("전체")}
-                >
-                  전체 선택
-                </SelectButton>
-                <SelectButton
-                  selected={selectedTab === "합격자"}
-                  onClick={() => selectBtnClick("합격자")}
-                >
-                  합격자 선택
-                </SelectButton>
-                <SelectButton
-                  selected={selectedTab === "불합격자"}
-                  onClick={() => selectBtnClick("불합격자")}
-                >
-                  불합격자 선택
-                </SelectButton>
-              </SelectTab>
-              <ReceiverBox>
-                {receiverList.map((receiver, index) => (
-                  <ReceiverItem key={receiver.applicationId}>
-                    {receiver.name}
-                    <p>{receiver.studentNumber}</p>
-                    <img
-                      src="/images/manager/cancel.svg"
-                      alt="삭제"
-                      onClick={() => removeReceiver(receiver.applicationId)}
-                    />
-                  </ReceiverItem>
-                ))}
-              </ReceiverBox>
-            </ReceiverContainer>
-          </Receiver>
-          <EmailTitle>
-            <EmailCaption>제목</EmailCaption>{" "}
-            <Input>
-              <input
-                value={emailTitle}
-                onChange={(e) => setEmailTitle(e.target.value)}
-                placeholder="메일 제목을 입력하세요"
-              />
-            </Input>
-          </EmailTitle>
-          <Body>
-            <textarea
-              value={emailBody}
-              onChange={(e) => setEmailBody(e.target.value)}
-              placeholder="메일 내용을 입력하세요"
-            />
-          </Body>
+            </Body>
+          </EmailContainer>
         </Container>
       </EvaluateWrapper>
     </Wrapper>
@@ -271,18 +319,26 @@ const Wrapper = styled.div`
 const EvaluateWrapper = styled.div`
   display: flex;
   width: 100vw;
-  height: 100vh;
+  height: 100%;
+  overflow-y: hidden;
   justify-content: flex-start;
-  gap: 100px;
-  height: 100vh;
   background-color: #fff;
 `;
 
 const Container = styled.div`
   display: flex;
+  justify-content: center;
+  width: 100%;
+  padding: 0px 5%;
+  height: 100%;
+  overflow-y: auto;
+`;
+
+const EmailContainer = styled.div`
+  display: flex;
   flex-direction: column;
-  width: 60%;
-  height: 100vh;
+  width: 100%;
+  height: 100%;
 `;
 
 const Title = styled.div`
@@ -469,12 +525,41 @@ const ReceiverItem = styled.div`
     cursor: pointer;
   }
 `;
+const SearchResult = styled.div`
+  display: flex;
+  flex-direction: column;
+  width: 30%;
+  max-height: 200px;
+  overflow-y: auto;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+`;
+
+const SearchResultItem = styled.div`
+  display: flex;
+  algin-items: center;
+  padding: 5px 5px;
+  gap: 6px;
+
+  color: #767676;
+  font-family: Pretendard;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 150%; /* 24px */
+
+  &:hover {
+    color: #000;
+    cursor: pointer;
+    background-color: #f9f9f9;
+  }
+`;
 
 const Body = styled.div`
   display: flex;
   width: 100%;
-  flex: 1;
-  margin-bottom: 20px;
+  height: 240px;
+  margin-bottom: 10px;
   padding: 5px;
   align-items: flex-start;
   flex-shrink: 0;

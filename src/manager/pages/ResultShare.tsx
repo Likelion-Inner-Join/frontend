@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { Navbar } from "../../common/ui";
 import { ApplicantType, PostInfoType } from "../global/types";
 import { GET, PATCH } from "../../common/api/axios";
+import { applicantData } from "../mock/applicantData";
 
 const ResultShare = () => {
   const [applicantList, setApplicantList] = useState<ApplicantType[]>([]);
@@ -22,7 +23,8 @@ const ResultShare = () => {
 
   const getApplicantList = async () => {
     try {
-      const res = await GET(`posts/1/application`);
+      //const res = await GET(`posts/1/application`);
+      const res = applicantData;
 
       if (res.isSuccess) {
         setApplicantList(res.result.applicationList);
@@ -181,7 +183,8 @@ const Wrapper = styled.div`
 const EvaluateWrapper = styled.div`
   display: flex;
   width: 100vw;
-  height: 100vh;
+  height: 100%;
+  overflow-y: hidden;
   background-color: #fff;
 `;
 
@@ -189,8 +192,9 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   width: 100%;
-  height: 100vh;
+  height: 100%;
   padding: 0px 5%;
+  padding-bottom: 50px;
   overflow-y: auto;
   background-color: #fff;
 `;

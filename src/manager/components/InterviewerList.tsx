@@ -4,6 +4,7 @@ import styled from "styled-components";
 import DocView from "./DocView";
 import { ApplicantType, PostInfoType } from "../global/types";
 import { PUT, GET } from "../../common/api/axios";
+import { applicantData } from "../mock/applicantData";
 
 interface PositionType {
   recruitingId: number;
@@ -30,12 +31,14 @@ const InterviewerList = ({ data1, data2, isEmail }: ApplicantListProps) => {
   const [applicantList, setApplicantList] = useState<ApplicantType[]>([]);
   const [postInfo, setPostInfo] = useState<PostInfoType>();
   const currApplyID = searchParams.get("apply");
+  const [redirectPage, setRedirectPage] = useState("");
   const navigate = useNavigate();
 
   const getApplicantList = async () => {
     try {
       //const res = await GET(`posts/${postId}/application`);
-      const res = await GET(`posts/1/application`);
+      //const res = await GET(`posts/1/application`);
+      const res = applicantData;
 
       if (res.isSuccess) {
         setApplicantList(res.result.applicationList);
@@ -187,6 +190,18 @@ const InterviewerList = ({ data1, data2, isEmail }: ApplicantListProps) => {
   };
 
   useEffect(() => {
+    if (postInfo?.recruitmentStatus === "OPEN") setRedirectPage("/doc-eval");
+    else if (postInfo?.recruitmentStatus === "FORM_REVIEWED")
+      setRedirectPage("/result");
+    else if (postInfo?.recruitmentStatus === "TIME_SET")
+      setRedirectPage("/meet-eval");
+    else if (postInfo?.recruitmentStatus === "INTERVIEWED")
+      setRedirectPage("/final-result");
+    else if (postInfo?.recruitmentStatus === "CLOSED")
+      setRedirectPage("/post-manage");
+  }, [postInfo]);
+
+  useEffect(() => {
     getApplicantList();
   }, [isDocumentOpen]);
 
@@ -257,7 +272,9 @@ const InterviewerList = ({ data1, data2, isEmail }: ApplicantListProps) => {
         <Title>
           <h1>면접자 리스트</h1>
           {isEmail ? (
-            <div></div>
+            <EmailButton onClick={() => navigate(redirectPage)}>
+              <p>돌아가기</p>
+            </EmailButton>
           ) : (
             <EmailButton onClick={() => navigate("/email-write")}>
               <p>이메일 보내기</p>
@@ -392,7 +409,7 @@ export default InterviewerList;
 const Wrapper = styled.div`
   display: flex;
   width: 400px;
-  height: 100vh;
+  height: 100%;
   padding: 0px 8px 5px 0px;
   gap: 20px;
   flex-shrink: 0;
