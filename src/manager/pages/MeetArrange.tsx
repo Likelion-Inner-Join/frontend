@@ -60,7 +60,6 @@ const MeetArrange = () => {
   const [breakTime, setBreakTime] = useState(10);
   const [reservationStartTime, setReservationStartTime] = useState("");
   const [reservationEndTime, setReservationEndTime] = useState("");
-  const [showNavbar, setShowNavbar] = useState(false);
 
   const getApplicantList = async () => {
     try {
@@ -519,30 +518,10 @@ const MeetArrange = () => {
     return { year, month, day, hours, minutes };
   }
 
-  const handleMouseMove = (event: MouseEvent) => {
-    if (event.clientX < 400 && event.clientY < 30) {
-      setShowNavbar(true);
-    } else if (event.clientX > 400 && event.clientY < 100) {
-      setShowNavbar(true);
-    } else {
-      setShowNavbar(false);
-    }
-  };
-
-  useEffect(() => {
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-    };
-  }, []);
-
   return (
     <Wrapper>
-      <NavbarWrapper show={showNavbar}>
-        {" "}
-        <Navbar />
-      </NavbarWrapper>
-      <EvaluateWrapper show={showNavbar}>
+      <Navbar />
+      <EvaluateWrapper>
         {postInfo?.recruitmentStatus === "OPEN" ||
         postInfo?.recruitmentStatus === "FORM_REVIEWED" ? (
           <ApplicantList
@@ -902,21 +881,11 @@ const Wrapper = styled.div`
   background-color: #fff;
 `;
 
-const NavbarWrapper = styled.div<{ show: boolean }>`
-  background-color: #fff;
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  height: ${({ show }) => (show ? "60px" : "0px")};
-  overflow: hidden;
-  transition: height 0.3s ease-in-out;
-`;
-
-const EvaluateWrapper = styled.div<{ show: boolean }>`
+const EvaluateWrapper = styled.div`
   display: flex;
   width: 100vw;
-  height: ${({ show }) => (show ? "calc(100vh - 60px)" : "100vh")};
-  transition: height 0.3s ease-in-out;
+  height: 100%;
+  overflow-y: hidden;
   background-color: #fff;
 `;
 
@@ -924,7 +893,7 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   width: 100%;
-  height: 100vh;
+  height: 100%;
   padding-left: 5%;
   overflow-y: auto;
   overflow-x: hidden;

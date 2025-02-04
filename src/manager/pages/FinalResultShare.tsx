@@ -18,14 +18,13 @@ const FinalResultShare = () => {
   const [passList, setPassList] = useState<ApplicantType[]>([]);
   const [failList, setFailList] = useState<ApplicantType[]>([]);
   const [isShared, setIsShared] = useState(false);
-  const [showNavbar, setShowNavbar] = useState(false);
   const navigate = useNavigate();
 
   const getApplicantList = async () => {
     try {
       //const res = await GET(`posts/${postId}/application`);
-      const res = await GET(`posts/1/application`);
-      // const res = applicantData;
+      // const res = await GET(`posts/1/application`);
+      const res = applicantData;
 
       if (res.isSuccess) {
         setApplicantList(res.result.applicationList);
@@ -87,23 +86,6 @@ const FinalResultShare = () => {
     }
   };
 
-  const handleMouseMove = (event: MouseEvent) => {
-    if (event.clientX < 400 && event.clientY < 30) {
-      setShowNavbar(true);
-    } else if (event.clientX > 400 && event.clientY < 100) {
-      setShowNavbar(true);
-    } else {
-      setShowNavbar(false);
-    }
-  };
-
-  useEffect(() => {
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-    };
-  }, []);
-
   useEffect(() => {
     getApplicantList();
     getPostDetails();
@@ -137,11 +119,8 @@ const FinalResultShare = () => {
 
   return (
     <Wrapper>
-      <NavbarWrapper show={showNavbar}>
-        {" "}
-        <Navbar />
-      </NavbarWrapper>
-      <EvaluateWrapper show={showNavbar}>
+      <Navbar />
+      <EvaluateWrapper>
         <InterviewerList
           data1={applicantList}
           data2={postInfo?.recruitingList || []}
@@ -213,21 +192,11 @@ const Wrapper = styled.div`
   background-color: #fff;
 `;
 
-const NavbarWrapper = styled.div<{ show: boolean }>`
-  background-color: #fff;
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  height: ${({ show }) => (show ? "60px" : "0px")};
-  overflow: hidden;
-  transition: height 0.3s ease-in-out;
-`;
-
-const EvaluateWrapper = styled.div<{ show: boolean }>`
+const EvaluateWrapper = styled.div`
   display: flex;
   width: 100vw;
-  height: ${({ show }) => (show ? "calc(100vh - 60px)" : "100vh")};
-  transition: height 0.3s ease-in-out;
+  height: 100%;
+  overflow-y: hidden;
   background-color: #fff;
 `;
 
@@ -235,8 +204,9 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   width: 100%;
-  height: 100vh;
+  height: 100%;
   padding: 0px 5%;
+  padding-bottom: 50px;
   overflow-y: auto;
   background-color: #fff;
 `;

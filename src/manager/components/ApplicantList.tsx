@@ -3,7 +3,8 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import styled from "styled-components";
 import DocView from "./DocView";
 import { GET } from "../../common/api/axios";
-import { ApplicantType } from "../global/types";
+import { ApplicantType, PostInfoType } from "../global/types";
+import { applicantData } from "../mock/applicantData";
 
 interface PositionType {
   recruitingId: number;
@@ -25,6 +26,8 @@ const ApplicantList = ({ data1, data2, isEmail }: ApplicantListProps) => {
   const [selectedPositions, setSelectedPositions] = useState<string[]>([]);
   const [isDocumentOpen, setIsDocumentOpen] = useState(false);
   const [selectedApplicant, setSelectedApplicant] = useState<ApplicantType>();
+  const [postInfo, setPostInfo] = useState<PostInfoType>();
+  const [redirectPage, setRedirectPage] = useState("");
   const [searchParams] = useSearchParams();
   const currApplyID = searchParams.get("apply");
   const navigate = useNavigate();
@@ -87,13 +90,28 @@ const ApplicantList = ({ data1, data2, isEmail }: ApplicantListProps) => {
   const getApplicantList = async () => {
     try {
       //const res = await GET(`posts/${postId}/application`);
-      const res = await GET(`posts/1/application`);
+      //const res = await GET(`posts/1/application`);
+      const res = applicantData;
 
       if (res.isSuccess) {
         const sortedApplicants = sortApplicantsByName(
           res.result.applicationList
         );
         setApplicantList(sortedApplicants);
+      } else {
+        console.log(res.message);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const getPostDetails = async () => {
+    try {
+      const res = await GET(`posts/1`);
+
+      if (res.isSuccess) {
+        setPostInfo(res.result);
       } else {
         console.log(res.message);
       }
@@ -116,11 +134,24 @@ const ApplicantList = ({ data1, data2, isEmail }: ApplicantListProps) => {
   };
 
   useEffect(() => {
+    if (postInfo?.recruitmentStatus === "OPEN") setRedirectPage("/doc-eval");
+    else if (postInfo?.recruitmentStatus === "FORM_REVIEWED")
+      setRedirectPage("/result");
+    else if (postInfo?.recruitmentStatus === "TIME_SET")
+      setRedirectPage("/meet-eval");
+    else if (postInfo?.recruitmentStatus === "INTERVIEWED")
+      setRedirectPage("/final-result");
+    else if (postInfo?.recruitmentStatus === "CLOSED")
+      setRedirectPage("/post-manage");
+  }, [postInfo]);
+
+  useEffect(() => {
     getApplicantList();
   }, [isDocumentOpen]);
 
   useEffect(() => {
     getApplicantList();
+    getPostDetails();
   }, []);
 
   return (
@@ -129,7 +160,9 @@ const ApplicantList = ({ data1, data2, isEmail }: ApplicantListProps) => {
         <Title>
           <h1>지원자 리스트</h1>
           {isEmail ? (
-            <div></div>
+            <EmailButton onClick={() => navigate(redirectPage)}>
+              <p>돌아가기</p>
+            </EmailButton>
           ) : (
             <EmailButton onClick={() => navigate("/email-write")}>
               <p>이메일 보내기</p>
@@ -232,7 +265,7 @@ export default ApplicantList;
 const Wrapper = styled.div`
   display: flex;
   width: 400px;
-  height: 100vh;
+  height: 100%;
   padding: 0px 8px 5px 0px;
   gap: 20px;
   flex-shrink: 0;
@@ -244,7 +277,6 @@ const Container = styled.div`
   width: 100%;
   flex-direction: column;
   align-items: flex-start;
-  background-color: #fcfafa;
   margin-left: 30px;
 `;
 
