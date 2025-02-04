@@ -14,7 +14,7 @@ export const GlobalStyle = createGlobalStyle`
   }
   body {
     font-family: Pretendard;
-    background-color: #000000;
+    background-color: #fff;
     height:100vh;
   }
   ::-webkit-scrollbar {

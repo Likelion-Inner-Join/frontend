@@ -191,7 +191,7 @@ const OwnerPage = () => {
           <OwnerContainer>
             <TitleBox>
               <p>관리자 정보</p>
-              {/* {ownerInfoFix ? (
+              {ownerInfoFix ? (
                 <div />
               ) : (
                 <MyButton
@@ -199,7 +199,7 @@ const OwnerPage = () => {
                   buttonType="WHITE"
                   onClick={handleOwnerInfoFixButton}
                 />
-              )} */}
+              )}
             </TitleBox>
             <ContentBox>
               <Content>
@@ -259,7 +259,7 @@ const OwnerPage = () => {
           <ClubContainer>
             <TitleBox>
               <p>동아리 정보</p>
-              {/* {clubInfoFix ? (
+              {clubInfoFix ? (
                 <MyButton
                   content="저장하기"
                   buttonType="WHITE"
@@ -271,7 +271,7 @@ const OwnerPage = () => {
                   buttonType="WHITE"
                   onClick={handleClubInfoFixButton}
                 />
-              )} */}
+              )}
             </TitleBox>
             <ContentBox>
               <Content>
@@ -354,8 +354,9 @@ const InfoWrapper = styled.div`
 
 const InfoContainer = styled.div`
   display: flex;
-  width: 800px;
+  width: 55%;
   flex-direction: column;
+  align-self: center;
   align-items: flex-start;
   gap: 80px;
 `;
@@ -444,7 +445,7 @@ const StyledInput = styled.input<{ disabled: boolean }>`
 `;
 
 const Caption = styled.div`
-  width: 300px;
+  margin-right: 100px;
   color: var(--Achromatic-gray08, #424242);
   font-family: Pretendard;
   font-size: 16px;
