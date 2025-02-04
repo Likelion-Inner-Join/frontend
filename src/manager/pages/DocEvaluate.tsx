@@ -10,6 +10,7 @@ import { applicantData } from "../mock/applicantData";
 import { Navbar } from "../../common/ui";
 import { GET } from "../../common/api/axios";
 import { ApplicantType, PostInfoType } from "../global/types";
+import { breakpoints } from "../../common/ui/breakpoints";
 
 const DocEvaluate = () => {
   const [applicantList, setApplicantList] = useState<ApplicantType[]>([]);
@@ -156,8 +157,13 @@ const Wrapper = styled.div`
   display: flex;
   width: 100vw;
   height: 100vh;
+  overflow: hidden;
   flex-direction: column;
   background-color: #fff;
+
+  @media (max-width: ${breakpoints.mobile}) {
+    background-color: red;
+  }
 `;
 
 const EvaluateWrapper = styled.div`
@@ -165,7 +171,6 @@ const EvaluateWrapper = styled.div`
   width: 100vw;
   height: 100%;
   overflow-y: hidden;
-  background-color: #fff;
 `;
 
 const Container = styled.div`
@@ -175,7 +180,6 @@ const Container = styled.div`
   padding: 0px 5%;
   padding-bottom: 50px;
   overflow-y: auto;
-  background-color: #fff;
 `;
 
 const Buttons = styled.div`

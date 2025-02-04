@@ -277,7 +277,6 @@ const Container = styled.div`
   width: 100%;
   flex-direction: column;
   align-items: flex-start;
-  background-color: #fcfafa;
   margin-left: 30px;
 `;
 
