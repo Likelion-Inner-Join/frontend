@@ -1,6 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 import { ApplicantType } from "../global/types";
+import { breakpoints } from "../../common/ui/breakpoints";
 
 interface ResultTableProps {
   restList: ApplicantType[];
@@ -81,6 +82,10 @@ const Wrapper = styled.div`
   justify-content: center;
   gap: 40px;
   font-family: Pretendard;
+
+  @media (max-width: ${breakpoints.mobile}) {
+    gap: 12px;
+  }
 `;
 
 const TableTitle = styled.div<{ state: string; isColor: boolean }>`
@@ -115,6 +120,10 @@ const TableTitle = styled.div<{ state: string; isColor: boolean }>`
   }};
 
   border-bottom: none;
+
+  @media (max-width: ${breakpoints.mobile}) {
+    width: 110px;
+  }
 `;
 
 const TableContainer = styled.div`
@@ -130,6 +139,11 @@ const TableContainer = styled.div`
   border-radius: 0px 0px 20px 20px;
   border: 1px solid #f0f0f0;
   border-top: none;
+
+  @media (max-width: ${breakpoints.mobile}) {
+    width: 110px;
+    padding-left: 5px;
+  }
 `;
 
 const TableItem = styled.div<{ loc: number; length: number }>`
@@ -150,4 +164,8 @@ const TableItem = styled.div<{ loc: number; length: number }>`
     if (Math.floor(loc / 2) < Math.floor((length - 1) / 2))
       return "1px solid #f0f0f0";
   }};
+
+  @media (max-width: ${breakpoints.mobile}) {
+    border: none;
+  }
 `;

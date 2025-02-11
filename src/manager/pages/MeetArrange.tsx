@@ -60,6 +60,7 @@ const MeetArrange = () => {
   const [breakTime, setBreakTime] = useState(10);
   const [reservationStartTime, setReservationStartTime] = useState("");
   const [reservationEndTime, setReservationEndTime] = useState("");
+  const [isApplicantListOpen, setIsApplicantListOpen] = useState(false);
 
   const getApplicantList = async () => {
     try {
@@ -528,12 +529,14 @@ const MeetArrange = () => {
             data1={applicantList}
             data2={postInfo?.recruitingList || []}
             isEmail={false}
+            isOpen={isApplicantListOpen}
           />
         ) : (
           <InterviewerList
             data1={applicantList}
             data2={postInfo?.recruitingList || []}
             isEmail={false}
+            isOpen={isApplicantListOpen}
           />
         )}
         <Container>

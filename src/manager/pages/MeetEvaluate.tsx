@@ -17,6 +17,7 @@ const MeetEvaluate = () => {
   const [restList, setRestList] = useState<ApplicantType[]>([]);
   const [passList, setPassList] = useState<ApplicantType[]>([]);
   const [failList, setFailList] = useState<ApplicantType[]>([]);
+  const [isApplicantListOpen, setIsApplicantListOpen] = useState(false);
   const navigate = useNavigate();
 
   const getApplicantList = async () => {
@@ -86,6 +87,7 @@ const MeetEvaluate = () => {
           data1={applicantList}
           data2={postInfo?.recruitingList || []}
           isEmail={false}
+          isOpen={isApplicantListOpen}
         />
         <Container>
           <EvaluationHeader status="INTERVIEWED" />

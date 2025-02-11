@@ -4,6 +4,7 @@ import { Button } from "./button";
 import { useAuth } from "../../auth/context/auth-context";
 import profileImage from "../../assets/user-profile.svg";
 import logoImg from "../../assets/logo.svg";
+import { breakpoints } from "./breakpoints";
 
 export const Navbar = () => {
   const { authState } = useAuth();
@@ -25,9 +26,9 @@ export const Navbar = () => {
           }}
         >
           <img src={logoImg} alt="이너조인" />
-          이너조인
+          InnerJoin
         </Logo>
-        {isClubManager ? (
+        {!isClubManager ? (
           <div />
         ) : (
           <NavLinks>
@@ -52,7 +53,7 @@ export const Navbar = () => {
       </Left>
 
       <Right>
-        {authState.isAuthenticated ? (
+        {!authState.isAuthenticated ? (
           <ProfileWrapper
             onClick={() => {
               if (isClubManager) navigate("/owner/info");
@@ -91,6 +92,10 @@ const Container = styled.div`
   align-items: center;
   padding: 4px 40px;
   border-bottom: 1px solid #ccc;
+
+  @media (max-width: ${breakpoints.mobile}) {
+    padding: 4px 10px;
+  }
 `;
 
 const Left = styled.div`
@@ -106,6 +111,11 @@ const Logo = styled.span`
   font-weight: 700;
   cursor: pointer;
   color: #3e3e3e;
+
+  @media (max-width: ${breakpoints.mobile}) {
+    font-size: 20px;
+    gap: 10px;
+  }
 `;
 
 const NavLinks = styled.div`
@@ -146,6 +156,10 @@ const ProfileImage = styled.img`
 const UserName = styled.div`
   font-size: 16px;
   font-weight: 500;
+
+  @media (max-width: ${breakpoints.mobile}) {
+    font-size: 14px;
+  }
 `;
 
 const ButtonGroup = styled.div`

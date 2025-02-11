@@ -19,6 +19,7 @@ const WriteEmail = () => {
   const [emailTitle, setEmailTitle] = useState("");
   const [emailBody, setEmailBody] = useState("");
   const [receiverIds, setReceiverIds] = useState<number[]>([]);
+  const [isApplicantListOpen, setIsApplicantListOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchedApplicants, setSearchedApplicants] = useState<ApplicantType[]>(
     []
@@ -182,12 +183,14 @@ const WriteEmail = () => {
             data1={applicantList}
             data2={postInfo?.recruitingList || []}
             isEmail={true}
+            isOpen={isApplicantListOpen}
           />
         ) : (
           <InterviewerList
             data1={applicantList}
             data2={postInfo?.recruitingList || []}
             isEmail={true}
+            isOpen={isApplicantListOpen}
           />
         )}
         <Container>

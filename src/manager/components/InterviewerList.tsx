@@ -5,6 +5,7 @@ import DocView from "./DocView";
 import { ApplicantType, PostInfoType } from "../global/types";
 import { PUT, GET } from "../../common/api/axios";
 import { applicantData } from "../mock/applicantData";
+import { breakpoints } from "../../common/ui/breakpoints";
 
 interface PositionType {
   recruitingId: number;
@@ -15,11 +16,17 @@ interface ApplicantListProps {
   data1: ApplicantType[];
   data2: PositionType[];
   isEmail: boolean;
+  isOpen: boolean;
 }
 
 const stateList = ["전체", "합격", "불합격", "미평가"];
 
-const InterviewerList = ({ data1, data2, isEmail }: ApplicantListProps) => {
+const InterviewerList = ({
+  data1,
+  data2,
+  isEmail,
+  isOpen,
+}: ApplicantListProps) => {
   const [selectedState, setSelectedState] = useState("전체");
   const [selectedPositions, setSelectedPositions] = useState<string[]>([]);
   const [isDocumentOpen, setIsDocumentOpen] = useState(false);
@@ -267,7 +274,7 @@ const InterviewerList = ({ data1, data2, isEmail }: ApplicantListProps) => {
   };
 
   return (
-    <Wrapper>
+    <Wrapper isOpen={isOpen}>
       <Container>
         <Title>
           <h1>면접자 리스트</h1>
@@ -406,7 +413,7 @@ const InterviewerList = ({ data1, data2, isEmail }: ApplicantListProps) => {
 
 export default InterviewerList;
 
-const Wrapper = styled.div`
+const Wrapper = styled.div<{ isOpen: boolean }>`
   display: flex;
   width: 400px;
   height: 100%;
@@ -414,6 +421,13 @@ const Wrapper = styled.div`
   gap: 20px;
   flex-shrink: 0;
   background-color: #fcfafa;
+
+  @media (max-width: ${breakpoints.mobile}) {
+    display: ${({ isOpen }) => {
+      if (isOpen) return "flex";
+      return "none";
+    }};
+  }
 `;
 
 const Container = styled.div`
@@ -421,14 +435,13 @@ const Container = styled.div`
   width: 100%;
   flex-direction: column;
   align-items: flex-start;
-  background-color: #fcfafa;
   margin-left: 30px;
+  margin-top: 50px;
 `;
 
 const Title = styled.div`
   display: flex;
-  height: 108px;
-  padding: 40px 58px 16px 18px;
+  padding: 0px 58px 16px 18px;
   justify-content: space-between;
   align-items: flex-end;
   align-self: stretch;

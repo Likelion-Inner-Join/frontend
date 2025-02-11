@@ -134,15 +134,17 @@ const EvaluationHeader = ({ status }: EvaluationHeaderProps) => {
               if (index === 0) return null;
               const isCurrent = findCurrentStatus(status) === index;
               return (
-                <React.Fragment key={index}>
-                  <StageNumber current={isCurrent}>{index}</StageNumber>
-                  <StageName
-                    current={isCurrent}
-                    hovered={isHovered}
-                    onClick={() => handleStageClick(stageName)}
-                  >
-                    {stageName}
-                  </StageName>
+                <StageWithLoading>
+                  <StageItem>
+                    <StageNumber current={isCurrent}>{index}</StageNumber>
+                    <StageName
+                      current={isCurrent}
+                      hovered={isHovered}
+                      onClick={() => handleStageClick(stageName)}
+                    >
+                      {stageName}
+                    </StageName>
+                  </StageItem>
                   <div>
                     {isCurrent ? (
                       <img src="/images/manager/loading.svg" alt="로딩바" />
@@ -150,7 +152,7 @@ const EvaluationHeader = ({ status }: EvaluationHeaderProps) => {
                       <p> </p>
                     )}
                   </div>
-                </React.Fragment>
+                </StageWithLoading>
               );
             })}
             <img
@@ -221,6 +223,24 @@ const Stage = styled.div<{ hovered: boolean }>`
   transition: opacity 0.3s ease-in-out;
 `;
 
+const StageWithLoading = styled.div`
+  display: flex;
+  align-items: flex-end;
+
+  img {
+    display: flex;
+    justify-content: center;
+    padding-bottom: 10px;
+    padding-left: 8px;
+  }
+`;
+
+const StageItem = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+`;
+
 const StageNumber = styled.div<{ current: boolean }>`
   display: flex;
   width: 24px;
@@ -228,6 +248,7 @@ const StageNumber = styled.div<{ current: boolean }>`
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  margin-bottom: 5px;
   border-radius: 14px;
 
   background-color: ${({ current }) => {
@@ -261,12 +282,16 @@ const StageName = styled.div<{ current: boolean; hovered: boolean }>`
   cursor: pointer;
 
   font-family: Pretendard;
-  font-size: 16px;
   font-style: normal;
+  font-size: ${({ hovered }) => {
+    if (hovered) return "14px";
+    return "16px";
+  }};
   font-weight: ${({ hovered }) => {
     if (hovered) return "500";
     return "700";
   }};
+  text-align: center;
 
   line-height: 150%;
   letter-spacing: -0.32px;

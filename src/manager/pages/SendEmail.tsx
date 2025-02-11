@@ -13,6 +13,7 @@ const SendEmail = () => {
   const [redirectPage, setRedirectPage] = useState("");
   const [postInfo, setPostInfo] = useState<PostInfoType>();
   const navigate = useNavigate();
+  const [isApplicantListOpen, setIsApplicantListOpen] = useState(false);
 
   const getApplicantList = async () => {
     try {
@@ -73,12 +74,14 @@ const SendEmail = () => {
             data1={applicantList}
             data2={postInfo?.recruitingList || []}
             isEmail={true}
+            isOpen={isApplicantListOpen}
           />
         ) : (
           <InterviewerList
             data1={applicantList}
             data2={postInfo?.recruitingList || []}
             isEmail={true}
+            isOpen={isApplicantListOpen}
           />
         )}
         <Container>

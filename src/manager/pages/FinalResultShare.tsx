@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
+import { useMediaQuery } from "react-responsive";
 import InterviewerList from "../components/InterviewerList";
 import InformationBox from "../components/InformationBox";
 import ResultTable from "../components/ResultTable";
@@ -10,6 +11,7 @@ import { useNavigate } from "react-router-dom";
 import { Navbar } from "../../common/ui";
 import { ApplicantType, PostInfoType } from "../global/types";
 import { GET, PATCH } from "../../common/api/axios";
+import { breakpoints } from "../../common/ui/breakpoints";
 
 const FinalResultShare = () => {
   const [applicantList, setApplicantList] = useState<ApplicantType[]>([]);
@@ -18,7 +20,9 @@ const FinalResultShare = () => {
   const [passList, setPassList] = useState<ApplicantType[]>([]);
   const [failList, setFailList] = useState<ApplicantType[]>([]);
   const [isShared, setIsShared] = useState(false);
+  const [isApplicantListOpen, setIsApplicantListOpen] = useState(false);
   const navigate = useNavigate();
+  const isMobile = useMediaQuery({ maxWidth: parseInt(breakpoints.mobile) });
 
   const getApplicantList = async () => {
     try {
@@ -125,43 +129,67 @@ const FinalResultShare = () => {
           data1={applicantList}
           data2={postInfo?.recruitingList || []}
           isEmail={false}
+          isOpen={isApplicantListOpen}
         />
-        <Container>
+        <Container isOpen={isApplicantListOpen}>
           <EvaluationHeader status="CLOSED" />
           {isShared && (
             <Buttons>
               <MyButton
                 content="평가 종료"
                 buttonType="RED"
-                onClick={() => updateRecruitStatus("CLOSED")}
+                onClick={() => {
+                  updateRecruitStatus("CLOSED");
+                  navigate("/post-manage");
+                }}
               />
             </Buttons>
           )}
           {isShared ? (
-            <Caption>최종 결과가 지원자에게 공유되었습니다!</Caption>
+            isMobile ? (
+              <Caption isShared={isShared}>
+                {" "}
+                최종 결과가 지원자에게
+                <br /> 공유되었습니다!
+              </Caption>
+            ) : (
+              <Caption isShared={isShared}>
+                최종 결과가 지원자에게 공유되었습니다!
+              </Caption>
+            )
+          ) : isMobile ? (
+            <Caption isShared={isShared}>
+              최종 결과를 지원자에게 <br /> 공유하시겠습니까?
+            </Caption>
           ) : (
-            <Caption>최종 결과를 지원자에게 공유하시겠습니까?</Caption>
+            <Caption isShared={isShared}>
+              최종 결과를 지원자에게 공유하시겠습니까?
+            </Caption>
           )}
           <ButtonBox>
-            <ShareButton
-              onClick={() => updateRecruitStatus("INTERVIEWED")}
-              isShared={isShared}
-            >
-              공유하기
-            </ShareButton>
-            {isShared ? (
-              <MyButton
-                content="이메일로 알리기"
-                buttonType="WHITE"
-                onClick={() => navigate("/email-write")}
-              />
-            ) : (
-              <MyButton
-                content="수정하기"
-                buttonType="WHITE"
-                onClick={() => navigate("/meet-eval")}
-              />
-            )}
+            <LeftBox>
+              <ShareButton
+                onClick={() => updateRecruitStatus("INTERVIEWED")}
+                isShared={isShared}
+              >
+                공유하기
+              </ShareButton>
+            </LeftBox>
+            <RightBox>
+              {isShared ? (
+                <MyButton
+                  content="메일 알림"
+                  buttonType="WHITE"
+                  onClick={() => navigate("/email-write")}
+                />
+              ) : (
+                <MyButton
+                  content="수정하기"
+                  buttonType="WHITE"
+                  onClick={() => navigate("/meet-eval")}
+                />
+              )}
+            </RightBox>
           </ButtonBox>
           <InformationBox
             restList={restList}
@@ -177,6 +205,23 @@ const FinalResultShare = () => {
           />
         </Container>
       </EvaluateWrapper>
+      {isApplicantListOpen === true ? (
+        <CloseApplicantListButton
+          onClick={() => setIsApplicantListOpen(!isApplicantListOpen)}
+        >
+          <img
+            src="/images/manager/back.svg"
+            alt="지원자 리스트"
+            width="20px"
+          />
+        </CloseApplicantListButton>
+      ) : (
+        <OpenApplicantListButton
+          onClick={() => setIsApplicantListOpen(!isApplicantListOpen)}
+        >
+          <img src="/images/manager/list.svg" alt="뒤로가기" width="20px" />
+        </OpenApplicantListButton>
+      )}
     </Wrapper>
   );
 };
@@ -198,9 +243,13 @@ const EvaluateWrapper = styled.div`
   height: 100%;
   overflow-y: hidden;
   background-color: #fff;
+
+  @media (max-width: ${breakpoints.mobile}) {
+    padding-bottom: 100px;
+  }
 `;
 
-const Container = styled.div`
+const Container = styled.div<{ isOpen: boolean }>`
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -209,24 +258,37 @@ const Container = styled.div`
   padding-bottom: 50px;
   overflow-y: auto;
   background-color: #fff;
+
+  @media (max-width: ${breakpoints.mobile}) {
+    padding-bottom: 50px;
+    display: ${({ isOpen }) => {
+      if (isOpen) return "none";
+      return "flex";
+    }};
+  }
 `;
 
-const Caption = styled.div`
-  margin-top: 80px;
+const Caption = styled.div<{ isShared: boolean }>`
   color: #000;
   text-align: center;
   font-family: Pretendard;
   font-size: 42px;
   font-style: normal;
   font-weight: 600;
-  line-height: 170%; /* 71.4px */
+  line-height: 170%;
   letter-spacing: -0.84px;
+
+  margin-top: ${({ isShared }) => {
+    if (isShared) return "30px";
+    return "80px";
+  }};
+
+  @media (max-width: ${breakpoints.mobile}) {
+    font-size: 24px;
+  }
 `;
 
 const Buttons = styled.div`
-  position: fixed;
-  right: 5%;
-  top: 15%;
   display: flex;
   width: 100%;
   justify-content: flex-end;
@@ -243,8 +305,25 @@ const ButtonBox = styled.div`
   font-size: 16px;
   font-style: normal;
   font-weight: 600;
-  line-height: 150%; /* 24px */
+  line-height: 150%;
   letter-spacing: -0.32px;
+
+  @media (max-width: ${breakpoints.mobile}) {
+    margin-bottom: 60px;
+    gap: 18px;
+  }
+`;
+
+const LeftBox = styled.div`
+  display: flex;
+  width: 50%;
+  justify-content: flex-end;
+`;
+
+const RightBox = styled.div`
+  display: flex;
+  width: 50%;
+  justify-content: flex-start;
 `;
 
 const ShareButton = styled.div<{ isShared: boolean }>`
@@ -283,4 +362,51 @@ const ShareButton = styled.div<{ isShared: boolean }>`
 
 const Style = styled.div`
   margin-top: 30px;
+`;
+
+const OpenApplicantListButton = styled.div`
+  display: none;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #cc141d;
+  color: white;
+  border: none;
+  padding: 15px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 30px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+  z-index: 999;
+
+  &:hover {
+    background: #cc141d;
+  }
+
+  @media (max-width: ${breakpoints.mobile}) {
+    display: block;
+  }
+`;
+
+const CloseApplicantListButton = styled.div`
+  display: none;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #fcfafa;
+  border: none;
+  padding: 15px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 30px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+  z-index: 999;
+
+  &:hover {
+    background: #fcfafa;
+  }
+
+  @media (max-width: ${breakpoints.mobile}) {
+    display: block;
+  }
 `;
