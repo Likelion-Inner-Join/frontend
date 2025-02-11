@@ -201,6 +201,7 @@ const Container = styled.div<{ isOpen: boolean }>`
   padding: 0px 5%;
   padding-bottom: 50px;
   overflow-y: auto;
+  overflow-x: hidden;
 
   @media (max-width: ${breakpoints.mobile}) {
     display: ${({ isOpen }) => {
