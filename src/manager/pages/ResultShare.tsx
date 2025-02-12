@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useMediaQuery } from "react-responsive";
 import styled from "styled-components";
 import ApplicantList from "../components/ApplicantList";
 import InformationBox from "../components/InformationBox";
@@ -21,6 +22,7 @@ const ResultShare = () => {
   const [isApplicantListOpen, setIsApplicantListOpen] = useState(false);
   const [postInfo, setPostInfo] = useState<PostInfoType>();
   const [resultType, setResultType] = useState<String>("");
+  const isMobile = useMediaQuery({ maxWidth: parseInt(breakpoints.mobile) });
   const navigate = useNavigate();
 
   const getApplicantList = async () => {
@@ -131,8 +133,20 @@ const ResultShare = () => {
             </Buttons>
           )}
           {isShared ? (
+            isMobile ? (
+              <Caption isShared={isShared}>
+                {" "}
+                {resultType} 결과가 지원자에게
+                <br /> 공유되었습니다!
+              </Caption>
+            ) : (
+              <Caption isShared={isShared}>
+                {resultType} 결과가 지원자에게 공유되었습니다!
+              </Caption>
+            )
+          ) : isMobile ? (
             <Caption isShared={isShared}>
-              {resultType} 결과가 지원자에게 공유되었습니다!
+              {resultType} 결과를 지원자에게 <br /> 공유하시겠습니까?
             </Caption>
           ) : (
             <Caption isShared={isShared}>
@@ -300,7 +314,6 @@ const RightBox = styled.div`
 `;
 
 const ShareButton = styled.div<{ isShared: boolean }>`
-  width: 120px;
   padding: 12px 30px;
   border-radius: 30px;
   text-align: center;
@@ -325,6 +338,10 @@ const ShareButton = styled.div<{ isShared: boolean }>`
     background-color: ${({ isShared }) => {
       if (!isShared) return "#000";
     }};
+  }
+
+  @media (max-width: ${breakpoints.mobile}) {
+    padding: 10px 20px;
   }
 `;
 

@@ -327,7 +327,6 @@ const RightBox = styled.div`
 `;
 
 const ShareButton = styled.div<{ isShared: boolean }>`
-  width: 120px;
   padding: 12px 30px;
   border-radius: 30px;
   text-align: center;
@@ -357,6 +356,10 @@ const ShareButton = styled.div<{ isShared: boolean }>`
     background-color: ${({ isShared }) => {
       if (!isShared) return "#000";
     }};
+  }
+
+  @media (max-width: ${breakpoints.mobile}) {
+    padding: 10px 20px;
   }
 `;
 
