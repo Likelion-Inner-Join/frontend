@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { ApplicantType, PostInfoType } from "../global/types";
 import { GET, POST } from "../../common/api/axios";
 import { applicantData } from "../mock/applicantData";
+import { breakpoints } from "../../common/ui/breakpoints";
 
 const WriteEmail = () => {
   const [applicantList, setApplicantList] = useState<ApplicantType[]>([]);
@@ -193,7 +194,7 @@ const WriteEmail = () => {
             isOpen={isApplicantListOpen}
           />
         )}
-        <Container>
+        <Container isOpen={isApplicantListOpen}>
           <EmailContainer>
             <Title>
               <h1>{postInfo?.title}</h1>
@@ -216,7 +217,7 @@ const WriteEmail = () => {
             <Sender>
               <EmailCaption>보내는 사람</EmailCaption>
               <Input>
-                <input disabled={true} value={"innerjoint@gmail.com"}></input>
+                <input disabled={true} value={"innerjoin@gmail.com"}></input>
               </Input>
             </Sender>
             <Receiver>
@@ -227,19 +228,19 @@ const WriteEmail = () => {
                     selected={selectedTab === "전체"}
                     onClick={() => selectBtnClick("전체")}
                   >
-                    전체 선택
+                    전체
                   </SelectButton>
                   <SelectButton
                     selected={selectedTab === "합격자"}
                     onClick={() => selectBtnClick("합격자")}
                   >
-                    합격자 선택
+                    합격자
                   </SelectButton>
                   <SelectButton
                     selected={selectedTab === "불합격자"}
                     onClick={() => selectBtnClick("불합격자")}
                   >
-                    불합격자 선택
+                    불합격자
                   </SelectButton>
                 </SelectTab>
                 <ReceiverBox>
@@ -256,8 +257,8 @@ const WriteEmail = () => {
                   ))}
                   <input
                     type="text"
-                    placeholder="이름 또는 학번 검색"
                     value={searchQuery}
+                    placeholder="이름 또는 학번 검색"
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
                 </ReceiverBox>
@@ -304,6 +305,23 @@ const WriteEmail = () => {
           </EmailContainer>
         </Container>
       </EvaluateWrapper>
+      {isApplicantListOpen === true ? (
+        <CloseApplicantListButton
+          onClick={() => setIsApplicantListOpen(!isApplicantListOpen)}
+        >
+          <img
+            src="/images/manager/back.svg"
+            alt="지원자 리스트"
+            width="20px"
+          />
+        </CloseApplicantListButton>
+      ) : (
+        <OpenApplicantListButton
+          onClick={() => setIsApplicantListOpen(!isApplicantListOpen)}
+        >
+          <img src="/images/manager/list.svg" alt="뒤로가기" width="20px" />
+        </OpenApplicantListButton>
+      )}
     </Wrapper>
   );
 };
@@ -312,6 +330,7 @@ export default WriteEmail;
 
 const Wrapper = styled.div`
   display: flex;
+  position: fixed;
   width: 100vw;
   height: 100vh;
   overflow: hidden;
@@ -321,20 +340,31 @@ const Wrapper = styled.div`
 
 const EvaluateWrapper = styled.div`
   display: flex;
-  width: 100vw;
+  width: 100%;
   height: 100%;
   overflow-y: hidden;
   justify-content: flex-start;
-  background-color: #fff;
+
+  @media (max-width: ${breakpoints.mobile}) {
+    padding-bottom: 110px;
+  }
 `;
 
-const Container = styled.div`
+const Container = styled.div<{ isOpen: boolean }>`
   display: flex;
   justify-content: center;
   width: 100%;
-  padding: 0px 5%;
   height: 100%;
+  padding: 0px 5%;
   overflow-y: auto;
+  overflow-x: hidden;
+
+  @media (max-width: ${breakpoints.mobile}) {
+    display: ${({ isOpen }) => {
+      if (isOpen) return "none";
+      return "flex";
+    }};
+  }
 `;
 
 const EmailContainer = styled.div`
@@ -450,7 +480,8 @@ const Input = styled.div`
 `;
 
 const ReceiverContainer = styled.div`
-  display: flex;
+  position: relative;
+  display: inline-block;
   width: 100%;
   flex-direction: column;
 `;
@@ -494,11 +525,21 @@ const ReceiverBox = styled.div`
   min-height: 44px;
   height: auto
   align-items: center;
-  padding: 5px 5px;
+  padding: 5px 10px;
   gap: 5px;
   flex-shrink: 0;
   border-radius: 4px;
   border: 1px solid #ddd;
+
+  input {
+    flex: 1;
+    font-family: Pretendard;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 150%; /* 21px */
+    letter-spacing: -0.28px;
+  }
 `;
 
 const ReceiverItem = styled.div`
@@ -529,24 +570,30 @@ const ReceiverItem = styled.div`
   }
 `;
 const SearchResult = styled.div`
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 100;
+
   display: flex;
   flex-direction: column;
-  width: 30%;
+  width: 200px;
   max-height: 200px;
   overflow-y: auto;
   border-radius: 4px;
   border: 1px solid #ddd;
+  background-color: #fff;
 `;
 
 const SearchResultItem = styled.div`
   display: flex;
   algin-items: center;
-  padding: 5px 5px;
+  padding: 5px 10px;
   gap: 6px;
 
   color: #767676;
   font-family: Pretendard;
-  font-size: 16px;
+  font-size: 14px;
   font-style: normal;
   font-weight: 500;
   line-height: 150%; /* 24px */
@@ -561,7 +608,7 @@ const SearchResultItem = styled.div`
 const Body = styled.div`
   display: flex;
   width: 100%;
-  height: 240px;
+  height: 300px;
   margin-bottom: 10px;
   padding: 5px;
   align-items: flex-start;
@@ -589,5 +636,52 @@ const Body = styled.div`
     &::placeholder {
       color: #767676;
     }
+  }
+`;
+
+const OpenApplicantListButton = styled.div`
+  display: none;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #cc141d;
+  color: white;
+  border: none;
+  padding: 15px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 30px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+  z-index: 999;
+
+  &:hover {
+    background: #cc141d;
+  }
+
+  @media (max-width: ${breakpoints.mobile}) {
+    display: block;
+  }
+`;
+
+const CloseApplicantListButton = styled.div`
+  display: none;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #fcfafa;
+  border: none;
+  padding: 15px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 30px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+  z-index: 999;
+
+  &:hover {
+    background: #fcfafa;
+  }
+
+  @media (max-width: ${breakpoints.mobile}) {
+    display: block;
   }
 `;
