@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useMediaQuery } from "react-responsive";
 import InterviewerList from "../components/InterviewerList";
 import ApplicantList from "../components/ApplicantList";
 import MyButton from "../components/MyButton";
@@ -11,6 +12,7 @@ import { useNavigate } from "react-router-dom";
 import { Navbar } from "../../common/ui";
 import { ApplicantType, PostInfoType, MeetingTimesType } from "../global/types";
 import { GET, POST, PATCH } from "../../common/api/axios";
+import { breakpoints } from "../../common/ui/breakpoints";
 
 type GroupedMeetings = {
   [date: string]: {
@@ -61,6 +63,7 @@ const MeetArrange = () => {
   const [reservationStartTime, setReservationStartTime] = useState("");
   const [reservationEndTime, setReservationEndTime] = useState("");
   const [isApplicantListOpen, setIsApplicantListOpen] = useState(false);
+  const isMobile = useMediaQuery({ maxWidth: parseInt(breakpoints.mobile) });
 
   const getApplicantList = async () => {
     try {
@@ -539,7 +542,7 @@ const MeetArrange = () => {
             isOpen={isApplicantListOpen}
           />
         )}
-        <Container>
+        <Container isOpen={isApplicantListOpen}>
           <HeaderWrapper>
             {" "}
             <EvaluationHeader status="TIME_SET" />
@@ -602,6 +605,7 @@ const MeetArrange = () => {
                     postInfo?.recruitmentStatus !== "FORM_REVIEWED"
                   }
                   type="date"
+                  defaultValue={""}
                   value={
                     reservationStartTime
                       ? reservationStartTime.split("T")[0]
@@ -745,6 +749,7 @@ const MeetArrange = () => {
                             handleStartTimeChange(e.target.value)
                           }
                         />
+                        <p>~</p>
                         <MeetingTime
                           type="time"
                           value={selectedEndTime}
@@ -871,6 +876,23 @@ const MeetArrange = () => {
           </RestContainer>
         </Container>
       </EvaluateWrapper>
+      {isApplicantListOpen === true ? (
+        <CloseApplicantListButton
+          onClick={() => setIsApplicantListOpen(!isApplicantListOpen)}
+        >
+          <img
+            src="/images/manager/back.svg"
+            alt="지원자 리스트"
+            width="20px"
+          />
+        </CloseApplicantListButton>
+      ) : (
+        <OpenApplicantListButton
+          onClick={() => setIsApplicantListOpen(!isApplicantListOpen)}
+        >
+          <img src="/images/manager/list.svg" alt="뒤로가기" width="20px" />
+        </OpenApplicantListButton>
+      )}
     </Wrapper>
   );
 };
@@ -886,13 +908,16 @@ const Wrapper = styled.div`
 
 const EvaluateWrapper = styled.div`
   display: flex;
-  width: 100vw;
+  width: 100%;
   height: 100%;
   overflow-y: hidden;
-  background-color: #fff;
+
+  @media (max-width: ${breakpoints.mobile}) {
+    padding-bottom: 100px;
+  }
 `;
 
-const Container = styled.div`
+const Container = styled.div<{ isOpen: boolean }>`
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -901,6 +926,13 @@ const Container = styled.div`
   overflow-y: auto;
   overflow-x: hidden;
   background-color: #fff;
+
+  @media (max-width: ${breakpoints.mobile}) {
+    display: ${({ isOpen }) => {
+      if (isOpen) return "none";
+      return "flex";
+    }};
+  }
 `;
 
 const HeaderWrapper = styled.div`
@@ -913,13 +945,21 @@ const MeetTitle = styled.div`
   justify-content: space-between;
   align-items: center;
   padding-right: 7.7%;
+
+  @media (max-width: ${breakpoints.mobile}) {
+    flex-direction: column-reverse;
+  }
 `;
 
 const MeetCaptionContainer = styled.div<{ color: boolean }>`
   display: flex;
-  width: 500px;
   align-items: center;
   gap: 11px;
+
+  @media (max-width: ${breakpoints.mobile}) {
+    padding-top: 20px;
+    align-self: flex-start;
+  }
 
   p {
     font-family: Pretendard;
@@ -942,10 +982,14 @@ const MeetCaption = styled.div`
 
 const Buttons = styled.div`
   display: flex;
-  width: 100%;
   justify-content: flex-end;
   gap: 24px;
   margin-bottom: 15px;
+
+  @media (max-width: ${breakpoints.mobile}) {
+    align-self: flex-end;
+    gap: 6px;
+  }
 `;
 
 const MeetingSendButton = styled.div<{ isOpen: boolean }>`
@@ -1002,20 +1046,20 @@ const Tooltip = styled.div`
   padding: 8px;
   position: absolute;
   z-index: 1;
-  bottom: 125%;
-  left: 50%;
-  transform: translateX(-50%);
+  top: 150%;
+  left: 30%;
+  transform: translateX(0%);
   white-space: nowrap;
 
   &::after {
     content: "";
     position: absolute;
-    top: 100%;
-    left: 50%;
-    margin-left: -5px;
-    border-width: 5px;
+    top: -20%;
+    left: 5%;
+    transform: translateX(-50%);
+    border-width: 0 15px 15px 0px;
     border-style: solid;
-    border-color: #333 transparent transparent transparent;
+    border-color: transparent transparent #333 transparent;
   }
 `;
 
@@ -1023,17 +1067,30 @@ const InfoWrapper = styled(InfoContainer)`
   &:hover ${Tooltip} {
     visibility: visible;
   }
+
+  @media (max-width: ${breakpoints.mobile}) {
+    padding-top: 4px;
+  }
 `;
 
 const MeetPeriodContainer = styled.div`
   display: inline-flex;
   align-items: center;
   gap: 60px;
+
+  @media (max-width: ${breakpoints.mobile}) {
+    margin-top: 10px;
+    gap: 30px;
+  }
 `;
 
 const MeetPeriod = styled.div`
   display: flex;
   align-items: center;
+
+  @media (max-width: ${breakpoints.mobile}) {
+    align-items: flex-start;
+  }
 
   p {
     margin-right: 24px;
@@ -1043,12 +1100,20 @@ const MeetPeriod = styled.div`
     font-style: normal;
     font-weight: 600;
     line-height: 130%; /* 23.4px */
+
+    @media (max-width: ${breakpoints.mobile}) {
+      padding-top: 2px;
+    }
   }
 `;
 
 const Period = styled.div`
   display: flex;
   gap: 10px;
+
+  @media (max-width: ${breakpoints.mobile}) {
+    flex-direction: column;
+  }
 
   input {
     border: 1px solid #fcfafa;
@@ -1205,7 +1270,6 @@ const Interviewer = styled.div`
 const MeetSettingBox = styled.div`
   display: flex;
   width: 480px;
-  height: 550px;
   padding: 36px 24px;
   flex-direction: column;
   align-items: center;
@@ -1213,6 +1277,12 @@ const MeetSettingBox = styled.div`
   border-radius: 18px;
   border: 1px solid #ddd;
   margin-right: 15px;
+
+  @media (max-width: ${breakpoints.mobile}) {
+    width: 1080px;
+    padding: 25px 24px;
+    gap: 30px;
+  }
 `;
 
 const MeetSettingDetailBox = styled.div`
@@ -1221,6 +1291,10 @@ const MeetSettingDetailBox = styled.div`
   align-items: center;
   gap: 28px;
   align-self: stretch;
+
+  @media (max-width: ${breakpoints.mobile}) {
+    gap: 20px;
+  }
 `;
 
 const MeetSettingDetail = styled.div`
@@ -1229,6 +1303,10 @@ const MeetSettingDetail = styled.div`
   align-items: flex-start;
   gap: 22px;
   align-self: stretch;
+
+  @media (max-width: ${breakpoints.mobile}) {
+    gap: 12px;
+  }
 `;
 
 const MeetSettingButtons = styled.div`
@@ -1251,6 +1329,10 @@ const MeetingSettingInfoBox = styled.div`
     font-weight: 600;
     line-height: 150%; /* 27px */
     letter-spacing: -0.36px;
+
+    @media (max-width: ${breakpoints.mobile}) {
+      font-size: 16px;
+    }
   }
 
   select {
@@ -1269,6 +1351,10 @@ const MeetingSettingInfoBox = styled.div`
     line-height: 140%; /* 22.4px */
     border: solid 1px #f9f9f9;
 
+    @media (max-width: ${breakpoints.mobile}) {
+      height: 30px;
+    }
+
     &:focus {
       outline: none;
       border: solid 1px #606060;
@@ -1279,6 +1365,10 @@ const MeetingSettingInfoBox = styled.div`
     border: solid 1px #f9f9f9;
     &:focus {
       border: solid 1px #606060;
+    }
+
+    @media (max-width: ${breakpoints.mobile}) {
+      height: 30px;
     }
   }
 `;
@@ -1318,7 +1408,6 @@ const GrayLine = styled.div`
 `;
 
 const MeetingTime = styled.input`
-  width: 105px;
   border: 1px solid #fcfafa;
   border-radius: 4px;
   font-family: Pretendard;
@@ -1326,6 +1415,9 @@ const MeetingTime = styled.input`
   font-weight: 500;
   padding: 2px 2.5px;
   background-color: #fcfafa;
+
+  @media (max-width: ${breakpoints.mobile}) {
+  }
 
   &:hover {
     cursor: pointer;
@@ -1349,6 +1441,10 @@ const CancelButton = styled.div`
   line-height: 150%; /* 24px */
   letter-spacing: -0.32px;
   cursor: pointer;
+
+  @media (max-width: ${breakpoints.mobile}) {
+    padding: 10px 20px;
+  }
 `;
 
 const MakeButton = styled.div`
@@ -1368,6 +1464,10 @@ const MakeButton = styled.div`
   line-height: 150%; /* 24px */
   letter-spacing: -0.32px;
   cursor: pointer;
+
+  @media (max-width: ${breakpoints.mobile}) {
+    padding: 10px 20px;
+  }
 `;
 
 const RestContainer = styled.div`
@@ -1427,6 +1527,53 @@ const RestApplicant = styled.div`
   gap: 12px;
   border-radius: 6px;
   border: 1px solid var(--Achromatic-gray02, #f0f0f0);
+`;
+
+const OpenApplicantListButton = styled.div`
+  display: none;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #cc141d;
+  color: white;
+  border: none;
+  padding: 15px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 30px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+  z-index: 999;
+
+  &:hover {
+    background: #cc141d;
+  }
+
+  @media (max-width: ${breakpoints.mobile}) {
+    display: block;
+  }
+`;
+
+const CloseApplicantListButton = styled.div`
+  display: none;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #fcfafa;
+  border: none;
+  padding: 15px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 30px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+  z-index: 999;
+
+  &:hover {
+    background: #fcfafa;
+  }
+
+  @media (max-width: ${breakpoints.mobile}) {
+    display: block;
+  }
 `;
 
 const CustomInput = styled.input`

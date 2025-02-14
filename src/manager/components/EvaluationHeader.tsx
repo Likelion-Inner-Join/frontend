@@ -3,6 +3,7 @@ import styled from "styled-components";
 import { PostInfoType } from "../global/types";
 import { GET, PATCH } from "../../common/api/axios";
 import { useNavigate } from "react-router-dom";
+import { breakpoints } from "../../common/ui/breakpoints";
 
 interface EvaluationHeaderProps {
   status: string;
@@ -301,6 +302,10 @@ const Title = styled.div`
   display: flex;
   justify-content: space-between;
   margin-bottom: 25px;
+
+  @media (max-width: ${breakpoints.mobile}) {
+    margin-bottom: 10px;
+  }
 
   h1 {
     overflow: hidden;
