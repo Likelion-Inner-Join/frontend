@@ -125,6 +125,7 @@ export const router = createBrowserRouter([
     path: ROUTES.DOC_EVALUATE,
     element: (
       <div>
+        <GlobalStyle />
         <DocEvaluate />
       </div>
     ),
@@ -187,6 +188,7 @@ export const router = createBrowserRouter([
     path: ROUTES.OWNER,
     element: (
       <div>
+        <GlobalStyle />
         <OwnerPage />
       </div>
     ),

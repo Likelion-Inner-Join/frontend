@@ -1,5 +1,6 @@
 import React from "react";
 import styled from "styled-components";
+import { breakpoints } from "../../common/ui/breakpoints";
 
 interface ButtonProps {
   content: string;
@@ -29,6 +30,10 @@ const Wrapper = styled.button<ButtonProps>`
   letter-spacing: -0.32px;
   border: 1px solid;
   transition: background-color 0.3s ease-in-out;
+
+  @media (max-width: ${breakpoints.mobile}) {
+    padding: 10px 20px;
+  }
 
   background-color: ${({ buttonType }) => {
     if (buttonType === "RED") return "#CC141D";

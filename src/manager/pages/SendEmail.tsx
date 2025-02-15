@@ -7,12 +7,14 @@ import { Navbar } from "../../common/ui";
 import { useNavigate } from "react-router-dom";
 import { ApplicantType, PostInfoType } from "../global/types";
 import { GET } from "../../common/api/axios";
+import { breakpoints } from "../../common/ui/breakpoints";
 
 const SendEmail = () => {
   const [applicantList, setApplicantList] = useState<ApplicantType[]>([]);
   const [redirectPage, setRedirectPage] = useState("");
   const [postInfo, setPostInfo] = useState<PostInfoType>();
   const navigate = useNavigate();
+  const [isApplicantListOpen, setIsApplicantListOpen] = useState(false);
 
   const getApplicantList = async () => {
     try {
@@ -73,12 +75,14 @@ const SendEmail = () => {
             data1={applicantList}
             data2={postInfo?.recruitingList || []}
             isEmail={true}
+            isOpen={isApplicantListOpen}
           />
         ) : (
           <InterviewerList
             data1={applicantList}
             data2={postInfo?.recruitingList || []}
             isEmail={true}
+            isOpen={isApplicantListOpen}
           />
         )}
         <Container>
@@ -116,27 +120,26 @@ const Wrapper = styled.div`
 
 const EvaluateWrapper = styled.div`
   display: flex;
-  width: 100vw;
+  width: 100%;
   height: 100%;
-  overflow-y: hidden;
-  background-color: #fff;
+  overflow: hidden;
 `;
 
 const Container = styled.div`
   display: flex;
   flex-direction: column;
   width: 100%;
-  height: 100%;
+  height: auto;
   justify-content: center;
   align-items: center;
+  gap: 25px;
 
-  img {
-    margin-bottom: 55px;
+  @media (max-width: ${breakpoints.mobile}) {
+    margin-bottom: 100px;
   }
 `;
 
 const Caption = styled.div`
-  margin-bottom: 25px;
   color: #000;
   font-family: Pretendard;
   font-size: 36px;
@@ -144,4 +147,8 @@ const Caption = styled.div`
   font-weight: 600;
   line-height: 150%; /* 54px */
   letter-spacing: -0.72px;
+
+  @media (max-width: ${breakpoints.mobile}) {
+    font-size: 24px;
+  }
 `;

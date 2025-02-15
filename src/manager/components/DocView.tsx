@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
+import { useMediaQuery } from "react-responsive";
 import styled from "styled-components";
 import TextForm from "./TextForm";
 import DropDownForm from "./DropDownForm";
@@ -12,6 +13,7 @@ import {
   PostInfoType,
 } from "../global/types";
 import { GET, PUT, POST } from "../../common/api/axios";
+import { breakpoints } from "../../common/ui/breakpoints";
 
 interface DocViewProps {
   applicant?: ApplicantType;
@@ -34,6 +36,7 @@ const DocView = ({ applicant, type }: DocViewProps) => {
   );
   const [totalScore, setTotalScore] = useState(0);
   const [meetingScore, setMeetingScore] = useState(0);
+  const isMobile = useMediaQuery({ maxWidth: parseInt(breakpoints.mobile) });
 
   useEffect(() => {
     if (applyId) {
@@ -276,11 +279,19 @@ const DocView = ({ applicant, type }: DocViewProps) => {
                 buttonType="WHITE"
                 onClick={closeDocument}
               />
-              <MyButton
-                content="저장하기"
-                buttonType="RED"
-                onClick={saveDocument}
-              />
+              {isMobile ? (
+                <MyButton
+                  content="저장"
+                  buttonType="RED"
+                  onClick={saveDocument}
+                />
+              ) : (
+                <MyButton
+                  content="저장하기"
+                  buttonType="RED"
+                  onClick={saveDocument}
+                />
+              )}
             </Buttons>
           </Title>
           <ApplicantInfo>
@@ -461,25 +472,37 @@ const Wrapper = styled.div`
   width: calc(100% - 400px);
   height: 100vh;
   background: rgba(68, 68, 68, 0.4);
-  z-index: 1;
+  z-index: 1000;
+
+  @media (max-width: ${breakpoints.mobile}) {
+    left: 0px;
+    width: 100%;
+  }
 `;
 
 const Buttons = styled.div`
   display: flex;
-  width: 100%;
   justify-content: flex-end;
   gap: 12px;
+
+  @media (max-width: ${breakpoints.mobile}) {
+    gap: 6px;
+  }
 `;
 
 const DocumentPopUp = styled.div`
   display: flex;
   flex-direction: column;
-  width: 80%;
-  height: 90%;
+  width: 90%;
+  height: 95%;
   align-items: flex-start;
   padding: 20px 10px 20px 30px;
   border-radius: 8px 8px 0px 0px;
   background: #fcfafa;
+
+  @media (max-width: ${breakpoints.mobile}) {
+    padding: 10px 5px 10px 10px;
+  }
 `;
 
 const TitleContainer = styled.div`
@@ -496,10 +519,9 @@ const Title = styled.div`
   display: flex;
   width: 100%;
   justify-content: space-between;
-  align-items: flex-end;
+  align-items: center;
 
   p {
-    width: 500px;
     color: #000;
     font-family: Pretendard;
     font-size: 24px;
@@ -507,6 +529,10 @@ const Title = styled.div`
     font-weight: 700;
     line-height: normal;
     letter-spacing: -0.56px;
+
+    @media (max-width: ${breakpoints.mobile}) {
+      font-size: 20px;
+    }
   }
 `;
 
@@ -527,6 +553,11 @@ const ResultContainer = styled.div`
   align-items: center;
   align-self: stretch;
 
+  @media (max-width: ${breakpoints.mobile}) {
+    margin-right: 5px;
+    padding-bottom: 10px;
+  }
+
   p {
     color: #000;
     font-family: Pretendard;
@@ -535,6 +566,10 @@ const ResultContainer = styled.div`
     font-weight: 600;
     line-height: normal;
     letter-spacing: -0.4px;
+
+    @media (max-width: ${breakpoints.mobile}) {
+      font-size: 18px;
+    }
   }
 `;
 
@@ -542,6 +577,10 @@ const ResultTab = styled.div`
   display: flex;
   align-items: center;
   gap: 24px;
+
+  @media (max-width: ${breakpoints.mobile}) {
+    gap: 10px;
+  }
 `;
 
 const CheckBox = styled.div<{ selected: boolean; disabled: boolean }>`
@@ -573,6 +612,10 @@ const Result = styled.div`
   align-items: center;
   gap: 8px;
 
+  @media (max-width: ${breakpoints.mobile}) {
+    gap: 5px;
+  }
+
   p {
     color: var #222;
     font-family: Pretendard;
@@ -580,6 +623,10 @@ const Result = styled.div`
     font-style: normal;
     font-weight: 500;
     line-height: 150%; /* 24px */
+
+    @media (max-width: ${breakpoints.mobile}) {
+      font-size: 14px;
+    }
   }
 `;
 
@@ -594,6 +641,12 @@ const ScoreContainer = styled.div`
   align-self: stretch;
   border-top: solid 1px #ddd;
 
+  @media (max-width: ${breakpoints.mobile}) {
+    margin-right: 5px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+
   p {
     color: #000;
     font-family: Pretendard;
@@ -602,6 +655,10 @@ const ScoreContainer = styled.div`
     font-weight: 600;
     line-height: normal;
     letter-spacing: -0.4px;
+
+    @media (max-width: ${breakpoints.mobile}) {
+      font-size: 18px;
+    }
   }
 `;
 
@@ -626,6 +683,10 @@ const TotalScore = styled.div`
     font-weight: 700;
     line-height: normal;
     letter-spacing: -0.4px;
+
+    @media (max-width: ${breakpoints.mobile}) {
+      font-size: 14px;
+    }
   }
 
   input {

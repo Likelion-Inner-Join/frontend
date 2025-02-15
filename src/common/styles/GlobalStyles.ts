@@ -4,7 +4,6 @@ export const GlobalStyle = createGlobalStyle`
   ${reset}
   html {
     font-size:10px;
-    height:100vh;
     cursor:default;
   }
   *{
@@ -15,7 +14,7 @@ export const GlobalStyle = createGlobalStyle`
   body {
     font-family: Pretendard;
     background-color: #fff;
-    height:100vh;
+    overflow: hidden;
   }
   ::-webkit-scrollbar {
   width: 4px; /* 스크롤바의 너비 */

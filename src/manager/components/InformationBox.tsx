@@ -1,6 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 import { ApplicantType } from "../global/types";
+import { breakpoints } from "../../common/ui/breakpoints";
 interface InformationBoxProps {
   restList: ApplicantType[];
   passList: ApplicantType[];
@@ -53,7 +54,7 @@ const InfoBox = styled.div`
   margin-top: 12px;
   padding: 18px 40px;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
   gap: 36px;
   border-radius: 16px;
   background: #f9f9f9;
@@ -71,6 +72,12 @@ const InfoBox = styled.div`
     font-weight: 500;
     letter-spacing: -0.32px;
   }
+
+  @media (max-width: ${breakpoints.mobile}) {
+    gap: 10px;
+    padding: 10px 20px;
+    height: 50px;
+  }
 `;
 
 const Count = styled.div<{ state: string }>`
@@ -86,4 +93,8 @@ const Count = styled.div<{ state: string }>`
     if (state === "fail") return "#88181C";
     return "#000";
   }};
+
+  @media (max-width: ${breakpoints.mobile}) {
+    margin-left: 10px;
+  }
 `;

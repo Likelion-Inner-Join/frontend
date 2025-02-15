@@ -10,6 +10,7 @@ import { Navbar } from "../../common/ui";
 import { GET } from "../../common/api/axios";
 import { ApplicantType, PostInfoType } from "../global/types";
 import { applicantData } from "../mock/applicantData";
+import { breakpoints } from "../../common/ui/breakpoints";
 
 const MeetEvaluate = () => {
   const [applicantList, setApplicantList] = useState<ApplicantType[]>([]);
@@ -17,6 +18,7 @@ const MeetEvaluate = () => {
   const [restList, setRestList] = useState<ApplicantType[]>([]);
   const [passList, setPassList] = useState<ApplicantType[]>([]);
   const [failList, setFailList] = useState<ApplicantType[]>([]);
+  const [isApplicantListOpen, setIsApplicantListOpen] = useState(false);
   const navigate = useNavigate();
 
   const getApplicantList = async () => {
@@ -86,8 +88,9 @@ const MeetEvaluate = () => {
           data1={applicantList}
           data2={postInfo?.recruitingList || []}
           isEmail={false}
+          isOpen={isApplicantListOpen}
         />
-        <Container>
+        <Container isOpen={isApplicantListOpen}>
           <EvaluationHeader status="INTERVIEWED" />
           <Buttons>
             {/* <EvalButton>
@@ -146,6 +149,23 @@ const MeetEvaluate = () => {
           />
         </Container>
       </EvaluateWrapper>
+      {isApplicantListOpen === true ? (
+        <CloseApplicantListButton
+          onClick={() => setIsApplicantListOpen(!isApplicantListOpen)}
+        >
+          <img
+            src="/images/manager/back.svg"
+            alt="지원자 리스트"
+            width="20px"
+          />
+        </CloseApplicantListButton>
+      ) : (
+        <OpenApplicantListButton
+          onClick={() => setIsApplicantListOpen(!isApplicantListOpen)}
+        >
+          <img src="/images/manager/list.svg" alt="뒤로가기" width="20px" />
+        </OpenApplicantListButton>
+      )}
     </Wrapper>
   );
 };
@@ -163,21 +183,31 @@ const Wrapper = styled.div`
 
 const EvaluateWrapper = styled.div`
   display: flex;
-  width: 100vw;
-  height: 100%;
-  overflow-y: hidden;
-  background-color: #fff;
-`;
-
-const Container = styled.div`
-  display: flex;
-  flex-direction: column;
   width: 100%;
   height: 100%;
+  overflow-y: hidden;
+
+  @media (max-width: ${breakpoints.mobile}) {
+    padding-bottom: 100px;
+  }
+`;
+
+const Container = styled.div<{ isOpen: boolean }>`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
   padding: 0px 5%;
   padding-bottom: 50px;
   overflow-y: auto;
-  background-color: #fff;
+  overflow-x: hidden;
+
+  @media (max-width: ${breakpoints.mobile}) {
+    display: ${({ isOpen }) => {
+      if (isOpen) return "none";
+      return "flex";
+    }};
+  }
 `;
 
 const Buttons = styled.div`
@@ -186,6 +216,53 @@ const Buttons = styled.div`
   justify-content: flex-end;
   gap: 24px;
   margin-bottom: 15px;
+`;
+
+const OpenApplicantListButton = styled.div`
+  display: none;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #cc141d;
+  color: white;
+  border: none;
+  padding: 15px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 30px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+  z-index: 999;
+
+  &:hover {
+    background: #cc141d;
+  }
+
+  @media (max-width: ${breakpoints.mobile}) {
+    display: block;
+  }
+`;
+
+const CloseApplicantListButton = styled.div`
+  display: none;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #fcfafa;
+  border: none;
+  padding: 15px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 30px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+  z-index: 999;
+
+  &:hover {
+    background: #fcfafa;
+  }
+
+  @media (max-width: ${breakpoints.mobile}) {
+    display: block;
+  }
 `;
 
 const EvalButton = styled.div`
@@ -267,4 +344,8 @@ const InfoRatio = styled.div`
 
 const Style = styled.div`
   margin-top: 70px;
+
+  @media (max-width: ${breakpoints.mobile}) {
+    margin-top: 50px;
+  }
 `;

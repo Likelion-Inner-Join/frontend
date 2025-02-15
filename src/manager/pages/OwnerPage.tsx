@@ -1,10 +1,13 @@
 import React, { useEffect, useState, useRef } from "react";
+import { useMediaQuery } from "react-responsive";
 import styled from "styled-components";
 import { Navbar } from "../../common/ui";
+import profileImage from "../../assets/user-profile.svg";
 import MyButton from "../components/MyButton";
 import { ClubInfoType } from "../global/types";
 import axios from "axios";
 import { GET, PUT } from "../../common/api/axios";
+import { breakpoints } from "../../common/ui/breakpoints";
 
 const OwnerPage = () => {
   const [clubInfo, setClubInfo] = useState<ClubInfoType>({
@@ -27,6 +30,7 @@ const OwnerPage = () => {
   //   const [newClubImage, setNewClubImage] = useState("password");
   const [image, setImage] = useState<File | null>(null);
   const inputRef = useRef<HTMLInputElement>(null); // Ref 생성
+  const isMobile = useMediaQuery({ maxWidth: parseInt(breakpoints.mobile) });
 
   const apiMultipart = axios.create({
     baseURL: "https://innerjoin.duckdns.org/",
@@ -218,6 +222,31 @@ const OwnerPage = () => {
                     placeholder="새 비밀번호를 입력하세요"
                     onChange={(e) => setNewPassword(e.target.value)}
                   />
+                  {ownerInfoFix && isMobile ? (
+                    <SaveButton
+                      onClick={() => {
+                        handlePasswordChange();
+                      }}
+                    >
+                      저장
+                    </SaveButton>
+                  ) : (
+                    <div />
+                  )}
+                  {ownerInfoFix && isMobile ? (
+                    <CancelButton
+                      onClick={() => {
+                        setNewPassword("password");
+                        setOwnerInfoFix(false);
+                      }}
+                    >
+                      취소
+                    </CancelButton>
+                  ) : (
+                    <div />
+                  )}
+                </PassWord>
+                <PassWord>
                   {ownerInfoFix ? (
                     <input
                       type="password"
@@ -230,7 +259,7 @@ const OwnerPage = () => {
                     <div />
                   )}
                 </PassWord>
-                {ownerInfoFix ? (
+                {ownerInfoFix && !isMobile ? (
                   <SaveButton
                     onClick={() => {
                       handlePasswordChange();
@@ -241,7 +270,7 @@ const OwnerPage = () => {
                 ) : (
                   <div />
                 )}
-                {ownerInfoFix ? (
+                {ownerInfoFix && !isMobile ? (
                   <CancelButton
                     onClick={() => {
                       setNewPassword("password");
@@ -279,7 +308,7 @@ const OwnerPage = () => {
                   <Caption>동아리명</Caption>
                   <StyledInput
                     disabled={!clubInfoFix}
-                    value={clubInfo?.name}
+                    value={clubInfo?.name || "동아리명을 등록해주세요"}
                     onChange={(e) =>
                       setClubInfo({
                         ...clubInfo,
@@ -293,7 +322,7 @@ const OwnerPage = () => {
                 <Caption>동아리 이메일</Caption>
                 <StyledInput
                   disabled={!clubInfoFix}
-                  value={clubInfo?.email || ""}
+                  value={clubInfo?.email || "이메일을 등록해주세요"}
                   onChange={(e) =>
                     setClubInfo({
                       ...clubInfo,
@@ -306,7 +335,7 @@ const OwnerPage = () => {
                 <Caption>학교</Caption>
                 <StyledInput
                   disabled={!clubInfoFix}
-                  value={clubInfo?.school || ""}
+                  value={clubInfo?.school || "대학교를 등록해주세요"}
                   onChange={(e) =>
                     setClubInfo({
                       ...clubInfo,
@@ -317,14 +346,28 @@ const OwnerPage = () => {
               </Content>
               <Content>
                 <Caption>분과</Caption>
-                <p>{clubInfo?.categoryName}</p>
+                <StyledInput
+                  disabled={!clubInfoFix}
+                  value={clubInfo?.categoryName || "분과를 등록해주세요"}
+                  onChange={(e) =>
+                    setClubInfo({
+                      ...clubInfo,
+                      categoryName: e.target.value,
+                    })
+                  }
+                />
+                {/* <p>{clubInfo?.categoryName || "분과를 등록해주세요"}</p> */}
               </Content>
               <Content>
                 <Caption>프로필사진</Caption>
                 {clubInfoFix && (
                   <input type="file" onChange={handleImageChange} />
                 )}
-                <img src={clubInfo?.imageUrl} alt="동아리 프로필 사진" />
+                {clubInfo.imageUrl ? (
+                  <img src={clubInfo?.imageUrl} alt="동아리 프로필 사진" />
+                ) : (
+                  <img src={profileImage} alt="기본 프로필 사진" />
+                )}
               </Content>
             </ContentBox>
           </ClubContainer>{" "}
@@ -343,6 +386,7 @@ const Wrapper = styled.div`
   flex-direction: column;
   background-color: #fff;
   overflow-y: auto;
+  position: fixed;
 `;
 
 const InfoWrapper = styled.div`
@@ -350,6 +394,10 @@ const InfoWrapper = styled.div`
   justify-content: center;
   margin-top: 90px;
   margin-bottom: 90px;
+
+  @media (max-width: ${breakpoints.mobile}) {
+    padding-bottom: 50px;
+  }
 `;
 
 const InfoContainer = styled.div`
@@ -359,6 +407,11 @@ const InfoContainer = styled.div`
   align-self: center;
   align-items: flex-start;
   gap: 80px;
+
+  @media (max-width: ${breakpoints.mobile}) {
+    width: 80%;
+    gap: 30px;
+  }
 `;
 
 const OwnerContainer = styled.div`
@@ -367,6 +420,10 @@ const OwnerContainer = styled.div`
   align-items: flex-start;
   gap: 45px;
   align-self: stretch;
+
+  @media (max-width: ${breakpoints.mobile}) {
+    gap: 30px;
+  }
 `;
 
 const ClubContainer = styled.div`
@@ -375,6 +432,10 @@ const ClubContainer = styled.div`
   align-items: flex-start;
   gap: 45px;
   align-self: stretch;
+
+  @media (max-width: ${breakpoints.mobile}) {
+    gap: 30px;
+  }
 `;
 
 const TitleBox = styled.div`
@@ -399,11 +460,19 @@ const ContentBox = styled.div`
   flex-direction: column;
   justify-content: flex-start;
   gap: 50px;
+
+  @media (max-width: ${breakpoints.mobile}) {
+    gap: 25px;
+  }
 `;
 
 const Content = styled.div`
   display: flex;
   justify-content: flex-start;
+  
+  @media (max-width: ${breakpoints.mobile}) {
+    flex-direction: column;
+  }
 
   p {
     color: #000;
@@ -413,14 +482,27 @@ const Content = styled.div`
     font-weight: 500;
     line-height: 120%;
     letter-spacing: -0.32px;
+
+    @media (max-width: ${breakpoints.mobile}) {
+      margin-left: 5px;
+    }
   }
 
   img {
     width: 90px;
     height: 90px;
-    border-radius: 100px;
+    border-radius: 50%;
     background: url(<path-to-image>) lightgray 6.152px 20.876px / 87.444%
       60.207% no-repeat;
+    object-fit: cover;
+
+    @media (max-width: ${breakpoints.mobile}) {
+      margin-left: 30px;
+    }
+  }
+
+  input {
+    margin-bottom: 10px;
   }
 }
 `;
@@ -445,7 +527,9 @@ const StyledInput = styled.input<{ disabled: boolean }>`
 `;
 
 const Caption = styled.div`
-  margin-right: 100px;
+  width: 100px;
+  margin-right: 80px;
+  padding: 5px 5px;
   color: var(--Achromatic-gray08, #424242);
   font-family: Pretendard;
   font-size: 16px;
@@ -453,6 +537,10 @@ const Caption = styled.div`
   font-weight: 500;
   line-height: 120%; /* 19.2px */
   letter-spacing: -0.32px;
+
+  @media (max-width: ${breakpoints.mobile}) {
+    margin-right: 50px;
+  }
 `;
 
 const HashTagBox = styled.div`
@@ -475,24 +563,33 @@ const HashTagBox = styled.div`
 
 const PassWord = styled.div`
   display: flex;
-  flex-direction: column;
   gap: 10px;
+  margin-right: 10px;
 
   input {
     display: flex;
     flex: wrap;
-    padding: 5px 0px;
+    padding: 5px 5px;
     border-radius: 10px;
     font-family: Pretendard;
     font-size: 14px;
     background-color: #fff;
     color: #000;
+    border: solid 1px #fff;
+
+    @media (max-width: ${breakpoints.mobile}) {
+      width: 160px;
+    }
 
     &:focus {
       padding: 5px 5px;
       border: solid 1px #424242;
       background-color: #fcfbfb;
     }
+  }
+
+  @media (max-width: ${breakpoints.mobile}) {
+    gap: 0px;
   }
 `;
 
@@ -515,6 +612,11 @@ const SaveButton = styled.div`
   font-weight: 300;
   line-height: 120%; /* 19.2px */
   letter-spacing: -0.32px;
+
+  @media (max-width: ${breakpoints.mobile}) {
+    margin-left: 10px;
+    font-size: 14px;
+  }
 `;
 
 const CancelButton = styled.div`
@@ -536,4 +638,9 @@ const CancelButton = styled.div`
   font-weight: 300;
   line-height: 120%; /* 19.2px */
   letter-spacing: -0.32px;
+
+  @media (max-width: ${breakpoints.mobile}) {
+    font-size: 14px;
+    margin-left: 5px;
+  }
 `;

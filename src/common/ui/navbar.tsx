@@ -4,6 +4,7 @@ import { Button } from "./button";
 import { useAuth } from "../../auth/context/auth-context";
 import profileImage from "../../assets/user-profile.svg";
 import logoImg from "../../assets/logo.svg";
+import { breakpoints } from "./breakpoints";
 
 export const Navbar = () => {
   const { authState } = useAuth();
@@ -25,29 +26,25 @@ export const Navbar = () => {
           }}
         >
           <img src={logoImg} alt="이너조인" />
-          이너조인
+          InnerJoin
         </Logo>
-        {isClubManager ? (
-          <div />
-        ) : (
+        {authState.isAuthenticated ? (
           <NavLinks>
-            <NavLink
-              selected={isActive("/")}
-              onClick={() => {
-                navigate("/");
-              }}
-            >
-              카테고리
-            </NavLink>
-            <NavLink
-              selected={isActive("/my/application-manage")}
-              onClick={() => {
-                navigate("/my/application-manage");
-              }}
-            >
-              지원 관리하기
-            </NavLink>
+            {isClubManager ? (
+              <div />
+            ) : (
+              <NavLink
+                selected={isActive("/my/application-manage")}
+                onClick={() => {
+                  navigate("/my/application-manage");
+                }}
+              >
+                지원 관리하기
+              </NavLink>
+            )}
           </NavLinks>
+        ) : (
+          <div />
         )}
       </Left>
 
@@ -91,6 +88,10 @@ const Container = styled.div`
   align-items: center;
   padding: 4px 40px;
   border-bottom: 1px solid #ccc;
+
+  @media (max-width: ${breakpoints.mobile}) {
+    padding: 4px 10px;
+  }
 `;
 
 const Left = styled.div`
@@ -106,12 +107,21 @@ const Logo = styled.span`
   font-weight: 700;
   cursor: pointer;
   color: #3e3e3e;
+
+  @media (max-width: ${breakpoints.mobile}) {
+    font-size: 20px;
+    gap: 10px;
+  }
 `;
 
 const NavLinks = styled.div`
   display: flex;
   gap: 36px;
   margin-left: 60px;
+
+  @media (max-width: ${breakpoints.mobile}) {
+    margin-left: 20px;
+  }
 `;
 
 const NavLink = styled.div<{ selected?: boolean }>`
@@ -121,6 +131,10 @@ const NavLink = styled.div<{ selected?: boolean }>`
   color: ${({ selected }) => (selected ? "#000000" : "#424242")};
   &:hover {
     color: #000000;
+  }
+
+  @media (max-width: ${breakpoints.mobile}) {
+    font-size: 16px;
   }
 `;
 
@@ -134,6 +148,10 @@ const ProfileWrapper = styled.div`
   align-items: center;
   gap: 10px;
   cursor: pointer;
+
+  @media (max-width: ${breakpoints.mobile}) {
+    gap: 6px;
+  }
 `;
 
 const ProfileImage = styled.img`
@@ -146,6 +164,10 @@ const ProfileImage = styled.img`
 const UserName = styled.div`
   font-size: 16px;
   font-weight: 500;
+
+  @media (max-width: ${breakpoints.mobile}) {
+    font-size: 16px;
+  }
 `;
 
 const ButtonGroup = styled.div`

@@ -5,6 +5,7 @@ import DocView from "./DocView";
 import { GET } from "../../common/api/axios";
 import { ApplicantType, PostInfoType } from "../global/types";
 import { applicantData } from "../mock/applicantData";
+import { breakpoints } from "../../common/ui/breakpoints";
 
 interface PositionType {
   recruitingId: number;
@@ -16,11 +17,17 @@ interface ApplicantListProps {
   data1: ApplicantType[];
   data2: PositionType[];
   isEmail: boolean;
+  isOpen: boolean;
 }
 
 const stateList = ["전체", "합격", "불합격", "미평가"];
 
-const ApplicantList = ({ data1, data2, isEmail }: ApplicantListProps) => {
+const ApplicantList = ({
+  data1,
+  data2,
+  isEmail,
+  isOpen,
+}: ApplicantListProps) => {
   const [applicantList, setApplicantList] = useState<ApplicantType[]>([]);
   const [selectedState, setSelectedState] = useState("전체");
   const [selectedPositions, setSelectedPositions] = useState<string[]>([]);
@@ -155,7 +162,7 @@ const ApplicantList = ({ data1, data2, isEmail }: ApplicantListProps) => {
   }, []);
 
   return (
-    <Wrapper>
+    <Wrapper isOpen={isOpen}>
       <Container>
         <Title>
           <h1>지원자 리스트</h1>
@@ -262,7 +269,7 @@ const ApplicantList = ({ data1, data2, isEmail }: ApplicantListProps) => {
 
 export default ApplicantList;
 
-const Wrapper = styled.div`
+const Wrapper = styled.div<{ isOpen: boolean }>`
   display: flex;
   width: 400px;
   height: 100%;
@@ -270,6 +277,13 @@ const Wrapper = styled.div`
   gap: 20px;
   flex-shrink: 0;
   background-color: #fcfafa;
+
+  @media (max-width: ${breakpoints.mobile}) {
+    display: ${({ isOpen }) => {
+      if (isOpen) return "flex";
+      return "none";
+    }};
+  }
 `;
 
 const Container = styled.div`
@@ -278,12 +292,12 @@ const Container = styled.div`
   flex-direction: column;
   align-items: flex-start;
   margin-left: 30px;
+  margin-top: 50px;
 `;
 
 const Title = styled.div`
   display: flex;
-  height: 108px;
-  padding: 40px 58px 16px 18px;
+  padding: 0px 58px 16px 18px;
   justify-content: space-between;
   align-items: flex-end;
   align-self: stretch;
