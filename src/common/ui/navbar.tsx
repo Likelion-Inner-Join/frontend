@@ -28,32 +28,28 @@ export const Navbar = () => {
           <img src={logoImg} alt="이너조인" />
           InnerJoin
         </Logo>
-        {!isClubManager ? (
-          <div />
-        ) : (
+        {authState.isAuthenticated ? (
           <NavLinks>
-            <NavLink
-              selected={isActive("/")}
-              onClick={() => {
-                navigate("/");
-              }}
-            >
-              카테고리
-            </NavLink>
-            <NavLink
-              selected={isActive("/my/application-manage")}
-              onClick={() => {
-                navigate("/my/application-manage");
-              }}
-            >
-              지원 관리하기
-            </NavLink>
+            {isClubManager ? (
+              <div />
+            ) : (
+              <NavLink
+                selected={isActive("/my/application-manage")}
+                onClick={() => {
+                  navigate("/my/application-manage");
+                }}
+              >
+                지원 관리하기
+              </NavLink>
+            )}
           </NavLinks>
+        ) : (
+          <div />
         )}
       </Left>
 
       <Right>
-        {!authState.isAuthenticated ? (
+        {authState.isAuthenticated ? (
           <ProfileWrapper
             onClick={() => {
               if (isClubManager) navigate("/owner/info");
@@ -122,6 +118,10 @@ const NavLinks = styled.div`
   display: flex;
   gap: 36px;
   margin-left: 60px;
+
+  @media (max-width: ${breakpoints.mobile}) {
+    margin-left: 20px;
+  }
 `;
 
 const NavLink = styled.div<{ selected?: boolean }>`
@@ -131,6 +131,10 @@ const NavLink = styled.div<{ selected?: boolean }>`
   color: ${({ selected }) => (selected ? "#000000" : "#424242")};
   &:hover {
     color: #000000;
+  }
+
+  @media (max-width: ${breakpoints.mobile}) {
+    font-size: 16px;
   }
 `;
 
@@ -144,6 +148,10 @@ const ProfileWrapper = styled.div`
   align-items: center;
   gap: 10px;
   cursor: pointer;
+
+  @media (max-width: ${breakpoints.mobile}) {
+    gap: 6px;
+  }
 `;
 
 const ProfileImage = styled.img`
@@ -158,7 +166,7 @@ const UserName = styled.div`
   font-weight: 500;
 
   @media (max-width: ${breakpoints.mobile}) {
-    font-size: 14px;
+    font-size: 16px;
   }
 `;
 
